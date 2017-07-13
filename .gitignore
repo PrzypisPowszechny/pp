@@ -1,3 +1,7 @@
+.idea/.*  # PyCharm project folder
+
+### Git python preset
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -1,0 +1,17 @@
+# Install mysql server
+sudo apt-get update
+sudo apt-get install mysql-server
+sudo mysql_secure_installation
+
+# On Debian/Ubuntu also:
+sudo apt-get install libmysqlclient-dev
+
+# Create db command
+CREATE DATABASE <db_name> CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+# why unicode and not general: https://stackoverflow.com/questions/766809/whats-the-difference-between-utf8-general-ci-and-utf8-unicode-ci
+# why utf8 and not utf8mb4: https://mathiasbynens.be/notes/mysql-utf8mb4
+
+
+CREATE USER 'user'@'localhost';
+GRANT ALL ON <db>.* TO 'user'@'localhost';
