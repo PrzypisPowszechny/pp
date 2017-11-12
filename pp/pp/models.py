@@ -26,7 +26,7 @@ class Reference(Annotation):
     quote = models.TextField(max_length=250)
     # The exact annotated text part
 
-    reference_type = models.CharField(choices=consts.annotation_types, max_length=100)
+    reference_priority = models.CharField(choices=consts.annotation_priorities, max_length=100)
     comment = models.TextField(max_length=100)
 
     link = models.CharField(max_length=100)
