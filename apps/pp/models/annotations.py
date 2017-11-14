@@ -1,15 +1,19 @@
 from django.db import models
-from django.contrib.auth.models import User
-import consts
-
-
-class PPUser(User):
-    pass
+from apps.pp import consts
 
 
 class Annotation(models.Model):
-    user = models.ForeignKey('PPUser')
+    user = models.ForeignKey('pp.User')
     create_date = models.DateTimeField(auto_now_add=True)
+
+    url = models.CharField(max_length=200)
+    # URL where the annotation has been made
+
+    range = models.TextField(max_length=1000)
+    # Json data with information aboute the annotation location
+
+    quote = models.TextField(max_length=250)
+    # The exact annotated text part
 
     class Meta:
         abstract = True
@@ -20,13 +24,8 @@ class ReferenceRequest(Annotation):
 
 
 class Reference(Annotation):
-    range = models.TextField(max_length=1000)
-    # Json data with information aboute the annotation location
 
-    quote = models.TextField(max_length=250)
-    # The exact annotated text part
-
-    reference_priority = models.CharField(choices=consts.annotation_priorities, max_length=100)
+    priority = models.CharField(choices=consts.annotation_priorities, max_length=100)
     comment = models.TextField(max_length=100)
 
     link = models.CharField(max_length=100)
@@ -41,7 +40,7 @@ class Reference(Annotation):
 
 
 class UserReferenceFeedback(models.Model):
-    user = models.ForeignKey('PPUser')
+    user = models.ForeignKey('pp.User')
     reference = models.ForeignKey(Reference)
 
     useful = models.BooleanField()
@@ -52,7 +51,7 @@ class UserReferenceFeedback(models.Model):
 
 
 class UserReferenceRequestFeedback(models.Model):
-    user = models.ForeignKey('PPUser')
+    user = models.ForeignKey('pp.User')
     reference_request = models.ForeignKey(ReferenceRequest)
 
     class Meta:

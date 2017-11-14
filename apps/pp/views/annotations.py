@@ -1,8 +1,5 @@
-from django.contrib.auth.models import User
 from django.http import HttpResponse
 from lazysignup.decorators import allow_lazy_user
-from lazysignup.models import LazyUser
-
 
 @allow_lazy_user
 def get(request):

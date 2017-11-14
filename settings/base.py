@@ -31,18 +31,24 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
     # an application that creates account for all anonymous users' requests and associates it with user session
     'lazysignup',
 
-    'pp',
+    # Main project app
+    'apps.pp',
+
 ]
+
+# Set PPUser as Django user model
+AUTH_USER_MODEL = 'pp.User'
+
 
 # Lines below added based on http://django-lazysignup.readthedocs.io/en/latest/install.html#installation
 AUTHENTICATION_BACKENDS = (
@@ -65,7 +71,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'pp.urls'
+ROOT_URLCONF = 'apps.urls'
 
 TEMPLATES = [
     {
@@ -83,7 +89,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'pp.wsgi.application'
+WSGI_APPLICATION = 'apps.wsgi.application'
 
 
 # Database

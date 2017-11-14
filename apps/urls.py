@@ -16,11 +16,11 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 
-import pp
-
+from apps.pp.views import annotations
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^annotations/', include(pp.urls, namespace='annotations')),
-]
-
+    url(r'^annotations/', include([
+        url(r'^', annotations.get)
+            ], namespace='annotations'))
+    ]
