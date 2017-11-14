@@ -1,5 +1,12 @@
-from pp.pp import models
+from django.contrib.auth.models import User
+from django.http import HttpResponse
+from lazysignup.decorators import allow_lazy_user
+from lazysignup.models import LazyUser
 
 
+@allow_lazy_user
 def get(request):
-    raise NotImplementedError
+    # With allow lazy user, a new user is created at database for every request
+    print(request.user.username)
+    return HttpResponse()
+

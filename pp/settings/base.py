@@ -37,8 +37,23 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # an application that creates account for all anonymous users' requests and associates it with user session
+    'lazysignup',
+
     'pp',
 ]
+
+# Lines below added based on http://django-lazysignup.readthedocs.io/en/latest/install.html#installation
+AUTHENTICATION_BACKENDS = (
+  'django.contrib.auth.backends.ModelBackend',
+  'lazysignup.backends.LazySignupBackend',
+)
+
+# Overwrite default Django behaviour and sends a session cookie to every request (also unlogged ones)
+# Crucial for 'lazysignup' to recognize anonymous user in subsequent requests
+# NOTE: the session cookie won't be sent to the user anyway after Server Internal Error
+SESSION_SAVE_EVERY_REQUEST = True
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
