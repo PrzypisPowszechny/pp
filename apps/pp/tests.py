@@ -178,12 +178,13 @@ class PPAPITest(APITestCase):
             json.loads(response.content.decode('utf8')),
             test_answesr
         )
+
     def test_search_url_without_references(self):
         base_url2 = "/annotations/search&url={}"
-        total=0
-        rows=[]
-        url="www.przypis.pl"
-        test_answear= {
+        total = 0
+        rows = []
+        url = "www.przypis.pl"
+        test_answear = {
             'total': total,
             'rows': rows
         }
@@ -192,3 +193,22 @@ class PPAPITest(APITestCase):
             json.loads(response.content.decode('utf8')),
             test_answear
         )
+
+    def test_post_new_reference(self):
+        base_url3 = "/annotations/"
+        user = User.objects.create_user(username="Alibaba", password='12345')
+        token = Token.objects.create(user=user)
+        self.client.login(username=user, password='12345', HTTP_AUTHORIZATION=token)
+        response = self.client.post(
+            base_url3, json.dumps(
+                {
+                    'url': "www.przypis.pl",
+                    'range': "Od tad do tad",
+                    'quote': 'very nice',
+                    'priority': 'NORMAL',
+                    'link': 'www.przypispowszechny.com',
+                    'link_title': 'very nice too'}), content_type='application/json')
+
+        self.assertEqual(response.status_code, 201)
+        new_reference = Reference.objects.get(user=user)
+        self.assertEqual(new_reference.range, "Od tad do tad")

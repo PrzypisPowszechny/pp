@@ -1,8 +1,11 @@
 import json
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from lazysignup.decorators import allow_lazy_user
 from .models import Reference, User, UserReferenceFeedback
 from django.core.exceptions import ObjectDoesNotExist
+from .serializers import ReferencePOSTSerializer
+from rest_framework.parsers import JSONParser
+from rest_framework.views import APIView
 
 
 @allow_lazy_user
@@ -51,3 +54,16 @@ def search_view(request, url):
         'rows': rows
     }
     return HttpResponse(json.dumps(js), content_type='application/json')
+
+
+@allow_lazy_user
+def post_view(request):
+    if request.method == 'POST':
+        data = JSONParser().parse(request)
+        data['user'] = request.user.pk
+        serializer = ReferencePOSTSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=201)
+        return JsonResponse(serializer.errors, status=400)
+    return HttpResponse(content_type='application/json')

@@ -9,6 +9,12 @@ class ReferenceSerialzer(serializers.ModelSerializer):
                   'useful_count', 'objection', 'objection_count')
 
 
+class ReferencePOSTSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Reference
+        fields = ('user', 'id', 'url', 'range', 'quote', 'priority', 'link', 'link_title')
+
+
 class UserReferenceFeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserReferenceFeedback
