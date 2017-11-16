@@ -1,9 +1,19 @@
-from .models import Reference
+from .models import Reference, UserReferenceFeedback
 from rest_framework import serializers
 
 
 class ReferenceSerialzer(serializers.ModelSerializer):
     class Meta:
         model = Reference
-        fields = ('id', 'url', 'range', 'quote', 'priority', 'link', 'link_title', 'reference_request_id',
-                  'useful_count', 'objection_count')
+        fields = ('id', 'url', 'range', 'quote', 'priority', 'link', 'link_title', 'reference_request_id', 'useful',
+                  'useful_count', 'objection', 'objection_count')
+
+
+class UserReferenceFeedbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserReferenceFeedback
+        fields = ('user', 'reference', 'useful', 'objection')
+
+
+class GETAPISerializer(serializers.Serializer):
+    reference = ReferenceSerialzer()
