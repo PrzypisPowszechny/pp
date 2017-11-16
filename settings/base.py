@@ -39,6 +39,11 @@ INSTALLED_APPS = [
     # an application that creates account for all anonymous users' requests and associates it with user session
     'lazysignup',
 
+
+    # framework for creating api
+    'rest_framework',
+    'rest_framework.authtoken',
+
     # Main project app
     'apps.pp',
 
@@ -119,6 +124,13 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    )
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/

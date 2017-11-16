@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from apps.pp import consts
+from django.db.models import Count
 
 
 class User(AbstractUser):
@@ -41,6 +42,18 @@ class Reference(Annotation):
 
     reference_request = models.ForeignKey(ReferenceRequest, null=True)
     # Null when the annotation has not been created on request
+
+    useful_count = models.IntegerField(default=0)
+    # Numbet of upvotes
+
+    objection_count = models.IntegerField(default=0)
+
+    # Number of objections
+
+    def count_useful_and_objection(self):
+        self.useful_count = UserReferenceFeedback.objects.filter(reference=self).filter(useful=True).count()
+        self.objection_count = UserReferenceFeedback.objects.filter(reference=self).filter(objection=True).count()
+        return (self.useful_count, self.objection_count)
 
 
 class UserReferenceFeedback(models.Model):
