@@ -26,9 +26,6 @@ class ReferenceModelTest(TestCase):
         self.reference = Reference.objects.create(user=user, priority='NORMAL', comment="good job",
                                                   link="www.przypispowszechny.com", link_title="very nice")
 
-    def test_string_representation(self):
-        self.assertEqual(self.reference.comment, str(self.reference))
-
     def test_creating_reference_without_user(self):
         try:
             reference = Reference.objects.create(priority='NORMAL', comment="good job",
@@ -112,6 +109,10 @@ class PPAPITest(APITestCase):
              'objection': urf.objection,
              'objection_count': reference.objection_count}
         )
+
+    def test_get_wrong_url(self):
+        response = self.client.get(self.base_url.format(123))
+        self.assertEqual(response.status_code, 404)
 
     def test_search_return_json_200(self):
         base_url2 = "/annotations/search&url={}"
@@ -212,3 +213,36 @@ class PPAPITest(APITestCase):
         self.assertEqual(response.status_code, 201)
         new_reference = Reference.objects.get(user=user)
         self.assertEqual(new_reference.range, "Od tad do tad")
+
+    def test_put_reference(self):
+        user = User.objects.create_user(username="Alibaba", password='12345')
+        token = Token.objects.create(user=user)
+        self.client.login(username=user, password='12345', HTTP_AUTHORIZATION=token)
+        reference = Reference.objects.create(user=user, priority='NORMAL', url='www.przypis.pl', comment="good job",
+                                             link="www.przypispowszechny.com", link_title="very nice",
+                                             quote='not this time')
+        urf = UserReferenceFeedback.objects.create(user=user, reference=reference, useful=True, objection=False)
+        put_string = 'not so well'
+        put_data = json.dumps({
+            'link_title': put_string,
+        })
+        response = self.client.put(self.base_url.format(reference.id), put_data, content_type='application/json')
+        reference = Reference.objects.get(id=reference.id)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(reference.link_title, put_string)
+
+    def test_put_wrong_reference(self):
+        user = User.objects.create_user(username="Alibaba", password='12345')
+        token = Token.objects.create(user=user)
+        self.client.login(username=user, password='12345', HTTP_AUTHORIZATION=token)
+        reference = Reference.objects.create(user=user, priority='NORMAL', url='www.przypis.pl', comment="good job",
+                                             link="www.przypispowszechny.com", link_title="very nice",
+                                             quote='not this time')
+        urf = UserReferenceFeedback.objects.create(user=user, reference=reference, useful=True, objection=False)
+        put_string = 'not so well'
+        put_data = json.dumps({
+            'comment': put_string,
+        })
+        response = self.client.put(self.base_url.format(reference.id), put_data, content_type='application/json')
+        reference = Reference.objects.get(id=reference.id)
+        self.assertEqual(response.status_code, 400)

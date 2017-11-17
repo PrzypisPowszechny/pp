@@ -3,7 +3,7 @@ from django.http import HttpResponse, JsonResponse
 from lazysignup.decorators import allow_lazy_user
 from .models import Reference, User, UserReferenceFeedback
 from django.core.exceptions import ObjectDoesNotExist
-from .serializers import ReferencePOSTSerializer
+from .serializers import ReferencePOSTSerializer, ReferencePUTSerializer
 from rest_framework.parsers import JSONParser
 from rest_framework.views import APIView
 
@@ -11,8 +11,23 @@ from rest_framework.views import APIView
 @allow_lazy_user
 def get_view(request, pk):
     # With allow lazy user, a new user is created at database for every request
-    reference_json = prepare_reference_json(request, pk)
-    return HttpResponse(json.dumps(reference_json), content_type='application/json')
+    try:
+        reference= Reference.objects.get(id=pk)
+    except Reference.DoesNotExist:
+        return HttpResponse(status=404)
+    if request.method == 'GET':
+        reference_json = prepare_reference_json(request, pk)
+        return HttpResponse(json.dumps(reference_json), content_type='application/json')
+    elif request.method == 'PUT':
+        data = JSONParser().parse(request)
+        serializer = ReferencePUTSerializer(reference, data=data, partial=True)
+        if serializer.is_valid():
+            if len(serializer.validated_data)==0:
+                return HttpResponse(status=400)
+            serializer.save()
+            return JsonResponse(serializer.data)
+        return JsonResponse(serializer.errors, status=400)
+    return HttpResponse(status=400)
 
 
 def prepare_reference_json(request, pk):

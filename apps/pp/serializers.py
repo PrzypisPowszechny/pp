@@ -15,6 +15,12 @@ class ReferencePOSTSerializer(serializers.ModelSerializer):
         fields = ('user', 'id', 'url', 'range', 'quote', 'priority', 'link', 'link_title')
 
 
+class ReferencePUTSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Reference
+        fields = ('quote', 'priority', 'link', 'link_title')
+
+
 class UserReferenceFeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserReferenceFeedback
