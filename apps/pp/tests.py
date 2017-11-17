@@ -211,10 +211,25 @@ class PPAPITest(APITestCase):
                     'link_title': 'very nice too'}), content_type='application/json')
 
         self.assertEqual(response.status_code, 201)
-        new_reference = Reference.objects.get(user=user)
-        self.assertEqual(new_reference.range, "Od tad do tad")
+        reference = Reference.objects.get(user=user)
+        reference.count_useful_and_objection()
+        self.assertEqual(reference.range, "Od tad do tad")
+        self.assertEqual(
+            json.loads(response.content.decode('utf8')),
+            {'id': reference.id,
+             'url': reference.url,
+             'range': reference.range,
+             'quote': reference.quote,
+             'priority': reference.priority,
+             'link': reference.link,
+             'link_title': reference.link_title,
+             'useful': 0,
+             'useful_count': reference.useful_count,
+             'objection': 0,
+             'objection_count': reference.objection_count}
+        )
 
-    def test_put_reference(self):
+    def test_patch_reference(self):
         user = User.objects.create_user(username="Alibaba", password='12345')
         token = Token.objects.create(user=user)
         self.client.login(username=user, password='12345', HTTP_AUTHORIZATION=token)
@@ -226,12 +241,27 @@ class PPAPITest(APITestCase):
         put_data = json.dumps({
             'link_title': put_string,
         })
-        response = self.client.put(self.base_url.format(reference.id), put_data, content_type='application/json')
+        response = self.client.patch(self.base_url.format(reference.id), put_data, content_type='application/json')
         reference = Reference.objects.get(id=reference.id)
+        reference.count_useful_and_objection()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(reference.link_title, put_string)
+        self.assertEqual(
+            json.loads(response.content.decode('utf8')),
+            {'id': reference.id,
+             'url': reference.url,
+             'range': reference.range,
+             'quote': reference.quote,
+             'priority': reference.priority,
+             'link': reference.link,
+             'link_title': reference.link_title,
+             'useful': urf.useful,
+             'useful_count': reference.useful_count,
+             'objection': urf.objection,
+             'objection_count': reference.objection_count}
+        )
 
-    def test_put_wrong_reference(self):
+    def test_patch_wrong_field_reference(self):
         user = User.objects.create_user(username="Alibaba", password='12345')
         token = Token.objects.create(user=user)
         self.client.login(username=user, password='12345', HTTP_AUTHORIZATION=token)
@@ -243,6 +273,7 @@ class PPAPITest(APITestCase):
         put_data = json.dumps({
             'comment': put_string,
         })
-        response = self.client.put(self.base_url.format(reference.id), put_data, content_type='application/json')
+        response = self.client.patch(self.base_url.format(reference.id), put_data, content_type='application/json')
         reference = Reference.objects.get(id=reference.id)
         self.assertEqual(response.status_code, 400)
+        self.assertNotEqual(reference.comment, put_string)

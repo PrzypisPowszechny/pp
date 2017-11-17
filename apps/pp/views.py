@@ -1,9 +1,10 @@
 import json
+from rest_framework import status
 from django.http import HttpResponse, JsonResponse
 from lazysignup.decorators import allow_lazy_user
 from .models import Reference, User, UserReferenceFeedback
 from django.core.exceptions import ObjectDoesNotExist
-from .serializers import ReferencePOSTSerializer, ReferencePUTSerializer
+from .serializers import ReferencePOSTSerializer, ReferencePATCHSerializer
 from rest_framework.parsers import JSONParser
 from rest_framework.views import APIView
 
@@ -12,20 +13,21 @@ from rest_framework.views import APIView
 def get_view(request, pk):
     # With allow lazy user, a new user is created at database for every request
     try:
-        reference= Reference.objects.get(id=pk)
+        reference = Reference.objects.get(id=pk)
     except Reference.DoesNotExist:
         return HttpResponse(status=404)
     if request.method == 'GET':
         reference_json = prepare_reference_json(request, pk)
         return HttpResponse(json.dumps(reference_json), content_type='application/json')
-    elif request.method == 'PUT':
+    elif request.method == 'PATCH':
         data = JSONParser().parse(request)
-        serializer = ReferencePUTSerializer(reference, data=data, partial=True)
+        serializer = ReferencePATCHSerializer(reference, data=data, partial=True)
         if serializer.is_valid():
-            if len(serializer.validated_data)==0:
+            if len(serializer.validated_data) == 0:
                 return HttpResponse(status=400)
             serializer.save()
-            return JsonResponse(serializer.data)
+            reference_json = prepare_reference_json(request, pk)
+            return HttpResponse(json.dumps(reference_json), content_type='application/json', status=200)
         return JsonResponse(serializer.errors, status=400)
     return HttpResponse(status=400)
 
@@ -78,7 +80,8 @@ def post_view(request):
         data['user'] = request.user.pk
         serializer = ReferencePOSTSerializer(data=data)
         if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data, status=201)
-        return JsonResponse(serializer.errors, status=400)
-    return HttpResponse(content_type='application/json')
+            reference = serializer.save()
+            reference_json = prepare_reference_json(request, reference.id)
+            return HttpResponse(json.dumps(reference_json), content_type='application/json', status=201)
+        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return HttpResponse(content_type='application/json', status=400)
