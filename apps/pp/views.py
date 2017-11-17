@@ -29,6 +29,9 @@ def get_view(request, pk):
             reference_json = prepare_reference_json(request, pk)
             return HttpResponse(json.dumps(reference_json), content_type='application/json', status=200)
         return JsonResponse(serializer.errors, status=400)
+    elif request.method == 'DELETE':
+        reference.delete()
+        return HttpResponse(status=200)
     return HttpResponse(status=400)
 
 

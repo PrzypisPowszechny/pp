@@ -277,3 +277,17 @@ class PPAPITest(APITestCase):
         reference = Reference.objects.get(id=reference.id)
         self.assertEqual(response.status_code, 400)
         self.assertNotEqual(reference.comment, put_string)
+
+    def test_delete_reference(self):
+        user = User.objects.create_user(username="Alibaba", password='12345')
+        token = Token.objects.create(user=user)
+        self.client.login(username=user, password='12345', HTTP_AUTHORIZATION=token)
+        reference = Reference.objects.create(user=user, priority='NORMAL', url='www.przypis.pl', comment="good job",
+                                             link="www.przypispowszechny.com", link_title="very nice",
+                                             quote='not this time')
+        urf = UserReferenceFeedback.objects.create(user=user, reference=reference, useful=True, objection=False)
+        id = reference.id
+        response = self.client.delete(self.base_url.format(reference.id), content_type='application/json')
+        self.assertEqual(response.status_code,200)
+        response2=self.client.get(self.base_url.format(id))
+        self.assertEqual(response2.status_code,404)
