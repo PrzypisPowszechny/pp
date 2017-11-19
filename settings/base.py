@@ -39,10 +39,8 @@ INSTALLED_APPS = [
     # an application that creates account for all anonymous users' requests and associates it with user session
     'lazysignup',
 
-
     # framework for creating api
     'rest_framework',
-    'rest_framework.authtoken',
 
     # Main project app
     'apps.pp',
@@ -125,11 +123,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# We do not django_rest_framework authentication backend
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-    )
+    'DEFAULT_AUTHENTICATION_CLASSES': []
 }
 
 # Internationalization

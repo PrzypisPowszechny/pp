@@ -1,6 +1,11 @@
+from django.views import View
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from lazysignup.decorators import allow_lazy_user
+from rest_framework.renderers import JSONRenderer
+
+from apps.pp.utils import SuccessHttpResponse, ErrorHttpResponse
 from .models import Reference
 from .serializers import ReferencePOSTSerializer, ReferencePATCHSerializer, ReferenceGETSerializer
 from rest_framework.parsers import JSONParser
@@ -10,7 +15,7 @@ from rest_framework.response import Response
 from django.utils.decorators import method_decorator
 
 
-class ReferenceDetail(APIView):
+class ReferenceDetail(View):
     def get_object(self, pk):
         try:
             return Reference.objects.get(pk=pk)
@@ -21,7 +26,7 @@ class ReferenceDetail(APIView):
     def get(self, request, pk, format=None):
         reference = self.get_object(pk)
         serializer = ReferenceGETSerializer(reference, context={'request': request})
-        return Response(serializer.data)
+        return HttpResponse(JSONRenderer().render(serializer.data))
 
     @method_decorator(allow_lazy_user)
     def patch(self, request, pk, format=None):
@@ -56,8 +61,8 @@ class ReferenceList(APIView):
         data = {'total': total, 'rows': rows}
         return Response(data)
 
-
-class ReferencePOST(APIView):
+@method_decorator(csrf_exempt, name='dispatch')
+class ReferencePOST(View):
     @method_decorator(allow_lazy_user)
     def post(self, request, format=None):
         data = JSONParser().parse(request)
@@ -66,5 +71,10 @@ class ReferencePOST(APIView):
         if serializer.is_valid():
             reference = serializer.save()
             reference_json = ReferenceGETSerializer(reference)
-            return Response(reference_json.data, status=status.HTTP_201_CREATED)
-        return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return SuccessHttpResponse(reference_json.data, status=status.HTTP_201_CREATED)
+
+        return ErrorHttpResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
