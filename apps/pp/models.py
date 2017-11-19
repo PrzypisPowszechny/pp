@@ -1,7 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from apps.pp import consts
-from django.db.models import Count
 
 
 class User(AbstractUser):
