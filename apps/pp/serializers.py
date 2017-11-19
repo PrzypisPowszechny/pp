@@ -23,11 +23,7 @@ class ReferenceGETSerializer(serializers.ModelSerializer):
                 if 'context' in kwargs and instance != None:
                     try:
                         user = kwargs['context']['request'].user
-                        print(user)
-                        urf = UserReferenceFeedback.objects.get(user=user)#, reference=instance)
-                        #
-                        # urf = UserReferenceFeedback.objects.get(
-                        #     user=User.objects.get(id=kwargs['context']['request'].user.id), reference=instance)
+                        urf = UserReferenceFeedback.objects.get(user=user, reference=instance)
                         self.useful_var = urf.useful
                         self.objection_var = urf.objection
                     except ObjectDoesNotExist:

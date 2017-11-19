@@ -8,7 +8,7 @@ class SuccessHttpResponse(HttpResponse):
         super().__init__(*args, **kwargs)
         response = {
             'success': True,
-            'result': result
+            'data': result
         }
         data = json.dumps(response)
         self.content_type = 'application/json'

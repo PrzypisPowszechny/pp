@@ -4,7 +4,7 @@ from .models import Reference, User, UserReferenceFeedback, UserReferenceRequest
 from rest_framework.test import APITestCase
 from rest_framework.test import APIRequestFactory
 from rest_framework.test import APIClient
-from rest_framework.authtoken.models import Token
+# from rest_framework.authtoken.models import Token
 from django.core.urlresolvers import reverse
 import json
 
@@ -72,7 +72,7 @@ class UserReferenceRequestFeedbackModelTest(TestCase):
         self.assertEqual(1, UserReferenceRequestFeedback.objects.count())
 
 
-class PPAPITest(APITestCase):
+class PPAPITest(TestCase):
     base_url = "/annotations/{}/"
     maxDiff = None
 
@@ -87,16 +87,17 @@ class PPAPITest(APITestCase):
 
     def test_get_returns_reference(self):
         user = User.objects.create_user(username="Alibaba", password='12345')
-        token = Token.objects.create(user=user)
+        # token = Token.objects.create(user=user)
         reference = Reference.objects.create(user=user, priority='NORMAL', comment="good job",
                                              link="www.przypispowszechny.com", link_title="very nice")
         urf = UserReferenceFeedback.objects.create(user=user, reference=reference, useful=True, objection=False)
-        self.client.login(username=user, password='12345', HTTP_AUTHORIZATION=token)
+        self.client.login(username=user, password='12345')
         self.assertEqual(1, urf.useful)
         response = self.client.get(self.base_url.format(reference.id))
         reference.count_useful_and_objection()
+        print(response.content.decode('utf8'))
         self.assertEqual(
-            json.loads(response.content.decode('utf8')),
+            json.loads(response.content.decode('utf8'))['data'],
             {'id': reference.id,
              'url': reference.url,
              'range': reference.range,
@@ -129,7 +130,6 @@ class PPAPITest(APITestCase):
     def test_search_return_list(self):
         base_url2 = "/annotations/search&url={}"
         user = User.objects.create_user(username="Alibaba", password='12345')
-        token = Token.objects.create(user=user)
         reference2 = Reference.objects.create(user=user, priority='NORMAL', comment="good job", url='www.przypis.pl',
                                               link="www.przypispowszechny2.com", link_title="very nice",
                                               create_date=datetime.now())
@@ -145,7 +145,7 @@ class PPAPITest(APITestCase):
         reference.save()
         reference = Reference.objects.get(id=reference.id)
         urf = UserReferenceFeedback.objects.create(user=user, reference=reference, useful=True, objection=False)
-        self.client.login(username=user, password='12345', HTTP_AUTHORIZATION=token)
+        self.client.login(username=user, password='12345')
         reference.count_useful_and_objection()
         reference2.count_useful_and_objection()
         response = self.client.get(base_url2.format(reference.url))
@@ -179,7 +179,7 @@ class PPAPITest(APITestCase):
             ]
         }
         self.assertEqual(
-            json.loads(response.content.decode('utf8')),
+            json.loads(response.content.decode('utf8'))['data'],
             test_answesr)
 
     def test_search_url_without_references(self):
@@ -193,15 +193,14 @@ class PPAPITest(APITestCase):
         }
         response = self.client.get(base_url2.format(url))
         self.assertEqual(
-            json.loads(response.content.decode('utf8')),
+            json.loads(response.content.decode('utf8'))['data'],
             test_answear
         )
 
     def test_post_new_reference(self):
         base_url3 = "/annotations/"
         user = User.objects.create_user(username="Alibaba", password='12345')
-        token = Token.objects.create(user=user)
-        self.client.login(username=user, password='12345', HTTP_AUTHORIZATION=token)
+        self.client.login(username=user, password='12345')
         response = self.client.post(
             base_url3, json.dumps(
                 {
@@ -212,12 +211,12 @@ class PPAPITest(APITestCase):
                     'link': 'www.przypispowszechny.com',
                     'link_title': 'very nice too'}), content_type='application/json')
 
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 200)
         reference = Reference.objects.get(user=user)
         reference.count_useful_and_objection()
         self.assertEqual(reference.range, "Od tad do tad")
         self.assertEqual(
-            json.loads(response.content.decode('utf8')),
+            json.loads(response.content.decode('utf8'))['data'],
             {'id': reference.id,
              'url': reference.url,
              'range': reference.range,
@@ -233,8 +232,7 @@ class PPAPITest(APITestCase):
 
     def test_patch_reference(self):
         user = User.objects.create_user(username="Alibaba", password='12345')
-        token = Token.objects.create(user=user)
-        self.client.login(username=user, password='12345', HTTP_AUTHORIZATION=token)
+        self.client.login(username=user, password='12345')
         reference = Reference.objects.create(user=user, priority='NORMAL', url='www.przypis.pl', comment="good job",
                                              link="www.przypispowszechny.com", link_title="very nice",
                                              quote='not this time')
@@ -249,7 +247,7 @@ class PPAPITest(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(reference.link_title, put_string)
         self.assertEqual(
-            json.loads(response.content.decode('utf8')),
+            json.loads(response.content.decode('utf8'))['data'],
             {'id': reference.id,
              'url': reference.url,
              'range': reference.range,
@@ -265,8 +263,7 @@ class PPAPITest(APITestCase):
 
     def test_patch_wrong_field_reference(self):
         user = User.objects.create_user(username="Alibaba", password='12345')
-        token = Token.objects.create(user=user)
-        self.client.login(username=user, password='12345', HTTP_AUTHORIZATION=token)
+        self.client.login(username=user, password='12345')
         reference = Reference.objects.create(user=user, priority='NORMAL', url='www.przypis.pl', comment="good job",
                                              link="www.przypispowszechny.com", link_title="very nice",
                                              quote='not this time')
@@ -282,8 +279,8 @@ class PPAPITest(APITestCase):
 
     def test_delete_reference(self):
         user = User.objects.create_user(username="Alibaba", password='12345')
-        token = Token.objects.create(user=user)
-        self.client.login(username=user, password='12345', HTTP_AUTHORIZATION=token)
+        # token = Token.objects.create(user=user)
+        self.client.login(username=user, password='12345')
         reference = Reference.objects.create(user=user, priority='NORMAL', url='www.przypis.pl', comment="good job",
                                              link="www.przypispowszechny.com", link_title="very nice",
                                              quote='not this time')

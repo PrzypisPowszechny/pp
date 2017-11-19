@@ -22,33 +22,39 @@ class ReferenceDetail(View):
         except Reference.DoesNotExist:
             raise Http404
 
+
     @method_decorator(allow_lazy_user)
     def get(self, request, pk, format=None):
         reference = self.get_object(pk)
         serializer = ReferenceGETSerializer(reference, context={'request': request})
-        return HttpResponse(JSONRenderer().render(serializer.data))
+        return SuccessHttpResponse(serializer.data)
+
 
     @method_decorator(allow_lazy_user)
     def patch(self, request, pk, format=None):
         reference = self.get_object(pk)
-        serializer = ReferencePATCHSerializer(reference, data=request.data, partial=True)
+        data = JSONParser().parse(request)
+        print(data)
+        serializer = ReferencePATCHSerializer(reference, data=data, partial=True)
         if serializer.is_valid():
             if len(serializer.validated_data) == 0:
                 return HttpResponse(status=400)
             serializer.save()
             reference2 = self.get_object(pk)
             serializer2 = ReferenceGETSerializer(reference2, context={'request': request})
-            return Response(serializer2.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+            return SuccessHttpResponse(serializer2.data)
+        return ErrorHttpResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
     @method_decorator(allow_lazy_user)
     def delete(self, request, pk, format=None):
         reference = self.get_object(pk)
         reference.delete()
-        return Response(status=status.HTTP_200_OK)
+        serializer = ReferenceGETSerializer(reference, context={'request': request})
+        return SuccessHttpResponse(serializer.data, status=status.HTTP_200_OK)
 
 
-class ReferenceList(APIView):
+class ReferenceList(View):
     @method_decorator(allow_lazy_user)
     def get(self, request, url, format=None):
         references = Reference.objects.filter(url=url).order_by("-create_date")
@@ -59,7 +65,8 @@ class ReferenceList(APIView):
         for i in range(len(references)):
             rows.append(ReferenceGETSerializer(references[i], context={'request': request}).data)
         data = {'total': total, 'rows': rows}
-        return Response(data)
+        return SuccessHttpResponse(data, status=status.HTTP_200_OK)
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ReferencePOST(View):
@@ -71,7 +78,7 @@ class ReferencePOST(View):
         if serializer.is_valid():
             reference = serializer.save()
             reference_json = ReferenceGETSerializer(reference)
-            return SuccessHttpResponse(reference_json.data, status=status.HTTP_201_CREATED)
+            return SuccessHttpResponse(reference_json.data, status=status.HTTP_200_OK)
 
         return ErrorHttpResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
