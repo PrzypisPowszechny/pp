@@ -34,7 +34,6 @@ class ReferenceDetail(View):
     def patch(self, request, pk, format=None):
         reference = self.get_object(pk)
         data = JSONParser().parse(request)
-        print(data)
         serializer = ReferencePATCHSerializer(reference, data=data, partial=True)
         if serializer.is_valid():
             if len(serializer.validated_data) == 0:
