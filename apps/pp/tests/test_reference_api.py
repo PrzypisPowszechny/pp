@@ -1,7 +1,9 @@
 import json
 from datetime import datetime, timedelta
+
+from django.contrib.auth import get_user_model
 from django.test import TestCase
-from apps.pp.models import Reference, User, UserReferenceFeedback
+from apps.pp.models import Reference, UserReferenceFeedback
 
 
 class PPAPITest(TestCase):
@@ -9,7 +11,7 @@ class PPAPITest(TestCase):
     maxDiff = None
 
     def test_get_returns_json_200(self):
-        user = User.objects.create_user(username="Alibaba")
+        user = get_user_model().objects.create_user(username="Alibaba")
         reference = Reference.objects.create(user=user, priority='NORMAL', comment="good job",
                                              link="www.przypispowszechny.com", link_title="very nice")
         urf = UserReferenceFeedback.objects.create(user=user, reference=reference, useful=True, objection=False)
@@ -18,7 +20,7 @@ class PPAPITest(TestCase):
         self.assertEqual(response['content-type'], 'application/json')
 
     def test_get_returns_reference(self):
-        user = User.objects.create_user(username="Alibaba", password='12345')
+        user = get_user_model().objects.create_user(username="Alibaba", password='12345')
         # token = Token.objects.create(user=user)
         reference = Reference.objects.create(user=user, priority='NORMAL', comment="good job",
                                              link="www.przypispowszechny.com", link_title="very nice")
@@ -49,7 +51,7 @@ class PPAPITest(TestCase):
 
     def test_search_return_json_200(self):
         base_url2 = "/annotations/search&url={}"
-        user = User.objects.create_user(username="Alibaba")
+        user = get_user_model().objects.create_user(username="Alibaba")
         reference = Reference.objects.create(user=user, priority='NORMAL', comment="good job",
                                              link="www.przypispowszechny.com", link_title="very nice")
         reference2 = Reference.objects.create(user=user, priority='NORMAL', comment="more good job",
@@ -61,7 +63,7 @@ class PPAPITest(TestCase):
 
     def test_search_return_list(self):
         base_url2 = "/annotations/search&url={}"
-        user = User.objects.create_user(username="Alibaba", password='12345')
+        user = get_user_model().objects.create_user(username="Alibaba", password='12345')
         reference2 = Reference.objects.create(user=user, priority='NORMAL', comment="good job", url='www.przypis.pl',
                                               link="www.przypispowszechny2.com", link_title="very nice",
                                               create_date=datetime.now())
@@ -131,7 +133,7 @@ class PPAPITest(TestCase):
 
     def test_post_new_reference(self):
         base_url3 = "/annotations/"
-        user = User.objects.create_user(username="Alibaba", password='12345')
+        user = get_user_model().objects.create_user(username="Alibaba", password='12345')
         self.client.login(username=user, password='12345')
         response = self.client.post(
             base_url3, json.dumps(
@@ -163,7 +165,7 @@ class PPAPITest(TestCase):
         )
 
     def test_patch_reference(self):
-        user = User.objects.create_user(username="Alibaba", password='12345')
+        user = get_user_model().objects.create_user(username="Alibaba", password='12345')
         self.client.login(username=user, password='12345')
         reference = Reference.objects.create(user=user, priority='NORMAL', url='www.przypis.pl', comment="good job",
                                              link="www.przypispowszechny.com", link_title="very nice",
@@ -194,7 +196,7 @@ class PPAPITest(TestCase):
         )
 
     def test_patch_wrong_field_reference(self):
-        user = User.objects.create_user(username="Alibaba", password='12345')
+        user = get_user_model().objects.create_user(username="Alibaba", password='12345')
         self.client.login(username=user, password='12345')
         reference = Reference.objects.create(user=user, priority='NORMAL', url='www.przypis.pl', comment="good job",
                                              link="www.przypispowszechny.com", link_title="very nice",
@@ -210,7 +212,7 @@ class PPAPITest(TestCase):
         self.assertNotEqual(reference.comment, put_string)
 
     def test_delete_reference(self):
-        user = User.objects.create_user(username="Alibaba", password='12345')
+        user = get_user_model().objects.create_user(username="Alibaba", password='12345')
         # token = Token.objects.create(user=user)
         self.client.login(username=user, password='12345')
         reference = Reference.objects.create(user=user, priority='NORMAL', url='www.przypis.pl', comment="good job",
