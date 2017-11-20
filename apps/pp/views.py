@@ -1,5 +1,6 @@
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 from rest_framework import status
 from django.http import HttpResponse
 from lazysignup.decorators import allow_lazy_user
@@ -14,7 +15,7 @@ from django.http import Http404
 from rest_framework.response import Response
 from django.utils.decorators import method_decorator
 
-
+@method_decorator(csrf_exempt, name='dispatch')
 class ReferenceDetail(View):
     def get_object(self, pk):
         try:
@@ -22,8 +23,8 @@ class ReferenceDetail(View):
         except Reference.DoesNotExist:
             raise Http404
 
-
     @method_decorator(allow_lazy_user)
+    @method_decorator(require_http_methods(["GET"]))
     def get(self, request, pk, format=None):
         reference = self.get_object(pk)
         serializer = ReferenceGETSerializer(reference, context={'request': request})
@@ -31,6 +32,7 @@ class ReferenceDetail(View):
 
 
     @method_decorator(allow_lazy_user)
+    @method_decorator(require_http_methods(["PATCH"]))
     def patch(self, request, pk, format=None):
         reference = self.get_object(pk)
         data = JSONParser().parse(request)
@@ -46,6 +48,7 @@ class ReferenceDetail(View):
 
 
     @method_decorator(allow_lazy_user)
+    @method_decorator(require_http_methods(["DELETE"]))
     def delete(self, request, pk, format=None):
         reference = self.get_object(pk)
         reference.delete()
@@ -55,6 +58,7 @@ class ReferenceDetail(View):
 
 class ReferenceList(View):
     @method_decorator(allow_lazy_user)
+    @method_decorator(require_http_methods(["GET"]))
     def get(self, request, url, format=None):
         references = Reference.objects.filter(url=url).order_by("-create_date")
         references = list(references)
@@ -70,6 +74,7 @@ class ReferenceList(View):
 @method_decorator(csrf_exempt, name='dispatch')
 class ReferencePOST(View):
     @method_decorator(allow_lazy_user)
+    @method_decorator(require_http_methods(["POST"]))
     def post(self, request, format=None):
         data = JSONParser().parse(request)
         data['user'] = request.user.pk
