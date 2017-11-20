@@ -42,6 +42,9 @@ INSTALLED_APPS = [
     # framework for creating api
     'rest_framework',
 
+    # Adds cross-origin headers to http request
+    'corsheaders',
+
     # Main project app
     'apps.pp',
 
@@ -61,9 +64,12 @@ AUTHENTICATION_BACKENDS = (
 # NOTE: the session cookie won't be sent to the user anyway after Server Internal Error
 SESSION_SAVE_EVERY_REQUEST = True
 
+CORS_ORIGIN_ALLOW_ALL = True
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -71,6 +77,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+APPEND_SLASH = False
 ROOT_URLCONF = 'apps.urls'
 
 TEMPLATES = [

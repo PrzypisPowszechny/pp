@@ -20,12 +20,12 @@ import apps
 '''
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^annotations/', include([
+    url(r'^annotations', include([
         url(r'^', annotations.get)
             ], namespace='annotations'))
     ]
 '''
 urlpatterns = [
     url(r'^admin.',admin.site.urls),
-    url(r'^annotations/',include('apps.pp.urls')),
+    url(r'^annotations',include('apps.pp.urls')),
 ]
