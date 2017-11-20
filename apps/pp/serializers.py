@@ -4,40 +4,51 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.fields import empty
 
 
-class ReferenceGETSerializer(serializers.ModelSerializer):
-    useful = serializers.SerializerMethodField('is_useful')
-    objection = serializers.SerializerMethodField('is_objected')
-    useful_var = False
-    objection_var = False
-
-    def is_useful(self, instance):
-        return self.useful_var
-
-    def is_objected(self, instance):
-        return self.objection_var
-
-    def __init__(self, instance=None, data=empty, *args, **kwargs):
-        if instance != None:
-            if isinstance(instance, Reference):
-                instance.count_useful_and_objection()
-                if 'context' in kwargs and instance != None:
-                    try:
-                        user = kwargs['context']['request'].user
-                        urf = UserReferenceFeedback.objects.get(user=user, reference=instance)
-                        self.useful_var = urf.useful
-                        self.objection_var = urf.objection
-                    except ObjectDoesNotExist:
-                        self.useful = False
-                        self.objection = False
-                else:
-                    self.useful = False
-                    self.objection = False
-        super().__init__(instance, data, *args, **kwargs)
+class ReferenceListGETSerializer(serializers.ModelSerializer):
+    useful_count = serializers.IntegerField(default=0, read_only=True)
+    objection_count = serializers.IntegerField(default=0, read_only=True)
+    useful = serializers.BooleanField(default=False, read_only=True)
+    objection = serializers.BooleanField(default=False, read_only=True)
 
     class Meta:
         model = Reference
-        fields = ('id', 'url', 'range', 'quote', 'priority', 'link', 'link_title', 'useful',
-                  'useful_count', 'objection', 'objection_count')
+        fields = ('id', 'url', 'range', 'quote', 'priority', 'link', 'link_title',
+                  'useful', 'useful_count',
+                  'objection', 'objection_count'
+                  )
+
+
+class ReferenceGETSerializer(serializers.ModelSerializer):
+    useful_count = serializers.SerializerMethodField()
+    objection_count = serializers.SerializerMethodField()
+    useful = serializers.SerializerMethodField('is_useful')
+    objection = serializers.SerializerMethodField('is_objection')
+
+    class Meta:
+        model = Reference
+        fields = ('id', 'url', 'range', 'quote', 'priority', 'link', 'link_title',
+                  'useful', 'useful_count',
+                  'objection', 'objection_count'
+                  )
+
+    def __init__(self, instance=None, data=empty, *args, **kwargs):
+        if 'context' not in kwargs:
+            raise ValueError('No context provided for ReferenceGETSerializer')
+
+        self.user = kwargs['context']['request'].user
+        super().__init__(instance, data, *args, **kwargs)
+
+    def get_useful_count(self, instance):
+        return UserReferenceFeedback.objects.filter(user=self.user, reference=instance, useful=True).count()
+
+    def get_objection_count(self, instance):
+        return UserReferenceFeedback.objects.filter(user=self.user, reference=instance, objection=True).count()
+
+    def is_useful(self, instance):
+        return UserReferenceFeedback.objects.filter(user=self.user, reference=instance, useful=True).exists()
+
+    def is_objection(self, instance):
+        return UserReferenceFeedback.objects.filter(user=self.user, reference=instance, objection=True).exists()
 
 
 class ReferencePOSTSerializer(serializers.ModelSerializer):

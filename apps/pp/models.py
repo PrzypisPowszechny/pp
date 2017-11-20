@@ -42,13 +42,6 @@ class Reference(Annotation):
     reference_request = models.ForeignKey(ReferenceRequest, null=True)
     # Null when the annotation has not been created on request
 
-    useful_count = models.IntegerField(default=0)
-    # Numbet of upvotes
-
-    objection_count = models.IntegerField(default=0)
-
-    # Number of objections
-
     def count_useful_and_objection(self):
         self.useful_count = UserReferenceFeedback.objects.filter(reference=self).filter(useful=True).count()
         self.objection_count = UserReferenceFeedback.objects.filter(reference=self).filter(objection=True).count()
@@ -57,7 +50,7 @@ class Reference(Annotation):
 
 class UserReferenceFeedback(models.Model):
     user = models.ForeignKey('User')
-    reference = models.ForeignKey(Reference)
+    reference = models.ForeignKey(Reference, related_name='feedbacks')
 
     useful = models.BooleanField()
     objection = models.BooleanField()

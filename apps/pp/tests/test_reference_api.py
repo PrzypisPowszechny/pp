@@ -52,6 +52,16 @@ class ReferenceAPITest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/json')
 
+        test_answer = {
+            'total': 0,
+            'rows': []
+        }
+        self.assertEqual(
+            json.loads(response.content.decode('utf8'))['data'],
+            test_answer
+        )
+
+
     def test_nonempty_search_return_json_200(self):
         search_base_url = "/annotations/search&url={}"
         reference = Reference.objects.create(user=self.user, priority='NORMAL', comment="good job",
@@ -62,14 +72,6 @@ class ReferenceAPITest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/json')
 
-        test_answer = {
-            'total': 0,
-            'rows': []
-        }
-        self.assertEqual(
-            json.loads(response.content.decode('utf8'))['data'],
-            test_answer
-        )
 
     def test_search_return_list(self):
         search_base_url = "/annotations/search&url={}"
