@@ -35,7 +35,7 @@ class ReferenceAPITest(TestCase):
             json.loads(response.content.decode('utf8'))['data'],
             {'id': reference.id,
              'url': reference.url,
-             'range': reference.range,
+             'ranges': reference.ranges,
              'quote': reference.quote,
              'priority': reference.priority,
              'link': reference.link,
@@ -109,7 +109,7 @@ class ReferenceAPITest(TestCase):
         self.assertEqual(response_reference,
                          {'id': reference.id,
                           'url': reference.url,
-                          'range': reference.range,
+                          'ranges': reference.ranges,
                           'quote': reference.quote,
                           'priority': reference.priority,
                           'link': reference.link,
@@ -122,7 +122,7 @@ class ReferenceAPITest(TestCase):
         self.assertEqual(response_reference2,
                          {'id': reference2.id,
                           'url': reference2.url,
-                          'range': reference2.range,
+                          'ranges': reference2.ranges,
                           'quote': reference2.quote,
                           'priority': reference2.priority,
                           'link': reference2.link,
@@ -140,7 +140,7 @@ class ReferenceAPITest(TestCase):
             base_url,
             json.dumps({
                 'url': "www.przypis.pl",
-                'range': "Od tad do tad",
+                'ranges': "Od tad do tad",
                 'quote': 'very nice',
                 'priority': 'NORMAL',
                 'link': 'www.przypispowszechny.com',
@@ -153,12 +153,12 @@ class ReferenceAPITest(TestCase):
         useful_count = UserReferenceFeedback.objects.filter(reference=reference).filter(useful=True).count()
         objection_count = UserReferenceFeedback.objects.filter(reference=reference).filter(objection=True).count()
 
-        self.assertEqual(reference.range, "Od tad do tad")
+        self.assertEqual(reference.ranges, "Od tad do tad")
         self.assertEqual(
             json.loads(response.content.decode('utf8'))['data'],
             {'id': reference.id,
              'url': reference.url,
-             'range': reference.range,
+             'ranges': reference.ranges,
              'quote': reference.quote,
              'priority': reference.priority,
              'link': reference.link,
@@ -191,7 +191,7 @@ class ReferenceAPITest(TestCase):
             json.loads(response.content.decode('utf8'))['data'],
             {'id': reference.id,
              'url': reference.url,
-             'range': reference.range,
+             'ranges': reference.ranges,
              'quote': reference.quote,
              'priority': reference.priority,
              'link': reference.link,

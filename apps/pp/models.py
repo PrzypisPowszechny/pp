@@ -14,7 +14,7 @@ class Annotation(models.Model):
     url = models.CharField(max_length=200)
     # URL where the annotation has been made
 
-    range = models.TextField(max_length=1000)
+    ranges = models.TextField(max_length=1000)
     # Json data with information aboute the annotation location
 
     quote = models.TextField(max_length=250)

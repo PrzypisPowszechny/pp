@@ -12,7 +12,7 @@ class ReferenceListGETSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reference
-        fields = ('id', 'url', 'range', 'quote', 'priority', 'link', 'link_title',
+        fields = ('id', 'url', 'ranges', 'quote', 'priority', 'link', 'link_title',
                   'useful', 'useful_count',
                   'objection', 'objection_count'
                   )
@@ -26,7 +26,7 @@ class ReferenceGETSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reference
-        fields = ('id', 'url', 'range', 'quote', 'priority', 'link', 'link_title',
+        fields = ('id', 'url', 'ranges', 'quote', 'priority', 'link', 'link_title',
                   'useful', 'useful_count',
                   'objection', 'objection_count'
                   )
@@ -54,7 +54,7 @@ class ReferenceGETSerializer(serializers.ModelSerializer):
 class ReferencePOSTSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reference
-        fields = ('user', 'url', 'range', 'quote', 'priority', 'link', 'link_title')
+        fields = ('user', 'url', 'ranges', 'quote', 'priority', 'link', 'link_title')
 
 
 class ReferencePATCHSerializer(serializers.ModelSerializer):
