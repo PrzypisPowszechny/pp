@@ -7,6 +7,7 @@ from django.db.models import When
 from django.db.models.functions import Coalesce
 from django.http import Http404
 from django.http import HttpResponse
+from django.http import HttpResponseBadRequest
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
@@ -27,7 +28,7 @@ class ReferenceDetail(View):
         try:
             return Reference.objects.get(pk=pk)
         except Reference.DoesNotExist:
-            raise Http404
+            return HttpResponseBadRequest()
 
     @method_decorator(allow_lazy_user)
     @method_decorator(require_http_methods(["GET"]))
@@ -45,12 +46,12 @@ class ReferenceDetail(View):
         serializer = ReferencePATCHSerializer(reference, context={'request': request}, data=data, partial=True)
         if serializer.is_valid():
             if len(serializer.validated_data) == 0:
-                return HttpResponse(status=400)
+                return ErrorHttpResponse()
             serializer.save()
             reference2 = self.get_object(pk)
             serializer2 = ReferenceGETSerializer(reference2, context={'request': request})
             return SuccessHttpResponse(serializer2.data)
-        return ErrorHttpResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return ErrorHttpResponse(serializer.errors)
 
 
     @method_decorator(allow_lazy_user)
@@ -59,7 +60,7 @@ class ReferenceDetail(View):
         reference = self.get_object(pk)
         reference.delete()
         serializer = ReferenceGETSerializer(reference, context={'request': request})
-        return SuccessHttpResponse(serializer.data, status=status.HTTP_200_OK)
+        return SuccessHttpResponse(serializer.data)
 
 
 class ReferenceList(View):
@@ -107,12 +108,12 @@ class ReferenceList(View):
                 reference.useful = feedback.useful
                 reference.objection = feedback.objection
 
-        # Finally pass over the annotated references to the serializer so it makes use of them
+        # Finally pass over the annotated reference models to the serializer so it makes use of them
         # along with the "native" model fields
         references = ReferenceListGETSerializer(references, context={'request': request}, many=True).data
 
         data = {'total': paginator.count, 'rows': references}
-        return SuccessHttpResponse(data, status=status.HTTP_200_OK)
+        return SuccessHttpResponse(data)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -126,9 +127,9 @@ class ReferencePOST(View):
         if serializer.is_valid():
             reference = serializer.save()
             reference_json = ReferenceGETSerializer(reference, context={'request': request})
-            return SuccessHttpResponse(reference_json.data, status=status.HTTP_200_OK)
+            return SuccessHttpResponse(reference_json.data)
 
-        return ErrorHttpResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return ErrorHttpResponse(serializer.errors)
 
 
 
