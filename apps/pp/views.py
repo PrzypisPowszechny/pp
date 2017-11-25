@@ -112,8 +112,14 @@ class ReferenceList(View):
         except EmptyPage:
             references = paginator.page(paginator.num_pages)
 
-        # Manually annotate useful & objection feedbacks for the current user
+        # Get ids on the current page
         reference_ids = set(reference.id for reference in references)
+
+        # Get references that belong to the user
+        user_reference_ids = Reference.objects\
+            .filter(user=request.user, id__in=reference_ids).values_list('id', flat=True)
+
+        # Manually annotate useful & objection feedbacks for the current user
         feedbacks = UserReferenceFeedback.objects.filter(user=request.user, reference_id__in=reference_ids)
         reference_to_feedback = {feedback.reference_id:feedback for feedback in feedbacks}
         for reference in references:
@@ -121,6 +127,7 @@ class ReferenceList(View):
             if feedback:
                 reference.useful = feedback.useful
                 reference.objection = feedback.objection
+                reference.does_belong_to_user = reference.id in user_reference_ids
 
         # Finally pass over the annotated reference models to the serializer so it makes use of them
         # along with the "native" model fields

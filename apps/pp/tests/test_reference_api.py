@@ -43,7 +43,9 @@ class ReferenceAPITest(TestCase):
              'useful': urf.useful,
              'useful_count': useful_count,
              'objection': urf.objection,
-             'objection_count': objection_count}
+             'objection_count': objection_count,
+             'does_belong_to_user': True
+             }
         )
 
     def test_empty_search_return_json_200(self):
@@ -117,7 +119,8 @@ class ReferenceAPITest(TestCase):
                           'useful': urf.useful,
                           'useful_count': useful_count,
                           'objection': urf.objection,
-                          'objection_count': objection_count
+                          'objection_count': objection_count,
+                          'does_belong_to_user': True
                           })
         self.assertEqual(response_reference2,
                          {'id': reference2.id,
@@ -130,7 +133,8 @@ class ReferenceAPITest(TestCase):
                           'useful': urf2.useful,
                           'useful_count': useful_count2,
                           'objection': urf2.objection,
-                          'objection_count': objection_count2
+                          'objection_count': objection_count2,
+                          'does_belong_to_user': True
                           })
 
     def test_post_new_reference(self):
@@ -166,7 +170,9 @@ class ReferenceAPITest(TestCase):
              'useful': False,
              'useful_count': useful_count,
              'objection': False,
-             'objection_count': objection_count}
+             'objection_count': objection_count,
+             'does_belong_to_user': True
+             }
         )
 
     def test_patch_reference(self):
@@ -199,7 +205,9 @@ class ReferenceAPITest(TestCase):
              'useful': urf.useful,
              'useful_count': useful_count,
              'objection': urf.objection,
-             'objection_count': objection_count}
+             'objection_count': objection_count,
+             'does_belong_to_user': True
+             }
         )
 
     def test_patch_wrong_field_reference(self):
