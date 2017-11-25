@@ -15,10 +15,12 @@ class ReferenceListGETSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reference
         fields = ('id', 'url', 'ranges', 'quote', 'priority', 'link', 'link_title',
-                  'useful', 'useful_count',
-                  'objection', 'objection_count',
-                  'does_belong_to_user'
+                  'useful', 'useful_count', 'objection', 'objection_count',
+                  'does_belong_to_user',
+                  'reference_request'
                   )
+        depth = 1
+
 
 
 class ReferenceGETSerializer(serializers.ModelSerializer):
@@ -31,10 +33,12 @@ class ReferenceGETSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reference
         fields = ('id', 'url', 'ranges', 'quote', 'priority', 'link', 'link_title',
-                  'useful', 'useful_count',
-                  'objection', 'objection_count',
-                  'does_belong_to_user'
+                  'useful', 'useful_count', 'objection', 'objection_count',
+                  'does_belong_to_user',
+                  'reference_request'
                   )
+        depth = 1
+
 
     def __init__(self, instance=None, data=empty, *args, **kwargs):
         if 'context' not in kwargs:

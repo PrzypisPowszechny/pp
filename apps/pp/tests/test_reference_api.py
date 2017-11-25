@@ -44,7 +44,8 @@ class ReferenceAPITest(TestCase):
              'useful_count': useful_count,
              'objection': urf.objection,
              'objection_count': objection_count,
-             'does_belong_to_user': True
+             'does_belong_to_user': True,
+             'reference_request': None
              }
         )
 
@@ -120,7 +121,8 @@ class ReferenceAPITest(TestCase):
                           'useful_count': useful_count,
                           'objection': urf.objection,
                           'objection_count': objection_count,
-                          'does_belong_to_user': True
+                          'does_belong_to_user': True,
+                          'reference_request': None
                           })
         self.assertEqual(response_reference2,
                          {'id': reference2.id,
@@ -134,7 +136,8 @@ class ReferenceAPITest(TestCase):
                           'useful_count': useful_count2,
                           'objection': urf2.objection,
                           'objection_count': objection_count2,
-                          'does_belong_to_user': True
+                          'does_belong_to_user': True,
+                          'reference_request': None
                           })
 
     def test_post_new_reference(self):
@@ -171,7 +174,8 @@ class ReferenceAPITest(TestCase):
              'useful_count': useful_count,
              'objection': False,
              'objection_count': objection_count,
-             'does_belong_to_user': True
+             'does_belong_to_user': True,
+             'reference_request': None
              }
         )
 
@@ -206,7 +210,8 @@ class ReferenceAPITest(TestCase):
              'useful_count': useful_count,
              'objection': urf.objection,
              'objection_count': objection_count,
-             'does_belong_to_user': True
+             'does_belong_to_user': True,
+             'reference_request': None
              }
         )
 

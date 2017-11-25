@@ -23,7 +23,7 @@ class ReferenceDetail(View):
     @method_decorator(require_http_methods(["GET"]))
     def get(self, request, pk):
         try:
-            reference = Reference.objects.get(pk=pk)
+            reference = Reference.objects.select_related('reference_request').get(pk=pk)
         except Reference.DoesNotExist:
             return ErrorHttpResponse()
 
@@ -34,7 +34,7 @@ class ReferenceDetail(View):
     @method_decorator(require_http_methods(["PATCH"]))
     def patch(self, request, pk):
         try:
-            reference = Reference.objects.get(pk=pk)
+            reference = Reference.objects.select_related('reference_request').get(pk=pk)
         except Reference.DoesNotExist:
             return ErrorHttpResponse()
 
@@ -64,7 +64,7 @@ class ReferenceDetail(View):
     @method_decorator(require_http_methods(["DELETE"]))
     def delete(self, request, pk):
         try:
-            reference = Reference.objects.get(pk=pk)
+            reference = Reference.objects.select_related('reference_request').get(pk=pk)
         except Reference.DoesNotExist:
             return ErrorHttpResponse()
 
@@ -89,7 +89,7 @@ class ReferenceList(View):
         page = request.GET.get('page', 1)
         page_size = request.GET.get('page_size', self.default_page_size)
 
-        query = Reference.objects.order_by(order)
+        query = Reference.objects.select_related('reference_request').order_by(order)
         if url is not None:
             query = query.filter(url=url)
 
