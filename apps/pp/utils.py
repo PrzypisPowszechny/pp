@@ -20,10 +20,11 @@ class SuccessHttpResponse(HttpResponse):
         data = json.dumps(response)
         self.content_type = 'application/json'
         kwargs.setdefault('content_type', 'application/json')
-        super().__init__(content=data, **kwargs)
+        super().__init__(*args, content=data, **kwargs)
+
 
 class ErrorHttpResponse(HttpResponse):
-    def __init__(self, errors, *args, status=default_error_status, **kwargs):
+    def __init__(self, errors=None, *args, status=default_error_status, **kwargs):
         response = {
             'success': False,
             'errors': errors or []
@@ -31,4 +32,10 @@ class ErrorHttpResponse(HttpResponse):
         data = json.dumps(response)
         self.content_type = 'application/json'
         kwargs.setdefault('content_type', 'application/json')
-        super().__init__(content=data, **kwargs)
+        super().__init__(*args, content=data, status=status, **kwargs)
+
+
+class PermissionDenied(ErrorHttpResponse):
+    def __init__(self, *args, **kwargs):
+        errors = [('permission', 'permission denied')]
+        super().__init__(*args, errors **kwargs)

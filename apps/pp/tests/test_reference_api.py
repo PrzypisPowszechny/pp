@@ -134,7 +134,7 @@ class ReferenceAPITest(TestCase):
                           })
 
     def test_post_new_reference(self):
-        base_url = "/annotations/"
+        base_url = "/annotations"
 
         response = self.client.post(
             base_url,
@@ -199,7 +199,7 @@ class ReferenceAPITest(TestCase):
              'useful': urf.useful,
              'useful_count': useful_count,
              'objection': urf.objection,
-             'objection_count':     objection_count}
+             'objection_count': objection_count}
         )
 
     def test_patch_wrong_field_reference(self):
@@ -207,7 +207,7 @@ class ReferenceAPITest(TestCase):
                                              comment="good job",
                                              link="www.przypispowszechny.com", link_title="very nice",
                                              quote='not this time')
-        urf = UserReferenceFeedback.objects.create(user=self.user, reference=reference, useful=True, objection=False)
+        UserReferenceFeedback.objects.create(user=self.user, reference=reference, useful=True, objection=False)
         put_string = 'not so well'
         put_data = json.dumps({
             'comment': put_string,
@@ -222,9 +222,9 @@ class ReferenceAPITest(TestCase):
                                              comment="good job",
                                              link="www.przypispowszechny.com", link_title="very nice",
                                              quote='not this time')
-        urf = UserReferenceFeedback.objects.create(user=self.user, reference=reference, useful=True, objection=False)
+        UserReferenceFeedback.objects.create(user=self.user, reference=reference, useful=True, objection=False)
         id = reference.id
         response = self.client.delete(self.base_url.format(reference.id), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         response2 = self.client.get(self.base_url.format(id))
-        self.assertEqual(response2.status_code, 404)
+        self.assertEqual(response2.status_code, 400)

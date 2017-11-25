@@ -1,22 +1,17 @@
 from django.core.paginator import Paginator, EmptyPage
 from django.db.models import Case
-from django.db.models import Count
 from django.db.models import IntegerField
 from django.db.models import Sum
 from django.db.models import When
 from django.db.models.functions import Coalesce
-from django.http import Http404
-from django.http import HttpResponse
-from django.http import HttpResponseBadRequest
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from lazysignup.decorators import allow_lazy_user
-from rest_framework import status
 from rest_framework.parsers import JSONParser
 
-from apps.pp.utils import SuccessHttpResponse, ErrorHttpResponse
+from apps.pp.utils import SuccessHttpResponse, ErrorHttpResponse, PermissionDenied
 from .models import Reference, UserReferenceFeedback
 from .serializers import ReferencePOSTSerializer, ReferencePATCHSerializer, ReferenceGETSerializer, \
     ReferenceListGETSerializer
@@ -24,47 +19,66 @@ from .serializers import ReferencePOSTSerializer, ReferencePATCHSerializer, Refe
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ReferenceDetail(View):
-    def get_object(self, pk):
-        try:
-            return Reference.objects.get(pk=pk)
-        except Reference.DoesNotExist:
-            return HttpResponseBadRequest()
-
     @method_decorator(allow_lazy_user)
     @method_decorator(require_http_methods(["GET"]))
     def get(self, request, pk):
-        reference = self.get_object(pk)
+        try:
+            reference = Reference.objects.get(pk=pk)
+        except Reference.DoesNotExist:
+            return ErrorHttpResponse()
+
         serializer = ReferenceGETSerializer(reference, context={'request': request})
         return SuccessHttpResponse(serializer.data)
-
 
     @method_decorator(allow_lazy_user)
     @method_decorator(require_http_methods(["PATCH"]))
     def patch(self, request, pk):
-        reference = self.get_object(pk)
+        try:
+            reference = Reference.objects.get(pk=pk)
+        except Reference.DoesNotExist:
+            return ErrorHttpResponse()
+
+        # Check permissions
+        if reference.user_id != request.user.id:
+            return PermissionDenied()
         data = JSONParser().parse(request)
         serializer = ReferencePATCHSerializer(reference, context={'request': request}, data=data, partial=True)
-        if serializer.is_valid():
-            if len(serializer.validated_data) == 0:
-                return ErrorHttpResponse()
-            serializer.save()
-            reference2 = self.get_object(pk)
-            serializer2 = ReferenceGETSerializer(reference2, context={'request': request})
-            return SuccessHttpResponse(serializer2.data)
-        return ErrorHttpResponse(serializer.errors)
+        if not serializer.is_valid():
+            return ErrorHttpResponse(serializer.errors)
+
+        if len(serializer.validated_data) == 0:
+            return ErrorHttpResponse()
+
+        serializer.save()
+
+        try:
+            updated_reference = Reference.objects.get(pk=pk)
+        except Reference.DoesNotExist:
+            return ErrorHttpResponse()
+
+        serializer2 = ReferenceGETSerializer(updated_reference, context={'request': request})
+        return SuccessHttpResponse(serializer2.data)
 
 
     @method_decorator(allow_lazy_user)
     @method_decorator(require_http_methods(["DELETE"]))
     def delete(self, request, pk):
-        reference = self.get_object(pk)
+        try:
+            reference = Reference.objects.get(pk=pk)
+        except Reference.DoesNotExist:
+            return ErrorHttpResponse()
+
+        # Check permissions
+        if reference.user_id != request.user.id:
+            return PermissionDenied()
+
         reference.delete()
         serializer = ReferenceGETSerializer(reference, context={'request': request})
         return SuccessHttpResponse(serializer.data)
 
 
 class ReferenceList(View):
-    default_page_size = 100
+    default_page_size = 10
     default_order = "-create_date"
 
     @method_decorator(allow_lazy_user)
@@ -124,12 +138,12 @@ class ReferencePOST(View):
         data = JSONParser().parse(request)
         data['user'] = request.user.pk
         serializer = ReferencePOSTSerializer(data=data)
-        if serializer.is_valid():
-            reference = serializer.save()
-            reference_json = ReferenceGETSerializer(reference, context={'request': request})
-            return SuccessHttpResponse(reference_json.data)
+        if not serializer.is_valid():
+            return ErrorHttpResponse(serializer.errors)
+        reference = serializer.save()
+        reference_json = ReferenceGETSerializer(reference, context={'request': request})
+        return SuccessHttpResponse(reference_json.data)
 
-        return ErrorHttpResponse(serializer.errors)
 
 
 
