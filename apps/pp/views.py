@@ -10,6 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from lazysignup.decorators import allow_lazy_user
 from rest_framework.parsers import JSONParser
+from rest_framework.views import APIView
 
 from apps.pp.utils import SuccessHttpResponse, ErrorHttpResponse, PermissionDenied
 from .models import Reference, UserReferenceFeedback
@@ -18,7 +19,7 @@ from .serializers import ReferencePOSTSerializer, ReferencePATCHSerializer, Refe
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class ReferenceDetail(View):
+class ReferenceDetail(APIView):
     @method_decorator(allow_lazy_user)
     @method_decorator(require_http_methods(["GET"]))
     def get(self, request, pk):
@@ -77,7 +78,7 @@ class ReferenceDetail(View):
         return SuccessHttpResponse(serializer.data)
 
 
-class ReferenceList(View):
+class ReferenceList(APIView):
     default_page_size = 10
     default_order = "-create_date"
 
@@ -138,7 +139,7 @@ class ReferenceList(View):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class ReferencePOST(View):
+class ReferencePOST(APIView):
     @method_decorator(allow_lazy_user)
     @method_decorator(require_http_methods(["POST"]))
     def post(self, request):

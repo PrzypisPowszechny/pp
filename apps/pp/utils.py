@@ -4,38 +4,36 @@ from django.http.response import HttpResponseBase, HttpResponse
 from rest_framework import status
 
 # We answer all unsuccessful requests with 400 status (bad request) that indicates the client's fault.
+from rest_framework.response import Response
+
 default_error_status = status.HTTP_400_BAD_REQUEST
 # We answer all successful requests with 200 status
 default_success_status = status.HTTP_200_OK
 # Policy based on http://blog.restcase.com/rest-api-error-codes-101/
 
 
-class SuccessHttpResponse(HttpResponse):
-    def __init__(self, result, *args, status=default_success_status, **kwargs):
-        super().__init__(*args, **kwargs)
-        response = {
-            'success': True,
-            'data': result
-        }
-        data = json.dumps(response)
-        self.content_type = 'application/json'
-        kwargs.setdefault('content_type', 'application/json')
-        super().__init__(*args, content=data, **kwargs)
+def SuccessHttpResponse(result, *args, status=default_success_status, **kwargs):
+    content = {
+        'success': True,
+        'data': result
+    }
+    # self.content_type = 'application/json'
+    kwargs.setdefault('content_type', 'application/json')
+    return Response(content, status=status)
 
 
-class ErrorHttpResponse(HttpResponse):
-    def __init__(self, errors=None, *args, status=default_error_status, **kwargs):
-        response = {
-            'success': False,
-            'errors': errors or []
-        }
-        data = json.dumps(response)
-        self.content_type = 'application/json'
-        kwargs.setdefault('content_type', 'application/json')
-        super().__init__(*args, content=data, status=status, **kwargs)
+def ErrorHttpResponse(errors=None, *args, status=default_error_status, **kwargs):
+    content = {
+        'success': False,
+        'errors': errors or []
+    }
+    # self.content_type = 'application/json'
+    kwargs.setdefault('content_type', 'application/json')
+    return Response(content, status=status)
 
 
-class PermissionDenied(ErrorHttpResponse):
-    def __init__(self, *args, **kwargs):
-        errors = [('permission', 'permission denied')]
-        super().__init__(*args, errors **kwargs)
+def PermissionDenied(*args, **kwargs):
+    errors = [('permission', 'permission denied')]
+    return Response(errors, status=status)
+    #
+    # super().__init__(*args, errors **kwargs)
