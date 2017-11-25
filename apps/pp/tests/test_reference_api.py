@@ -6,7 +6,7 @@ from apps.pp.tests.utils import create_test_user
 
 
 class ReferenceAPITest(TestCase):
-    base_url = "/annotations/{}/"
+    base_url = "/api/references/{}/"
     maxDiff = None
 
     # IMPORTANT: we log in for each test, so self.user has already an open session with server
@@ -47,7 +47,7 @@ class ReferenceAPITest(TestCase):
         )
 
     def test_empty_search_return_json_200(self):
-        search_base_url = "/annotations/search&url={}"
+        search_base_url = "/api/references/search/&url={}"
         response = self.client.get(search_base_url.format('przypis powszechny'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/json')
@@ -63,7 +63,7 @@ class ReferenceAPITest(TestCase):
 
 
     def test_nonempty_search_return_json_200(self):
-        search_base_url = "/annotations/search&url={}"
+        search_base_url = "/api/references/search/&url={}"
         reference = Reference.objects.create(user=self.user, priority='NORMAL', comment="good job",
                                              link="www.przypispowszechny.com", link_title="very nice")
         reference2 = Reference.objects.create(user=self.user, priority='NORMAL', comment="more good job",
@@ -74,7 +74,7 @@ class ReferenceAPITest(TestCase):
 
 
     def test_search_return_list(self):
-        search_base_url = "/annotations/search&url={}"
+        search_base_url = "/api/references/search/&url={}"
         # First reference
         reference = Reference.objects.create(user=self.user, priority='NORMAL', comment="more good job",
                                              url='www.przypis.pl', link="www.przypispowszechny.com",
@@ -134,7 +134,7 @@ class ReferenceAPITest(TestCase):
                           })
 
     def test_post_new_reference(self):
-        base_url = "/annotations"
+        base_url = "/api/references/"
 
         response = self.client.post(
             base_url,

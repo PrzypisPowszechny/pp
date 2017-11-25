@@ -19,6 +19,6 @@ from django.contrib import admin
 import apps
 
 urlpatterns = [
-    url(r'^admin.',admin.site.urls),
-    url(r'^annotations',include('apps.pp.urls')),
+    url(r'^admin/',admin.site.urls),
+    url(r'^api/references/',include('apps.pp.urls')),
 ]
