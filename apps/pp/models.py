@@ -4,7 +4,8 @@ from apps.pp import consts
 
 
 class User(AbstractUser):
-    pass
+    class JSONAPIMeta:
+        resource_name = 'users'
 
 
 class Annotation(models.Model):
@@ -26,7 +27,8 @@ class Annotation(models.Model):
 
 
 class ReferenceRequest(Annotation):
-    pass
+    class JSONAPIMeta:
+        resource_name = 'reference_requests'
 
 
 class Reference(Annotation):

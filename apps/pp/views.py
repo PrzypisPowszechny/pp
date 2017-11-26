@@ -1,4 +1,3 @@
-from django.core.paginator import Paginator, EmptyPage
 from django.db.models import Case
 from django.db.models import IntegerField
 from django.db.models import Sum
@@ -6,9 +5,7 @@ from django.db.models import When
 from django.db.models.functions import Coalesce
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
 from lazysignup.decorators import allow_lazy_user
-from rest_framework.generics import ListAPIView
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -16,8 +13,8 @@ from rest_framework_json_api.pagination import LimitOffsetPagination
 
 from apps.pp.utils.responses import PermissionDenied, ValidationErrorResponse, ErrorResponse
 from .models import Reference, UserReferenceFeedback
-from .serializers import ReferencePOSTSerializer, ReferencePATCHSerializer, ReferenceGETSerializer, \
-    ReferenceListGETSerializer
+from .serializers import ReferencePATCHSerializer, ReferenceGETSerializer, \
+    ReferenceListGETSerializer, ReferencePOSTSerializer
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -25,7 +22,6 @@ class ReferenceDetail(APIView):
     resource_name = 'references'
 
     @method_decorator(allow_lazy_user)
-    @method_decorator(require_http_methods(["GET"]))
     def get(self, request, pk):
         try:
             reference = Reference.objects.select_related('reference_request').get(pk=pk)
@@ -36,7 +32,6 @@ class ReferenceDetail(APIView):
         return Response(serializer.data)
 
     @method_decorator(allow_lazy_user)
-    @method_decorator(require_http_methods(["PATCH"]))
     def patch(self, request, pk):
         try:
             reference = Reference.objects.select_related('reference_request').get(pk=pk)
@@ -65,7 +60,6 @@ class ReferenceDetail(APIView):
         return Response(serializer2.data)
 
     @method_decorator(allow_lazy_user)
-    @method_decorator(require_http_methods(["DELETE"]))
     def delete(self, request, pk):
         try:
             reference = Reference.objects.select_related('reference_request').get(pk=pk)
@@ -81,7 +75,23 @@ class ReferenceDetail(APIView):
         return Response(serializer.data)
 
 
-class ReferenceList(ListAPIView):
+@method_decorator(csrf_exempt, name='dispatch')
+class ReferencePOST(APIView):
+    resource_name = 'references'
+
+    @method_decorator(allow_lazy_user)
+    def post(self, request):
+        data = JSONParser().parse(request)
+        data['user'] = request.user.pk
+        serializer = ReferencePOSTSerializer(data=data, context={'request': request})
+        if not serializer.is_valid():
+            return ValidationErrorResponse(serializer.errors)
+        reference = serializer.save()
+        reference_json = ReferenceGETSerializer(reference, context={'request': request})
+        return Response(reference_json.data)
+
+
+class ReferenceList(APIView):
     resource_name = 'references'
 
     pagination_class = LimitOffsetPagination
@@ -114,9 +124,7 @@ class ReferenceList(ListAPIView):
         return queryset
 
     @method_decorator(allow_lazy_user)
-    @method_decorator(require_http_methods(["GET"]))
     def get(self, request, *args, **kwargs):
-
         queryset = self.get_queryset()
 
         # Paginate the queryset
@@ -144,21 +152,3 @@ class ReferenceList(ListAPIView):
         references = ReferenceListGETSerializer(references, context={'request': request}, many=True).data
 
         return Response(references)
-
-
-
-@method_decorator(csrf_exempt, name='dispatch')
-class ReferencePOST(APIView):
-    resource_name = 'references'
-
-    @method_decorator(allow_lazy_user)
-    @method_decorator(require_http_methods(["POST"]))
-    def post(self, request):
-        data = JSONParser().parse(request)
-        data['user'] = request.user.pk
-        serializer = ReferencePOSTSerializer(data=data)
-        if not serializer.is_valid():
-            return ValidationErrorResponse(serializer.errors)
-        reference = serializer.save()
-        reference_json = ReferenceGETSerializer(reference, context={'request': request})
-        return Response(reference_json.data)

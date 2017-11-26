@@ -40,6 +40,7 @@ class ReferenceAPITest(TestCase):
                  'ranges': reference.ranges,
                  'quote': reference.quote,
                  'priority': reference.priority,
+                 'comment': reference.comment,
                  'link': reference.link,
                  'link_title': reference.link_title,
                  'useful': urf.useful,
@@ -115,6 +116,7 @@ class ReferenceAPITest(TestCase):
                               'ranges': reference.ranges,
                               'quote': reference.quote,
                               'priority': reference.priority,
+                              'comment': reference.comment,
                               'link': reference.link,
                               'link_title': reference.link_title,
                               'useful': urf.useful,
@@ -134,6 +136,7 @@ class ReferenceAPITest(TestCase):
                               'ranges': reference2.ranges,
                               'quote': reference2.quote,
                               'priority': reference2.priority,
+                              'comment': reference2.comment,
                               'link': reference2.link,
                               'link_title': reference2.link_title,
                               'useful': urf2.useful,
@@ -155,6 +158,7 @@ class ReferenceAPITest(TestCase):
                 'ranges': "Od tad do tad",
                 'quote': 'very nice',
                 'priority': 'NORMAL',
+                'comment': "komentarz",
                 'link': 'www.przypispowszechny.com',
                 'link_title': 'very nice too'
             }),
@@ -174,6 +178,7 @@ class ReferenceAPITest(TestCase):
              'ranges': reference.ranges,
              'quote': reference.quote,
              'priority': reference.priority,
+             'comment': reference.comment,
              'link': reference.link,
              'link_title': reference.link_title,
              'useful': False,
@@ -214,6 +219,7 @@ class ReferenceAPITest(TestCase):
                  'ranges': reference.ranges,
                  'quote': reference.quote,
                  'priority': reference.priority,
+                 'comment': reference.comment,
                  'link': reference.link,
                  'link_title': reference.link_title,
                  'useful': urf.useful,
@@ -239,7 +245,7 @@ class ReferenceAPITest(TestCase):
                 'type': 'references',
                 'id': str(reference.id),
                 'attributes': {
-                    'comment': put_string
+                    'quote': put_string
                 }
             }
         }

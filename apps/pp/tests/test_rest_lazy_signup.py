@@ -27,6 +27,7 @@ class LazySignupReferenceAPITest(TestCase):
                 'ranges': "Od tad do tad",
                 'quote': 'very nice',
                 'priority': 'NORMAL',
+                'comment': "komentarz",
                 'link': 'www.przypispowszechny.com',
                 'link_title': 'very nice too'
             }),
@@ -42,6 +43,7 @@ class LazySignupReferenceAPITest(TestCase):
                 'ranges': "Od tad do tad",
                 'quote': 'very nice',
                 'priority': 'NORMAL',
+                'comment': "komentarz",
                 'link': 'www.przypispowszechny.com',
                 'link_title': 'very nice too'
             })
