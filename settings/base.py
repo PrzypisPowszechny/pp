@@ -15,7 +15,6 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
@@ -26,7 +25,6 @@ SECRET_KEY = '_96(y+)c++%-5m6i*4i-4md6o1@zc(5a9fjpoop#%+q=fg3ig9'
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -41,6 +39,12 @@ INSTALLED_APPS = [
     # an application that creates account for all anonymous users' requests and associates it with user session
     'lazysignup',
 
+    # framework for creating api
+    'rest_framework',
+
+    # Adds cross-origin headers to http request
+    'corsheaders',
+
     # Main project app
     'apps.pp',
 
@@ -49,11 +53,10 @@ INSTALLED_APPS = [
 # Set PPUser as Django user model
 AUTH_USER_MODEL = 'pp.User'
 
-
 # Lines below added based on http://django-lazysignup.readthedocs.io/en/latest/install.html#installation
 AUTHENTICATION_BACKENDS = (
-  'django.contrib.auth.backends.ModelBackend',
-  'lazysignup.backends.LazySignupBackend',
+    'django.contrib.auth.backends.ModelBackend',
+    'lazysignup.backends.LazySignupBackend',
 )
 
 # Overwrite default Django behaviour and sends a session cookie to every request (also unlogged ones)
@@ -61,9 +64,12 @@ AUTHENTICATION_BACKENDS = (
 # NOTE: the session cookie won't be sent to the user anyway after Server Internal Error
 SESSION_SAVE_EVERY_REQUEST = True
 
+CORS_ORIGIN_ALLOW_ALL = True
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -71,6 +77,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+APPEND_SLASH = False
 ROOT_URLCONF = 'apps.urls'
 
 TEMPLATES = [
@@ -91,7 +98,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'apps.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
@@ -101,7 +107,7 @@ DATABASES = {
         'NAME': 'pp_dev',
         'USER': 'pp_dev',
         'PASSWORD': '',
-        'HOST': 'localhost',   # Or an IP Address that your DB is hosted on
+        'HOST': 'localhost',  # Or an IP Address that your DB is hosted on
         'PORT': '3306',
     }
 }
@@ -125,6 +131,29 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+REST_FRAMEWORK = {
+    # We do not use Django Rest Framework authentication backend
+    # User our own authenticator that uses Django authentication instead of Django Rest Framework's
+    'DEFAULT_AUTHENTICATION_CLASSES': ['apps.pp.auth.DjangoRestUseDjangoAuthenticator'],
+    'PAGE_SIZE': 10,
+  
+    # Settings recommended for rest_framework_json_api   https://github.com/django-json-api/django-rest-framework-json-api
+    'EXCEPTION_HANDLER': 'rest_framework_json_api.exceptions.exception_handler',
+    'DEFAULT_PAGINATION_CLASS':
+        'rest_framework_json_api.pagination.LimitOffsetPagination',
+    'DEFAULT_PARSER_CLASSES': (
+        'rest_framework_json_api.parsers.JSONParser',
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser'
+    ),
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework_json_api.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ),
+    'DEFAULT_METADATA_CLASS': 'rest_framework_json_api.metadata.JSONAPIMetadata',
+
+}
+
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
@@ -137,7 +166,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/

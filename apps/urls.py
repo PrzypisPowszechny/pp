@@ -15,12 +15,12 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
+from rest_framework.documentation import include_docs_urls
 
-from apps.pp.views import annotations
+import apps
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
-    url(r'^annotations/', include([
-        url(r'^', annotations.get)
-            ], namespace='annotations'))
-    ]
+    url(r'^admin/',admin.site.urls),
+    url(r'^api/',include('apps.pp.urls')),
+    url(r'^api/docs/', include_docs_urls(title='My API title'))
+]
