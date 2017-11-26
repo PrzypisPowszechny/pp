@@ -21,6 +21,6 @@ import apps
 
 urlpatterns = [
     url(r'^admin/',admin.site.urls),
-    url(r'^api/references/',include('apps.pp.urls')),
+    url(r'^api/',include('apps.pp.urls')),
     url(r'^api/docs/', include_docs_urls(title='My API title'))
 ]
