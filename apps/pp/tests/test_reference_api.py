@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from django.test import TestCase
 from apps.pp.models import Reference, UserReferenceFeedback
 from apps.pp.tests.utils import create_test_user
+from apps.pp.models import ReferenceRequest
 
 
 class ReferenceAPITest(TestCase):
@@ -151,6 +152,12 @@ class ReferenceAPITest(TestCase):
     def test_post_new_reference(self):
         base_url = "/api/references/"
 
+        reference_request = ReferenceRequest.objects.create(
+            user=self.user,
+            ranges="Od tad do tad",
+            quote='very nice',
+        )
+
         response = self.client.post(
             base_url,
             json.dumps({
@@ -160,7 +167,8 @@ class ReferenceAPITest(TestCase):
                 'priority': 'NORMAL',
                 'comment': "komentarz",
                 'link': 'www.przypispowszechny.com',
-                'link_title': 'very nice too'
+                'link_title': 'very nice too',
+                'reference_request': str(reference_request.id)
             }),
             content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 200)
@@ -187,7 +195,7 @@ class ReferenceAPITest(TestCase):
              'objection_count': objection_count,
              'does_belong_to_user': True,
              },
-             'relationships': {'reference_request': {'data': None}}
+             'relationships': {'reference_request': {'data': {'type': 'reference_requests', 'id': str(reference_request.id)}}}
              }
         )
 
