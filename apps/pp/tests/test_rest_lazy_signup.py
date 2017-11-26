@@ -14,7 +14,7 @@ class LazySignupReferenceAPITest(TestCase):
         self.user, self.password = create_test_user()
 
         reference = Reference.objects.create(user=self.user, priority='NORMAL', comment="good job",
-                                             link="www.przypispowszechny.com", link_title="very nice")
+                                             reference_link="www.przypispowszechny.com", reference_link_title="very nice")
         response = self.client.get(self.GET_base_url.format(reference.id))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/vnd.api+json')
@@ -31,8 +31,8 @@ class LazySignupReferenceAPITest(TestCase):
                         'quote': 'very nice',
                         'priority': 'NORMAL',
                         'comment': "komentarz",
-                        'link': 'www.przypispowszechny.com',
-                        'link_title': 'very nice too'
+                        'reference_link': 'www.przypispowszechny.com',
+                        'reference_link_title': 'very nice too'
                     }
                 }
             }),
@@ -52,8 +52,8 @@ class LazySignupReferenceAPITest(TestCase):
                         'quote': 'very nice',
                         'priority': 'NORMAL',
                         'comment': "komentarz",
-                        'link': 'www.przypispowszechny.com',
-                        'link_title': 'very nice too'
+                        'reference_link': 'www.przypispowszechny.com',
+                        'reference_link_title': 'very nice too'
                     }
                 }
             })

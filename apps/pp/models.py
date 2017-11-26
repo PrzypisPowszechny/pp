@@ -35,10 +35,10 @@ class Reference(Annotation):
     priority = models.CharField(choices=consts.annotation_priorities, max_length=100)
     comment = models.TextField(max_length=100)
 
-    link = models.CharField(max_length=100)
+    reference_link = models.CharField(max_length=100)
     # A hyperlink
 
-    link_title = models.CharField(max_length=100)
+    reference_link_title = models.CharField(max_length=100)
     # Short summary of the page referred to
 
     reference_request = models.ForeignKey(ReferenceRequest, null=True)
