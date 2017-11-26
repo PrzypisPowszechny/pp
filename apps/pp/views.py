@@ -6,15 +6,14 @@ from django.db.models.functions import Coalesce
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from lazysignup.decorators import allow_lazy_user
-from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_json_api.pagination import LimitOffsetPagination
+from rest_framework_json_api.parsers import JSONParser
 
 from apps.pp.utils.responses import PermissionDenied, ValidationErrorResponse, ErrorResponse
 from .models import Reference, UserReferenceFeedback
-from .serializers import ReferencePATCHSerializer, ReferenceGETSerializer, \
-    ReferenceListGETSerializer, ReferencePOSTSerializer
+from .serializers import ReferencePATCHSerializer, ReferenceListGETSerializer, ReferenceSerializer
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -28,7 +27,7 @@ class ReferenceDetail(APIView):
         except Reference.DoesNotExist:
             return ErrorResponse('Resource not found')
 
-        serializer = ReferenceGETSerializer(reference, context={'request': request})
+        serializer = ReferenceSerializer(reference, context={'request': request})
         return Response(serializer.data)
 
     @method_decorator(allow_lazy_user)
@@ -41,7 +40,7 @@ class ReferenceDetail(APIView):
         # Check permissions
         if reference.user_id != request.user.id:
             return PermissionDenied()
-        data = JSONParser().parse(request)
+        data = JSONParser().parse(request, parser_context={'request': request, 'view': ReferencePOST})
         serializer = ReferencePATCHSerializer(reference, context={'request': request}, data=data, partial=True)
         if not serializer.is_valid():
             return ErrorResponse(serializer.errors)
@@ -56,7 +55,7 @@ class ReferenceDetail(APIView):
         except Reference.DoesNotExist:
             return ErrorResponse()
 
-        serializer2 = ReferenceGETSerializer(updated_reference, context={'request': request})
+        serializer2 = ReferenceSerializer(updated_reference, context={'request': request})
         return Response(serializer2.data)
 
     @method_decorator(allow_lazy_user)
@@ -71,7 +70,7 @@ class ReferenceDetail(APIView):
             return PermissionDenied()
 
         reference.delete()
-        serializer = ReferenceGETSerializer(reference, context={'request': request})
+        serializer = ReferenceSerializer(reference, context={'request': request})
         return Response(serializer.data)
 
 
@@ -81,13 +80,17 @@ class ReferencePOST(APIView):
 
     @method_decorator(allow_lazy_user)
     def post(self, request):
-        data = JSONParser().parse(request)
+        data = JSONParser().parse(request, parser_context={'request': request, 'view': ReferencePOST})
+        # KG: we need to help JSONParser with relationships: extract {'id': X} pairs to X
+        data['reference_request'] = data.get('reference_request', {}).get('id')
+        # Set the user to the authenticated user
         data['user'] = request.user.pk
-        serializer = ReferencePOSTSerializer(data=data, context={'request': request})
+
+        serializer = ReferenceSerializer(data=data, context={'request': request})
         if not serializer.is_valid():
             return ValidationErrorResponse(serializer.errors)
         reference = serializer.save()
-        reference_json = ReferenceGETSerializer(reference, context={'request': request})
+        reference_json = ReferenceSerializer(reference, context={'request': request})
         return Response(reference_json.data)
 
 
@@ -120,7 +123,6 @@ class ReferenceList(APIView):
                 Sum(Case(When(feedbacks__objection=True, then=1)), default=0, output_field=IntegerField()),
                 0)
         )
-
         return queryset
 
     @method_decorator(allow_lazy_user)

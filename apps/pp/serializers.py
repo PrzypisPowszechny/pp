@@ -1,3 +1,7 @@
+from django.contrib.auth import get_user_model
+from rest_framework_json_api.relations import ResourceRelatedField
+
+from apps.pp.models import ReferenceRequest
 from .models import Reference, UserReferenceFeedback, User
 from rest_framework import serializers
 from django.core.exceptions import ObjectDoesNotExist
@@ -17,14 +21,14 @@ class ReferenceListGETSerializer(serializers.ModelSerializer):
                   'priority', 'comment', 'link', 'link_title',
                   'useful', 'useful_count', 'objection', 'objection_count',
                   'does_belong_to_user',
-                  'reference_request'
+                  # relationships:
+                  'user', 'reference_request'
                   )
         read_only_fields = ('useful', 'useful_count', 'objection', 'objection_count',
                             'does_belong_to_user')
-        depth = 1
 
 
-class ReferenceGETSerializer(serializers.ModelSerializer):
+class ReferenceSerializer(serializers.ModelSerializer):
     useful_count = serializers.SerializerMethodField()
     objection_count = serializers.SerializerMethodField()
     useful = serializers.SerializerMethodField('is_useful')
@@ -37,11 +41,11 @@ class ReferenceGETSerializer(serializers.ModelSerializer):
                   'priority', 'comment', 'link', 'link_title',
                   'useful', 'useful_count', 'objection', 'objection_count',
                   'does_belong_to_user',
-                  'reference_request'
+                  # relationships:
+                  'user', 'reference_request'
                   )
         read_only_fields = ('useful', 'useful_count', 'objection', 'objection_count',
                             'does_belong_to_user')
-        depth = 1
 
     def __init__(self, instance=None, data=empty, *args, **kwargs):
         if 'context' not in kwargs:
@@ -64,15 +68,6 @@ class ReferenceGETSerializer(serializers.ModelSerializer):
 
     def get_does_belong_to_user(self, instance):
         return self.user.id == instance.user_id
-
-
-class ReferencePOSTSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Reference
-        fields = ('url', 'ranges', 'quote',
-                  'priority', 'comment', 'link', 'link_title',
-                  'user', 'reference_request'
-                  )
 
 
 class ReferencePATCHSerializer(serializers.ModelSerializer):

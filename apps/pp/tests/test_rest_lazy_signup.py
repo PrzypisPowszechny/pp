@@ -23,13 +23,18 @@ class LazySignupReferenceAPITest(TestCase):
         response = self.client.post(
             self.POST_url,
             json.dumps({
-                'url': "www.przypis.pl",
-                'ranges': "Od tad do tad",
-                'quote': 'very nice',
-                'priority': 'NORMAL',
-                'comment': "komentarz",
-                'link': 'www.przypispowszechny.com',
-                'link_title': 'very nice too'
+                'data': {
+                    'type': 'references',
+                    'attributes': {
+                        'url': "www.przypis.pl",
+                        'ranges': "Od tad do tad",
+                        'quote': 'very nice',
+                        'priority': 'NORMAL',
+                        'comment': "komentarz",
+                        'link': 'www.przypispowszechny.com',
+                        'link_title': 'very nice too'
+                    }
+                }
             }),
             content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 200)
@@ -39,13 +44,18 @@ class LazySignupReferenceAPITest(TestCase):
     # Within the second one, it is recognised based on session cookies
     def test_client_maintains_identity_across_requests(self):
         reference_json = json.dumps({
-                'url': "www.przypis.pl",
-                'ranges': "Od tad do tad",
-                'quote': 'very nice',
-                'priority': 'NORMAL',
-                'comment': "komentarz",
-                'link': 'www.przypispowszechny.com',
-                'link_title': 'very nice too'
+                'data': {
+                    'type': 'references',
+                    'attributes': {
+                        'url': "www.przypis.pl",
+                        'ranges': "Od tad do tad",
+                        'quote': 'very nice',
+                        'priority': 'NORMAL',
+                        'comment': "komentarz",
+                        'link': 'www.przypispowszechny.com',
+                        'link_title': 'very nice too'
+                    }
+                }
             })
 
         # Post two references
