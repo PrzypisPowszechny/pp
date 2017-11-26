@@ -20,7 +20,7 @@ class ReferenceAPITest(TestCase):
         urf = UserReferenceFeedback.objects.create(user=self.user, reference=reference, useful=True, objection=False)
         response = self.client.get(self.base_url.format(reference.id))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['content-type'], 'application/json')
+        self.assertEqual(response['content-type'], 'application/vnd.api+json')
 
     def test_get_returns_reference(self):
         reference = Reference.objects.create(user=self.user, priority='NORMAL', comment="good job",
@@ -33,32 +33,32 @@ class ReferenceAPITest(TestCase):
 
         self.assertEqual(
             json.loads(response.content.decode('utf8'))['data'],
-            {'id': reference.id,
-             'url': reference.url,
-             'ranges': reference.ranges,
-             'quote': reference.quote,
-             'priority': reference.priority,
-             'link': reference.link,
-             'link_title': reference.link_title,
-             'useful': urf.useful,
-             'useful_count': useful_count,
-             'objection': urf.objection,
-             'objection_count': objection_count,
-             'does_belong_to_user': True,
-             'reference_request': None
+            {'id': str(reference.id),
+             'type': 'references',
+             'attributes': {
+                 'url': reference.url,
+                 'ranges': reference.ranges,
+                 'quote': reference.quote,
+                 'priority': reference.priority,
+                 'link': reference.link,
+                 'link_title': reference.link_title,
+                 'useful': urf.useful,
+                 'useful_count': useful_count,
+                 'objection': urf.objection,
+                 'objection_count': objection_count,
+                 'does_belong_to_user': True,
+             },
+             'relationships': {'reference_request': {'data': None}}
              }
-        )
+            )
 
     def test_empty_search_return_json_200(self):
         search_base_url = "/api/references/search/&url={}"
         response = self.client.get(search_base_url.format('przypis powszechny'))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['content-type'], 'application/json')
+        self.assertEqual(response['content-type'], 'application/vnd.api+json')
 
-        test_answer = {
-            'total': 0,
-            'rows': []
-        }
+        test_answer = []
         self.assertEqual(
             json.loads(response.content.decode('utf8'))['data'],
             test_answer
@@ -73,7 +73,7 @@ class ReferenceAPITest(TestCase):
                                               link="www.przypispowszechny.com", link_title="very nice again")
         response = self.client.get(search_base_url.format('przypis powszechny'))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['content-type'], 'application/json')
+        self.assertEqual(response['content-type'], 'application/vnd.api+json')
 
 
     def test_search_return_list(self):
@@ -105,39 +105,44 @@ class ReferenceAPITest(TestCase):
 
         raw_response = self.client.get(search_base_url.format(reference.url))
         response = json.loads(raw_response.content.decode('utf8'))['data']
-        self.assertEquals(response['total'], 2)
-        self.assertEquals(len(response['rows']), 2)
-        response_reference = next(row for row in response['rows'] if row['id'] == reference.id)
-        response_reference2 = next(row for row in response['rows'] if row['id'] == reference2.id)
+        response_reference = next(row for row in response if row['id'] == str(reference.id))
+        response_reference2 = next(row for row in response if row['id'] == str(reference2.id))
         self.assertEqual(response_reference,
-                         {'id': reference.id,
-                          'url': reference.url,
-                          'ranges': reference.ranges,
-                          'quote': reference.quote,
-                          'priority': reference.priority,
-                          'link': reference.link,
-                          'link_title': reference.link_title,
-                          'useful': urf.useful,
-                          'useful_count': useful_count,
-                          'objection': urf.objection,
-                          'objection_count': objection_count,
-                          'does_belong_to_user': True,
-                          'reference_request': None
+                         {'id': str(reference.id),
+                          'type': 'references',
+                          'attributes': {
+                              'url': reference.url,
+                              'ranges': reference.ranges,
+                              'quote': reference.quote,
+                              'priority': reference.priority,
+                              'link': reference.link,
+                              'link_title': reference.link_title,
+                              'useful': urf.useful,
+                              'useful_count': useful_count,
+                              'objection': urf.objection,
+                              'objection_count': objection_count,
+                              'does_belong_to_user': True,
+                          },
+                          'relationships': {'reference_request': {'data': None}}
                           })
+
         self.assertEqual(response_reference2,
-                         {'id': reference2.id,
-                          'url': reference2.url,
-                          'ranges': reference2.ranges,
-                          'quote': reference2.quote,
-                          'priority': reference2.priority,
-                          'link': reference2.link,
-                          'link_title': reference2.link_title,
-                          'useful': urf2.useful,
-                          'useful_count': useful_count2,
-                          'objection': urf2.objection,
-                          'objection_count': objection_count2,
-                          'does_belong_to_user': True,
-                          'reference_request': None
+                         {'id': str(reference2.id),
+                          'type': 'references',
+                          'attributes': {
+                              'url': reference2.url,
+                              'ranges': reference2.ranges,
+                              'quote': reference2.quote,
+                              'priority': reference2.priority,
+                              'link': reference2.link,
+                              'link_title': reference2.link_title,
+                              'useful': urf2.useful,
+                              'useful_count': useful_count2,
+                              'objection': urf2.objection,
+                              'objection_count': objection_count2,
+                              'does_belong_to_user': True,
+                          },
+                          'relationships': {'reference_request': {'data': None}}
                           })
 
     def test_post_new_reference(self):
@@ -153,17 +158,18 @@ class ReferenceAPITest(TestCase):
                 'link': 'www.przypispowszechny.com',
                 'link_title': 'very nice too'
             }),
-            content_type='application/json')
+            content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 200)
         reference = Reference.objects.get(user=self.user)
 
         useful_count = UserReferenceFeedback.objects.filter(reference=reference).filter(useful=True).count()
         objection_count = UserReferenceFeedback.objects.filter(reference=reference).filter(objection=True).count()
-
         self.assertEqual(reference.ranges, "Od tad do tad")
         self.assertEqual(
             json.loads(response.content.decode('utf8'))['data'],
-            {'id': reference.id,
+            {'id': str(reference.id),
+             'type': 'references',
+             'attributes': {
              'url': reference.url,
              'ranges': reference.ranges,
              'quote': reference.quote,
@@ -175,7 +181,8 @@ class ReferenceAPITest(TestCase):
              'objection': False,
              'objection_count': objection_count,
              'does_belong_to_user': True,
-             'reference_request': None
+             },
+             'relationships': {'reference_request': {'data': None}}
              }
         )
 
@@ -189,7 +196,7 @@ class ReferenceAPITest(TestCase):
         put_data = json.dumps({
             'link_title': put_string,
         })
-        response = self.client.patch(self.base_url.format(reference.id), put_data, content_type='application/json')
+        response = self.client.patch(self.base_url.format(reference.id), put_data, content_type='application/vnd.api+json')
         reference = Reference.objects.get(id=reference.id)
 
         useful_count = UserReferenceFeedback.objects.filter(reference=reference).filter(useful=True).count()
@@ -199,20 +206,25 @@ class ReferenceAPITest(TestCase):
         self.assertEqual(reference.link_title, put_string)
         self.assertEqual(
             json.loads(response.content.decode('utf8'))['data'],
-            {'id': reference.id,
-             'url': reference.url,
-             'ranges': reference.ranges,
-             'quote': reference.quote,
-             'priority': reference.priority,
-             'link': reference.link,
-             'link_title': reference.link_title,
-             'useful': urf.useful,
-             'useful_count': useful_count,
-             'objection': urf.objection,
-             'objection_count': objection_count,
-             'does_belong_to_user': True,
-             'reference_request': None
+
+            {'id': str(reference.id),
+             'type': 'references',
+             'attributes': {
+                 'url': reference.url,
+                 'ranges': reference.ranges,
+                 'quote': reference.quote,
+                 'priority': reference.priority,
+                 'link': reference.link,
+                 'link_title': reference.link_title,
+                 'useful': urf.useful,
+                 'useful_count': useful_count,
+                 'objection': urf.objection,
+                 'objection_count': objection_count,
+                 'does_belong_to_user': True,
+             },
+             'relationships': {'reference_request': {'data': None}}
              }
+
         )
 
     def test_patch_wrong_field_reference(self):
@@ -223,9 +235,17 @@ class ReferenceAPITest(TestCase):
         UserReferenceFeedback.objects.create(user=self.user, reference=reference, useful=True, objection=False)
         put_string = 'not so well'
         put_data = json.dumps({
-            'comment': put_string,
-        })
-        response = self.client.patch(self.base_url.format(reference.id), put_data, content_type='application/json')
+                'data': {
+                'type': 'references',
+                'id': str(reference.id),
+                'attributes': {
+                    'comment': put_string
+                }
+            }
+        }
+           )
+        response = self.client.patch(self.base_url.format(reference.id), put_data,
+                                     content_type='application/vnd.api+json')
         reference = Reference.objects.get(id=reference.id)
         self.assertEqual(response.status_code, 400)
         self.assertNotEqual(reference.comment, put_string)
@@ -237,7 +257,7 @@ class ReferenceAPITest(TestCase):
                                              quote='not this time')
         UserReferenceFeedback.objects.create(user=self.user, reference=reference, useful=True, objection=False)
         id = reference.id
-        response = self.client.delete(self.base_url.format(reference.id), content_type='application/json')
+        response = self.client.delete(self.base_url.format(reference.id), content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 200)
         response2 = self.client.get(self.base_url.format(id))
         self.assertEqual(response2.status_code, 400)

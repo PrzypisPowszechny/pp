@@ -47,6 +47,9 @@ class Reference(Annotation):
         self.objection_count = UserReferenceFeedback.objects.filter(reference=self).filter(objection=True).count()
         return (self.useful_count, self.objection_count)
 
+    class JSONAPIMeta:
+        resource_name = 'references'
+
 
 class UserReferenceFeedback(models.Model):
     user = models.ForeignKey('User')
@@ -58,6 +61,9 @@ class UserReferenceFeedback(models.Model):
     class Meta:
         unique_together = [('user', 'reference')]
 
+    class JSONAPIMeta:
+        resource_name = 'user_references'
+
 
 class UserReferenceRequestFeedback(models.Model):
     user = models.ForeignKey('User')
@@ -65,3 +71,6 @@ class UserReferenceRequestFeedback(models.Model):
 
     class Meta:
         unique_together = [('user', 'reference_request')]
+
+    class JSONAPIMeta:
+        resource_name = 'user_reference_feedbacks'

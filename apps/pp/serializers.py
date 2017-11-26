@@ -11,15 +11,15 @@ class ReferenceListGETSerializer(serializers.ModelSerializer):
     objection = serializers.BooleanField(default=False, read_only=True)
     does_belong_to_user = serializers.BooleanField(default=False, read_only=True)
 
-
     class Meta:
         model = Reference
-        fields = ('id', 'url', 'ranges', 'quote', 'priority', 'link', 'link_title',
+        fields = ('url', 'ranges', 'quote', 'priority', 'link', 'link_title',
                   'useful', 'useful_count', 'objection', 'objection_count',
                   'does_belong_to_user',
                   'reference_request'
                   )
         depth = 1
+
 
 
 
@@ -32,20 +32,19 @@ class ReferenceGETSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reference
-        fields = ('id', 'url', 'ranges', 'quote', 'priority', 'link', 'link_title',
+        fields = ('url', 'ranges', 'quote', 'priority', 'link', 'link_title',
                   'useful', 'useful_count', 'objection', 'objection_count',
                   'does_belong_to_user',
                   'reference_request'
                   )
         depth = 1
 
-
     def __init__(self, instance=None, data=empty, *args, **kwargs):
         if 'context' not in kwargs:
             raise ValueError('No context provided for ReferenceGETSerializer')
 
         self.user = kwargs['context']['request'].user
-        super().__init__(instance, data, *args, **kwargs)
+        super().__init__(instance, data, **kwargs)
 
     def get_useful_count(self, instance):
         return UserReferenceFeedback.objects.filter(user=self.user, reference=instance, useful=True).count()
