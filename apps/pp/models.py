@@ -4,12 +4,15 @@ from apps.pp import consts
 
 
 class User(AbstractUser):
+    class Meta:
+        app_label = 'pp'
+
     class JSONAPIMeta:
         resource_name = 'users'
 
 
 class Annotation(models.Model):
-    user = models.ForeignKey('User')
+    user = models.ForeignKey('pp.User')
     create_date = models.DateTimeField(auto_now_add=True)
 
     url = models.CharField(max_length=200)
@@ -19,7 +22,6 @@ class Annotation(models.Model):
     # Json data with information aboute the annotation location
 
     quote = models.TextField(max_length=250)
-
     # The exact annotated text part
 
     class Meta:
@@ -32,6 +34,12 @@ class ReferenceRequest(Annotation):
 
 
 class Reference(Annotation):
+    class Meta:
+        app_label = 'pp'
+
+    class JSONAPIMeta:
+        resource_name = 'references'
+
     priority = models.CharField(choices=consts.annotation_priorities, max_length=100)
     comment = models.TextField(max_length=100)
 
@@ -49,30 +57,29 @@ class Reference(Annotation):
         self.objection_count = UserReferenceFeedback.objects.filter(reference=self).filter(objection=True).count()
         return (self.useful_count, self.objection_count)
 
-    class JSONAPIMeta:
-        resource_name = 'references'
-
 
 class UserReferenceFeedback(models.Model):
-    user = models.ForeignKey('User')
-    reference = models.ForeignKey(Reference, related_name='feedbacks')
-
-    useful = models.BooleanField()
-    objection = models.BooleanField()
-
     class Meta:
+        app_label = 'pp'
         unique_together = [('user', 'reference')]
 
     class JSONAPIMeta:
         resource_name = 'user_references'
 
+    user = models.ForeignKey('pp.User')
+    reference = models.ForeignKey(Reference, related_name='feedbacks')
+
+    useful = models.BooleanField()
+    objection = models.BooleanField()
+
 
 class UserReferenceRequestFeedback(models.Model):
-    user = models.ForeignKey('User')
-    reference_request = models.ForeignKey(ReferenceRequest)
-
     class Meta:
+        app_label = 'pp'
         unique_together = [('user', 'reference_request')]
 
     class JSONAPIMeta:
         resource_name = 'user_reference_feedbacks'
+
+    user = models.ForeignKey('pp.User')
+    reference_request = models.ForeignKey(ReferenceRequest)
