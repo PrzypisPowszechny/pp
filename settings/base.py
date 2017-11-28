@@ -48,6 +48,9 @@ INSTALLED_APPS = [
     # Main project app
     'apps.pp',
 
+    # Ann app that saves models' states as they change together with the user who produced the change
+    'simple_history'
+
 ]
 
 # Set PPUser as Django user model
@@ -75,6 +78,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'simple_history.middleware.HistoryRequestMiddleware',
 ]
 
 APPEND_SLASH = False

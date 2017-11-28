@@ -5,6 +5,8 @@ coreschema==0.0.4
 Django==1.11.7
 django-cors-headers==2.1.0
 django-lazysignup==1.1.2
+django-model-utils==3.0.0
+django-simple-history==1.9.0
 djangorestframework==3.7.3
 djangorestframework-jsonapi==2.2.0
 idna==2.6

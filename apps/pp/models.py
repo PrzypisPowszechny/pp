@@ -1,7 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from apps.pp import consts
-
+from simple_history.models import HistoricalRecords
 
 class User(AbstractUser):
     class Meta:
@@ -54,6 +54,17 @@ class Reference(Annotation):
 
     reference_request = models.ForeignKey(ReferenceRequest, null=True)
     # Null when the annotation has not been created on request
+
+    # changed_by = models.ForeignKey('pp.User')
+    history = HistoricalRecords()
+
+    # @property
+    # def _history_user(self):
+    #     return self.changed_by
+    #
+    # @_history_user.setter
+    # def _history_user(self, value):
+    #     self.changed_by = value
 
     def count_useful_and_objection(self):
         self.useful_count = UserReferenceFeedback.objects.filter(reference=self).filter(useful=True).count()
