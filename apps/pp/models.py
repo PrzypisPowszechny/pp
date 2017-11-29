@@ -24,6 +24,9 @@ class Annotation(models.Model):
     quote = models.TextField(max_length=250)
     # The exact annotated text part
 
+    active = models.BooleanField(blank=True, default=True)
+    # We never actually delete models -- we only mark them as not active
+
     class Meta:
         abstract = True
 

@@ -23,7 +23,7 @@ class ReferenceDetail(APIView):
     @method_decorator(allow_lazy_user)
     def get(self, request, pk):
         try:
-            reference = Reference.objects.select_related('reference_request').get(pk=pk)
+            reference = Reference.objects.select_related('reference_request').get(active=True, pk=pk)
         except Reference.DoesNotExist:
             return ErrorResponse('Resource not found')
 
@@ -33,7 +33,7 @@ class ReferenceDetail(APIView):
     @method_decorator(allow_lazy_user)
     def patch(self, request, pk):
         try:
-            reference = Reference.objects.select_related('reference_request').get(pk=pk)
+            reference = Reference.objects.select_related('reference_request').get(active=True, pk=pk)
         except Reference.DoesNotExist:
             return ErrorResponse()
 
@@ -61,7 +61,7 @@ class ReferenceDetail(APIView):
     @method_decorator(allow_lazy_user)
     def delete(self, request, pk):
         try:
-            reference = Reference.objects.select_related('reference_request').get(pk=pk)
+            reference = Reference.objects.select_related('reference_request').get(active=True, pk=pk)
         except Reference.DoesNotExist:
             return Response()
 
@@ -69,7 +69,8 @@ class ReferenceDetail(APIView):
         if reference.user_id != request.user.id:
             return PermissionDenied()
 
-        reference.delete()
+        reference.active = False
+        reference.save()
         serializer = ReferenceSerializer(reference, context={'request': request})
         return Response(serializer.data)
 
@@ -102,7 +103,7 @@ class ReferenceList(APIView):
     default_sort = "-create_date"
 
     def get_queryset(self):
-        queryset = Reference.objects.select_related('reference_request')
+        queryset = Reference.objects.select_related('reference_request').filter(active=True)
 
         sort = self.kwargs.get('sort', self.default_sort)
         if sort:
