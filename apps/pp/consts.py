@@ -1,5 +1,10 @@
 annotation_priorities = (
-    ('NORMAL', u'normalny'),
-    ('WARNING', u'ostrzegawczy'),
-    ('ALERT', u'niebezpieczny'),
+    ('NORMAL', 'normalny'),
+    ('WARNING', 'ostrzegawczy'),
+    ('ALERT', 'niebezpieczny'),
+)
+
+reference_report_reasons = (
+    ('SPAM', 'spam'),
+    ('OTHER', 'inne'),
 )

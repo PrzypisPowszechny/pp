@@ -11,9 +11,15 @@ class User(AbstractUser):
         resource_name = 'users'
 
 
-class Annotation(models.Model):
+class UserInput(models.Model):
     user = models.ForeignKey('pp.User')
     create_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        abstract = True
+
+
+class Annotation(UserInput):
 
     url = models.CharField(max_length=200)
     # URL where the annotation has been made
@@ -55,8 +61,8 @@ class Reference(Annotation):
     reference_request = models.ForeignKey(ReferenceRequest, null=True)
     # Null when the annotation has not been created on request
 
-    # changed_by = models.ForeignKey('pp.User')
     history = HistoricalRecords()
+    # django-simple-history used here
 
     @property
     def _history_user(self):
@@ -70,6 +76,20 @@ class Reference(Annotation):
         self.useful_count = UserReferenceFeedback.objects.filter(reference=self).filter(useful=True).count()
         self.objection_count = UserReferenceFeedback.objects.filter(reference=self).filter(objection=True).count()
         return (self.useful_count, self.objection_count)
+
+
+class ReferenceReport(UserInput):
+    class Meta:
+        app_label = 'pp'
+
+    class JSONAPIMeta:
+        resource_name = 'reference_reports'
+
+    reference = models.ForeignKey(Reference, on_delete=models.CASCADE)
+
+    reason = models.CharField(choices=consts.reference_report_reasons, max_length=100)
+
+    comment = models.TextField(max_length=100)
 
 
 class UserReferenceFeedback(models.Model):
