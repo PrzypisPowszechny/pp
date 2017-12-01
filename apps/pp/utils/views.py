@@ -15,10 +15,12 @@ default_error_status = status.HTTP_400_BAD_REQUEST
 class ValidationErrorResponse(Response):
     def __init__(self, errors, *args, **kwargs):
         content = [{
-                       'field': field,
-                       'reasons': reasons
+                        'source': {
+                            'field': field
+                        },
+                       'detail': reason
                     }
-                   for field, reasons in errors.items()]
+                   for field, reason in errors.items()]
         super().__init__(content, *args, status=HTTP_400_BAD_REQUEST, **kwargs)
 
 

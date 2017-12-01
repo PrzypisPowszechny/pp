@@ -16,7 +16,7 @@ class ReferenceObjectionChange(APIView):
         try:
             UserReferenceFeedback.objects.create(reference_id=reference_id, user=request.user, objection=True)
         except IntegrityError:
-            return ErrorResponse('Resource not found')
+            return ErrorResponse('Failed to create object')
         return Response()
 
     @method_decorator(allow_lazy_user)
