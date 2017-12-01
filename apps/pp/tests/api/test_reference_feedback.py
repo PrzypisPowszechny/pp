@@ -8,8 +8,8 @@ from apps.pp.models import ReferenceRequest
 
 
 class ReferenceFeedbackAPITest(TestCase):
-    useful_url = "/api/references/{}/reference_usefuls/"
-    objection_url = "/api/references/{}/reference_objections/"
+    useful_url = "/api/references/{}/usefuls/"
+    objection_url = "/api/references/{}/objections/"
     maxDiff = None
 
     # IMPORTANT: we log in for each test, so self.user has already an open session with server

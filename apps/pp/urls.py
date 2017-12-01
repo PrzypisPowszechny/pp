@@ -7,10 +7,10 @@ reference_urls = [
     url(r'^$', references.ReferencePOST.as_view()),
     url(r'^search/', references.ReferenceList.as_view()),
 
-    url(r'^(?P<reference_id>[0-9]+)/reference_reports/$', reference_reports.ReferenceReportPOST.as_view()),
+    url(r'^(?P<reference_id>[0-9]+)/reports/$', reference_reports.ReferenceReportPOST.as_view()),
 
-    url(r'^(?P<reference_id>[0-9]+)/reference_usefuls/$', reference_usefuls.ReferenceUsefulChange.as_view()),
-    url(r'^(?P<reference_id>[0-9]+)/reference_objections/$', reference_objections.ReferenceObjectionChange.as_view()),
+    url(r'^(?P<reference_id>[0-9]+)/usefuls/$', reference_usefuls.ReferenceUsefulChange.as_view()),
+    url(r'^(?P<reference_id>[0-9]+)/objections/$', reference_objections.ReferenceObjectionChange.as_view()),
 ]
 
 urlpatterns = [

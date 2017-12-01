@@ -8,7 +8,7 @@ from apps.pp.models import ReferenceRequest
 
 
 class ReferenceReportAPITest(TestCase):
-    post_url = "/api/references/{}/reference_reports/"
+    post_url = "/api/references/{}/reports/"
     maxDiff = None
 
     # IMPORTANT: we log in for each test, so self.user has already an open session with server
