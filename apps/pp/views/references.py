@@ -100,14 +100,14 @@ class ReferenceList(APIView):
     default_page_size = 100
     default_sort = "-create_date"
 
-    def get_queryset(self):
+    def get_queryset(self, request):
         queryset = Reference.objects.select_related('reference_request').filter(active=True)
-
-        sort = self.kwargs.get('sort', self.default_sort)
+        print(request.query_params.get('sort'))
+        sort = request.query_params.get('sort', self.default_sort)
         if sort:
             queryset = queryset.order_by(sort)
 
-        url = self.kwargs.get('url')
+        url = request.query_params.get('url')
         if url:
             queryset = queryset.filter(url=url)
 
@@ -126,7 +126,7 @@ class ReferenceList(APIView):
 
     @method_decorator(allow_lazy_user)
     def get(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
+        queryset = self.get_queryset(request)
 
         # Paginate the queryset
         references = LimitOffsetPagination().paginate_queryset(queryset, request)
