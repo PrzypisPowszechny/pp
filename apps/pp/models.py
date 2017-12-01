@@ -92,19 +92,19 @@ class ReferenceReport(UserInput):
     comment = models.TextField(max_length=100)
 
 
-class UserReferenceFeedback(models.Model):
+class UserReferenceFeedback(UserInput):
     class Meta:
         app_label = 'pp'
         unique_together = [('user', 'reference')]
 
-    class JSONAPIMeta:
-        resource_name = 'user_references'
+    # No JSONAPIMeta information; the model corresponds to two resources, not just one
 
-    user = models.ForeignKey('pp.User')
     reference = models.ForeignKey(Reference, related_name='feedbacks')
 
-    useful = models.BooleanField()
-    objection = models.BooleanField()
+    # Only one of these can be true
+    # todo not a very neat representation, should probably be changed to a single choice field
+    useful = models.BooleanField(blank=True, default=False)
+    objection = models.BooleanField(blank=True, default=False)
 
 
 class UserReferenceRequestFeedback(models.Model):
@@ -113,7 +113,7 @@ class UserReferenceRequestFeedback(models.Model):
         unique_together = [('user', 'reference_request')]
 
     class JSONAPIMeta:
-        resource_name = 'user_reference_feedbacks'
+        resource_name = 'user_reference_request_feedbacks'
 
     user = models.ForeignKey('pp.User')
     reference_request = models.ForeignKey(ReferenceRequest)
