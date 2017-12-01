@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework_json_api.relations import ResourceRelatedField
 
+from apps.pp.models import ReferenceReport
 from apps.pp.models import ReferenceRequest
 from .models import Reference, UserReferenceFeedback, User
 from rest_framework import serializers
@@ -74,3 +75,12 @@ class ReferencePATCHSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reference
         fields = ('priority', 'comment', 'reference_link', 'reference_link_title')
+
+
+class ReferenceReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReferenceReport
+        fields = ('reason', 'comment',
+              # relationships:
+              'user', 'reference'
+              )
