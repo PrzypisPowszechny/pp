@@ -3,6 +3,7 @@ from django.db import models
 from apps.pp import consts
 from simple_history.models import HistoricalRecords
 
+
 class User(AbstractUser):
     class Meta:
         app_label = 'pp'
@@ -20,7 +21,6 @@ class UserInput(models.Model):
 
 
 class Annotation(UserInput):
-
     url = models.CharField(max_length=200)
     # URL where the annotation has been made
 
@@ -31,6 +31,7 @@ class Annotation(UserInput):
     # The exact annotated text part
 
     active = models.BooleanField(blank=True, default=True)
+
     # We never actually delete models -- we only mark them as not active
 
     class Meta:
@@ -38,6 +39,9 @@ class Annotation(UserInput):
 
 
 class ReferenceRequest(Annotation):
+    class Meta:
+        app_label = 'pp'
+
     class JSONAPIMeta:
         resource_name = 'reference_requests'
 
@@ -62,6 +66,7 @@ class Reference(Annotation):
     # Null when the annotation has not been created on request
 
     history = HistoricalRecords()
+
     # django-simple-history used here
 
     @property
@@ -86,9 +91,7 @@ class ReferenceReport(UserInput):
         resource_name = 'reference_reports'
 
     reference = models.ForeignKey(Reference, on_delete=models.CASCADE)
-
     reason = models.CharField(choices=consts.reference_report_reasons, max_length=100)
-
     comment = models.TextField(max_length=100)
 
 

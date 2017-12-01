@@ -3,12 +3,9 @@ from django.utils.decorators import method_decorator
 from lazysignup.decorators import allow_lazy_user
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_json_api.parsers import JSONParser
 
-from apps.pp.models import ReferenceReport
 from apps.pp.models import UserReferenceFeedback
-from apps.pp.serializers import ReferenceReportSerializer
-from apps.pp.utils.responses import ValidationErrorResponse, ErrorResponse
+from apps.pp.utils.views import ErrorResponse
 
 
 class ReferenceObjectionChange(APIView):

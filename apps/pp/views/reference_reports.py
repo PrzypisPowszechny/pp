@@ -4,9 +4,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_json_api.parsers import JSONParser
 
-from apps.pp.models import ReferenceReport
 from apps.pp.serializers import ReferenceReportSerializer
-from apps.pp.utils.responses import ValidationErrorResponse
+from apps.pp.utils.views import ValidationErrorResponse
 
 
 class ReferenceReportPOST(APIView):
@@ -17,7 +16,7 @@ class ReferenceReportPOST(APIView):
         data = JSONParser().parse(request, parser_context={'request': request, 'view': ReferenceReportPOST})
         # KG: we need to help JSONParser with relationships: extract {'id': X} pairs to X
         data['reference'] = reference_id
-        # Set the user to the authenticated user
+        # Set the user as the authenticated user
         data['user'] = request.user.pk
 
         serializer = ReferenceReportSerializer(data=data, context={'request': request})

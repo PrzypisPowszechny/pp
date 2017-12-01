@@ -1,30 +1,28 @@
+from apps.pp.utils.views import PermissionDenied, ValidationErrorResponse, ErrorResponse
 from django.db.models import Case
 from django.db.models import IntegerField
 from django.db.models import Sum
 from django.db.models import When
 from django.db.models.functions import Coalesce
 from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
 from lazysignup.decorators import allow_lazy_user
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_json_api.pagination import LimitOffsetPagination
 from rest_framework_json_api.parsers import JSONParser
 
-from apps.pp.utils.responses import PermissionDenied, ValidationErrorResponse, ErrorResponse
-from apps.pp.views.utils import get_data_fk_value
 from apps.pp.models import Reference, UserReferenceFeedback
 from apps.pp.serializers import ReferencePATCHSerializer, ReferenceListGETSerializer, ReferenceSerializer
+from apps.pp.utils.views import get_data_fk_value
 
 
-@method_decorator(csrf_exempt, name='dispatch')
 class ReferenceDetail(APIView):
     resource_name = 'references'
 
     @method_decorator(allow_lazy_user)
-    def get(self, request, pk):
+    def get(self, request, reference_id):
         try:
-            reference = Reference.objects.select_related('reference_request').get(active=True, pk=pk)
+            reference = Reference.objects.select_related('reference_request').get(active=True, id=reference_id)
         except Reference.DoesNotExist:
             return ErrorResponse('Resource not found')
 
@@ -32,9 +30,9 @@ class ReferenceDetail(APIView):
         return Response(serializer.data)
 
     @method_decorator(allow_lazy_user)
-    def patch(self, request, pk):
+    def patch(self, request, reference_id):
         try:
-            reference = Reference.objects.select_related('reference_request').get(active=True, pk=pk)
+            reference = Reference.objects.select_related('reference_request').get(active=True, id=reference_id)
         except Reference.DoesNotExist:
             return ErrorResponse()
 
@@ -52,7 +50,7 @@ class ReferenceDetail(APIView):
         serializer.save()
 
         try:
-            updated_reference = Reference.objects.get(pk=pk)
+            updated_reference = Reference.objects.get(id=reference_id)
         except Reference.DoesNotExist:
             return ErrorResponse()
 
@@ -60,9 +58,9 @@ class ReferenceDetail(APIView):
         return Response(serializer2.data)
 
     @method_decorator(allow_lazy_user)
-    def delete(self, request, pk):
+    def delete(self, request, reference_id):
         try:
-            reference = Reference.objects.select_related('reference_request').get(active=True, pk=pk)
+            reference = Reference.objects.select_related('reference_request').get(active=True, id=reference_id)
         except Reference.DoesNotExist:
             return Response()
 
@@ -76,7 +74,6 @@ class ReferenceDetail(APIView):
         return Response(serializer.data)
 
 
-@method_decorator(csrf_exempt, name='dispatch')
 class ReferencePOST(APIView):
     resource_name = 'references'
 
@@ -85,7 +82,7 @@ class ReferencePOST(APIView):
         data = JSONParser().parse(request, parser_context={'request': request, 'view': ReferencePOST})
         # KG: we need to help JSONParser with relationships: extract {'id': X} pairs to X
         data['reference_request'] = get_data_fk_value(data, 'reference_request')
-        # Set the user to the authenticated user
+        # Set the user as the authenticated user
         data['user'] = request.user.pk
 
         serializer = ReferenceSerializer(data=data, context={'request': request})
