@@ -3,8 +3,8 @@ import os
 import sys
 
 if __name__ == "__main__":
-
-    settings = "settings.base"
+    # By default start with base settings
+    settings = "settings.dev.base"
 
     if 'test' in sys.argv:
         settings = "settings.test.base"
