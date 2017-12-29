@@ -5,11 +5,12 @@ from simple_history.admin import SimpleHistoryAdmin
 from apps.pp.models import Reference
 from apps.pp.models import ReferenceRequest
 from apps.pp.models import UserReferenceFeedback
+from djangoql.admin import DjangoQLSearchMixin
 
 admin.site.register(get_user_model(), UserAdmin)
 
 
-class ReferenceAdmin(SimpleHistoryAdmin):
+class ReferenceAdmin(DjangoQLSearchMixin, SimpleHistoryAdmin):
     def useful(self, inst):
         return UserReferenceFeedback.objects.filter(reference=inst).filter(useful=True).count()
 
@@ -18,7 +19,6 @@ class ReferenceAdmin(SimpleHistoryAdmin):
 
     list_display = ('comment', 'create_date', 'user', 'useful', 'objection', 'priority', 'active')
     list_editable = ('active',)
-    search_fields = ('comment', 'quote', 'reference_link',)
     readonly_fields = (
         'user', 'url', 'ranges', 'quote', 'create_date', 'priority', 'useful', 'objection', 'reference_request')
 
@@ -39,10 +39,9 @@ class ReferenceAdmin(SimpleHistoryAdmin):
 admin.site.register(Reference, ReferenceAdmin)
 
 
-class ReferenceRequestAdmin(SimpleHistoryAdmin):
+class ReferenceRequestAdmin(DjangoQLSearchMixin, SimpleHistoryAdmin):
     list_display = ('user', 'url', 'active')
     list_editable = ('active',)
-    search_fields = ('user', 'url')
     readonly_fields = ('user', 'url', 'ranges', 'quote')
 
     def get_actions(self, request):

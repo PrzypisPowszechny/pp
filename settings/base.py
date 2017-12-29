@@ -36,10 +36,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # an application that creates account for all anonymous users' requests and associates it with user session
+    # An application that creates account for all anonymous users' requests and associates it with user session
     'lazysignup',
 
-    # framework for creating api
+    # Framework for creating api
     'rest_framework',
 
     # Adds cross-origin headers to http request
@@ -48,8 +48,11 @@ INSTALLED_APPS = [
     # Main project app
     'apps.pp',
 
-    # Ann app that saves models' states as they change together with the user who produced the change
-    'simple_history'
+    # An app that saves models' states as they change together with the user who produced the change
+    'simple_history',
+
+    # Advanced search for admin site
+    'djangoql'
 
 ]
 
