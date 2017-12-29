@@ -62,7 +62,7 @@ class Reference(Annotation):
     reference_link_title = models.CharField(max_length=100)
     # Short summary of the page referred to
 
-    reference_request = models.ForeignKey(ReferenceRequest, blank=True, null=True)
+    reference_request = models.ForeignKey(ReferenceRequest, null=True)
     # Null when the annotation has not been created on request
 
     history = HistoricalRecords()
