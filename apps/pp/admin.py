@@ -30,6 +30,9 @@ class ReferenceAdmin(SimpleHistoryAdmin):
     def has_add_permission(self, request):
         return False
 
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 admin.site.register(Reference, ReferenceAdmin)
 
@@ -47,6 +50,9 @@ class ReferenceRequestAdmin(SimpleHistoryAdmin):
         return actions
 
     def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
         return False
 
 
