@@ -19,6 +19,8 @@ class ReferenceAdmin(SimpleHistoryAdmin):
     list_display = ('comment', 'create_date', 'user', 'useful', 'objection', 'priority', 'active')
     list_editable = ('active',)
     search_fields = ('comment', 'quote', 'reference_link',)
+    readonly_fields = (
+        'user', 'url', 'ranges', 'quote', 'create_date', 'priority', 'useful', 'objection', 'reference_request')
 
     def get_actions(self, request):
         actions = super().get_actions(request)
@@ -41,6 +43,7 @@ class ReferenceRequestAdmin(SimpleHistoryAdmin):
     list_display = ('user', 'url', 'active')
     list_editable = ('active',)
     search_fields = ('user', 'url')
+    readonly_fields = ('user', 'url', 'ranges', 'quote')
 
     def get_actions(self, request):
         actions = super().get_actions(request)
