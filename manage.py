@@ -4,7 +4,7 @@ import sys
 
 if __name__ == "__main__":
     # By default start with base settings
-    settings = "settings.dev.base"
+    settings = "settings.prod"
 
     if 'test' in sys.argv:
         settings = "settings.test.base"
