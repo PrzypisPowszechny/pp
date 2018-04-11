@@ -13,7 +13,7 @@ sudo apt-get install python3-dev libmysqlclient-dev
 
 It might be preferable to use a local package manager:
 ```
-virtualenv -p -python3 env
+virtualenv -p python3 env
 ```
 To use the environment:
 ```
