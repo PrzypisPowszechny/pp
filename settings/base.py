@@ -49,8 +49,11 @@ INSTALLED_APPS = [
     'apps.pp',
 
     # Ann app that saves models' states as they change together with the user who produced the change
-    'simple_history'
+    'simple_history',
 
+    'rest_framework_swagger',
+
+    'drf_yasg',
 ]
 
 # Set PPUser as Django user model
@@ -144,19 +147,20 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
   
     # Settings recommended for rest_framework_json_api   https://github.com/django-json-api/django-rest-framework-json-api
-    'EXCEPTION_HANDLER': 'rest_framework_json_api.exceptions.exception_handler',
-    'DEFAULT_PAGINATION_CLASS':
-        'rest_framework_json_api.pagination.LimitOffsetPagination',
-    'DEFAULT_PARSER_CLASSES': (
-        'rest_framework_json_api.parsers.JSONParser',
-        'rest_framework.parsers.FormParser',
-        'rest_framework.parsers.MultiPartParser'
-    ),
-    'DEFAULT_RENDERER_CLASSES': (
-        'rest_framework_json_api.renderers.JSONRenderer',
-        'rest_framework.renderers.BrowsableAPIRenderer',
-    ),
-    'DEFAULT_METADATA_CLASS': 'rest_framework_json_api.metadata.JSONAPIMetadata',
+    # 'EXCEPTION_HANDLER': 'rest_framework_json_api.exceptions.exception_handler',
+    # 'DEFAULT_PAGINATION_CLASS':
+    #     'rest_framework_json_api.pagination.LimitOffsetPagination',
+    # 'DEFAULT_PARSER_CLASSES': (
+    #     # 'rest_framework_json_api.parsers.JSONParser',
+    #     'rest_framework.parsers'
+    #     'rest_framework.parsers.FormParser',
+    #     'rest_framework.parsers.MultiPartParser'
+    # ),
+    # 'DEFAULT_RENDERER_CLASSES': (
+    #     'rest_framework_json_api.renderers.JSONRenderer',
+    #     'rest_framework.renderers.BrowsableAPIRenderer',
+    # ),
+    # 'DEFAULT_METADATA_CLASS': 'rest_framework_json_api.metadata.JSONAPIMetadata',
 
 }
 

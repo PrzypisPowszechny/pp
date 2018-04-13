@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from rest_framework_json_api.relations import ResourceRelatedField
 
@@ -29,7 +30,26 @@ class ReferenceListGETSerializer(serializers.ModelSerializer):
                             'does_belong_to_user')
 
 
-class ReferenceSerializer(serializers.ModelSerializer):
+def wrap_data(serializer):
+    return type('Data%s' % serializer.__class__.__name__, (serializers.Serializer,), {'data': serializer})
+
+
+class ReferenceQuerySerializer(serializers.ModelSerializer):
+    reference_request = serializers.PrimaryKeyRelatedField(queryset=ReferenceRequest.objects.all(),
+                                                           required=False, allow_null=True)
+
+    class Meta:
+        model = Reference
+        fields = ('url', 'ranges', 'quote',
+                  'priority', 'comment', 'reference_link', 'reference_link_title',
+                  # relationships:
+                  'reference_request',
+                  )
+
+
+class ReferenceSerializer(ReferenceQuerySerializer):
+    reference_request = serializers.PrimaryKeyRelatedField(read_only=True, required=False, allow_null=True)
+
     useful_count = serializers.SerializerMethodField()
     objection_count = serializers.SerializerMethodField()
     useful = serializers.SerializerMethodField('is_useful')
@@ -37,21 +57,25 @@ class ReferenceSerializer(serializers.ModelSerializer):
     does_belong_to_user = serializers.SerializerMethodField()
 
     class Meta:
-        model = Reference
-        fields = ('url', 'ranges', 'quote',
-                  'priority', 'comment', 'reference_link', 'reference_link_title',
+        model = ReferenceQuerySerializer.Meta.model
+        fields = ReferenceQuerySerializer.Meta.fields + (
                   'useful', 'useful_count', 'objection', 'objection_count',
                   'does_belong_to_user',
                   # relationships:
-                  'user', 'reference_request'
+                  'user',
                   )
         read_only_fields = ('useful', 'useful_count', 'objection', 'objection_count',
                             'does_belong_to_user')
 
     def __init__(self, instance=None, data=empty, *args, **kwargs):
+        if settings.DEBUG:
+            # Allow mocking data in development to enable introspection of serializer
+            self.user = User()
+            super().__init__(instance, data, **kwargs)
+            return
+
         if 'context' not in kwargs:
-            raise ValueError('No context provided for ReferenceGETSerializer')
-        self.request = kwargs['context']['request']
+            raise ValueError('No context provided for ReferenceSerializer')
         self.user = self.request.user
         super().__init__(instance, data, **kwargs)
 

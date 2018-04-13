@@ -10,15 +10,19 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_json_api.pagination import LimitOffsetPagination
 from rest_framework_json_api.parsers import JSONParser
+from drf_yasg.utils import swagger_auto_schema
+
 
 from apps.pp.models import Reference, UserReferenceFeedback
-from apps.pp.serializers import ReferencePATCHSerializer, ReferenceListGETSerializer, ReferenceSerializer
+from apps.pp.serializers import ReferencePATCHSerializer, ReferenceListGETSerializer, ReferenceSerializer, \
+    ReferenceQuerySerializer, wrap_data
 from apps.pp.utils.views import get_data_fk_value
 
 
 class ReferenceDetail(APIView):
     resource_name = 'references'
 
+    @swagger_auto_schema(query_serializer=ReferenceSerializer, responses={200: ReferenceSerializer})
     @method_decorator(allow_lazy_user)
     def get(self, request, reference_id):
         try:
@@ -77,13 +81,17 @@ class ReferenceDetail(APIView):
 class ReferencePOST(APIView):
     resource_name = 'references'
 
+    @swagger_auto_schema(request_body=ReferenceQuerySerializer,
+                         responses={200: ReferenceSerializer})
     @method_decorator(allow_lazy_user)
     def post(self, request):
+        data = request.data
         data = JSONParser().parse(request, parser_context={'request': request, 'view': ReferencePOST})
-        # KG: we need to help JSONParser with relationships: extract {'id': X} pairs to X
-        data['reference_request'] = get_data_fk_value(data, 'reference_request')
+        # # KG: we need to help JSONParser with relationships: extract {'id': X} pairs to X
+        # data['reference_request'] = get_data_fk_value(data, 'reference_request')
         # Set the user as the authenticated user
         data['user'] = request.user.pk
+        print(data)
 
         serializer = ReferenceSerializer(data=data, context={'request': request})
         if not serializer.is_valid():
