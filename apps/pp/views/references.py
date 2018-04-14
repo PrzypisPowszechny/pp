@@ -15,7 +15,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 from apps.pp.models import Reference, UserReferenceFeedback
 from apps.pp.serializers import ReferencePATCHSerializer, ReferenceListGETSerializer, ReferenceSerializer, \
-    ReferenceQuerySerializer, wrap_data
+    ReferenceQuerySerializer, wrap_data, ReferenceQueryJerializer, ReferenceJerializer
 from apps.pp.utils.views import get_data_fk_value
 
 
@@ -81,8 +81,8 @@ class ReferenceDetail(APIView):
 class ReferencePOST(APIView):
     resource_name = 'references'
 
-    @swagger_auto_schema(request_body=ReferenceQuerySerializer,
-                         responses={200: ReferenceSerializer})
+    @swagger_auto_schema(request_body=wrap_data(ReferenceQueryJerializer),
+                         responses={200: wrap_data(ReferenceJerializer)})
     @method_decorator(allow_lazy_user)
     def post(self, request):
         data = request.data
