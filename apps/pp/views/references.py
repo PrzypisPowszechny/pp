@@ -15,8 +15,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 from apps.pp.models import Reference, UserReferenceFeedback, ReferenceRequest
 from apps.pp.serializers import ReferencePATCHSerializer, ReferenceListGETSerializer, ReferenceSerializer, \
-    wrap_data, ReferenceQueryJerializer, ReferenceJerializer, ReferenceAttributesJerializer, get_relationship_id, \
-    set_relationship
+    data_wrapped, ReferenceQueryJerializer, ReferenceJerializer, get_relationship_id, set_relationship
 from apps.pp.utils.views import get_data_fk_value
 
 
@@ -82,8 +81,8 @@ class ReferenceDetail(APIView):
 class ReferencePOST(APIView):
     resource_name = 'references'
 
-    @swagger_auto_schema(request_body=wrap_data(ReferenceQueryJerializer),
-                         responses={200: wrap_data(ReferenceJerializer)})
+    @swagger_auto_schema(request_body=data_wrapped(ReferenceQueryJerializer),
+                         responses={200: data_wrapped(ReferenceJerializer)})
     @method_decorator(allow_lazy_user)
     def post(self, request):
         data = request.data.get('data', {})
@@ -96,7 +95,7 @@ class ReferencePOST(APIView):
         reference.reference_request_id = get_relationship_id(query_serializer, 'reference_request')
         reference.save()
 
-        attributes_serializer = ReferenceAttributesJerializer(reference, context={'request': request})
+        attributes_serializer = ReferenceJerializer.Attributes(reference, context={'request': request})
         data = {'id': reference.id, 'attributes': attributes_serializer.data}
         # alternative for line below: cls=reference._meta.get_field('reference_request').related_model
         set_relationship(data, reference.reference_request_id, cls=ReferenceRequest)
