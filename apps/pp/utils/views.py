@@ -70,12 +70,12 @@ def data_wrapped_view(func):
         for k, v in data.items():
             request.data[k] = v
         response = func(request, *args, **kwargs)
-        if isinstance(response, (None.__class__, dict)):
+        if isinstance(response, (None.__class__, dict, list, tuple)):
             return DataResponse(response)
         if isinstance(response, JsonApiResponse):
             return response
         if not hasattr(response, 'data') or not isinstance(response.data, dict):
-            raise ValueError('%s requires view to return dict, None or response with data attribute'
+            raise ValueError('%s requires view to return dict, list, tuple, None or response with data attribute'
                              % data_wrapped_view.__name__)
         response.data = {'data': response.data}
     return wraps(func)(wrapped)

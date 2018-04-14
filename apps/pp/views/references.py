@@ -119,7 +119,6 @@ class ReferenceList(APIView):
 
     def get_queryset(self, request):
         queryset = Reference.objects.select_related('reference_request').filter(active=True)
-        print(request.query_params.get('sort'))
         sort = request.query_params.get('sort', self.default_sort)
         if sort:
             queryset = queryset.order_by(sort)
@@ -142,6 +141,7 @@ class ReferenceList(APIView):
         return queryset
 
     @method_decorator(allow_lazy_user)
+    @method_decorator(data_wrapped_view)
     def get(self, request, *args, **kwargs):
         queryset = self.get_queryset(request)
 
@@ -156,6 +156,7 @@ class ReferenceList(APIView):
             .filter(user=request.user, id__in=reference_ids).values_list('id', flat=True)
 
         # Manually annotate useful & objection feedbacks for the current user
+        data_list = []
         feedbacks = UserReferenceFeedback.objects.filter(user=request.user, reference_id__in=reference_ids)
         reference_to_feedback = {feedback.reference_id: feedback for feedback in feedbacks}
         for reference in references:
@@ -164,9 +165,9 @@ class ReferenceList(APIView):
                 reference.useful = feedback.useful
                 reference.objection = feedback.objection
                 reference.does_belong_to_user = reference.id in user_reference_ids
-
-        # Finally pass over the annotated reference models to the serializer so it makes use of them
-        # along with the "native" model fields
-        references = ReferenceListGETSerializer(references, context={'request': request}, many=True).data
-
-        return Response(references)
+            attributes_serializer = ReferenceListGETSerializer.Attributes(reference, context={'request': request})
+            data = {'id': reference.id, 'type': 'references', 'attributes': attributes_serializer.data}
+            set_relationship(data, reference.user_id, cls=reference._meta.get_field('user_id').related_model)
+            set_relationship(data, reference.reference_request_id, cls=ReferenceRequest)
+            data_list.append(data)
+        return data_list

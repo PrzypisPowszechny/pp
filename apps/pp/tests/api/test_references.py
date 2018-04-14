@@ -111,10 +111,10 @@ class ReferenceAPITest(TestCase):
 
         raw_response = self.client.get(search_base_url.format(reference.url))
         response = json.loads(raw_response.content.decode('utf8'))['data']
-        response_reference = next(row for row in response if row['id'] == str(reference.id))
-        response_reference2 = next(row for row in response if row['id'] == str(reference2.id))
+        response_reference = next(row for row in response if row['id'] == reference.id)
+        response_reference2 = next(row for row in response if row['id'] == reference2.id)
         self.assertEqual(response_reference,
-                         {'id': str(reference.id),
+                         {'id': reference.id,
                           'type': 'references',
                           'attributes': {
                               'url': reference.url,
@@ -132,12 +132,12 @@ class ReferenceAPITest(TestCase):
                           },
                           'relationships': {
                               'reference_request': {'data': None},
-                              'user': {'data': {'type': 'users', 'id': str(self.user.id)}}
+                              'user': {'data': {'type': 'users', 'id': self.user.id}}
                           }
                           })
 
         self.assertEqual(response_reference2,
-                         {'id': str(reference2.id),
+                         {'id': reference2.id,
                           'type': 'references',
                           'attributes': {
                               'url': reference2.url,
@@ -155,7 +155,7 @@ class ReferenceAPITest(TestCase):
                           },
                           'relationships': {
                               'reference_request': {'data': None},
-                              'user': {'data': {'type': 'users', 'id': str(self.user.id)}}
+                              'user': {'data': {'type': 'users', 'id': self.user.id}}
                           }
                           })
 

@@ -109,24 +109,40 @@ class ReferenceJerializer(ReferenceQueryJerializer):
     relationships = Relationships()
 
 
-class ReferenceListGETSerializer(serializers.ModelSerializer):
-    useful_count = serializers.IntegerField(default=0)
-    objection_count = serializers.IntegerField(default=0)
-    useful = serializers.BooleanField(default=False)
-    objection = serializers.BooleanField(default=False)
-    does_belong_to_user = serializers.BooleanField(default=False)
+class ReferenceListGETSerializer(serializers.Serializer):
+    class Attributes(serializers.ModelSerializer):
+        useful_count = serializers.IntegerField(default=0)
+        objection_count = serializers.IntegerField(default=0)
+        useful = serializers.BooleanField(default=False)
+        objection = serializers.BooleanField(default=False)
+        does_belong_to_user = serializers.BooleanField(default=False)
 
-    class Meta:
-        model = Reference
-        fields = ('url', 'ranges', 'quote',
-                  'priority', 'comment', 'reference_link', 'reference_link_title',
-                  'useful', 'useful_count', 'objection', 'objection_count',
-                  'does_belong_to_user',
-                  # relationships:
-                  'user', 'reference_request'
-                  )
-        read_only_fields = ('useful', 'useful_count', 'objection', 'objection_count',
-                            'does_belong_to_user')
+        class Meta:
+            model = Reference
+            fields = ('url', 'ranges', 'quote',
+                      'priority', 'comment', 'reference_link', 'reference_link_title',
+                      'useful', 'useful_count', 'objection', 'objection_count',
+                      'does_belong_to_user',
+                      )
+            read_only_fields = ('useful', 'useful_count', 'objection', 'objection_count',
+                                'does_belong_to_user')
+
+    class Relationships(serializers.Serializer):
+        class User(serializers.Serializer):
+            type = serializers.CharField(),
+            id = serializers.IntegerField()
+
+        class ReferenceRequest(serializers.Serializer):
+            type = serializers.CharField()
+            id = serializers.IntegerField()
+
+        user = data_wrapped(User)(required=True)
+        reference_request = data_wrapped(ReferenceRequest)(required=False, allow_null=True)
+
+    id = serializers.IntegerField(required=True)
+    type = serializers.CharField(required=True)
+    attributes = Attributes()
+    relationships = Relationships()
 
 
 class ReferenceQuerySerializer(serializers.ModelSerializer):
@@ -140,61 +156,13 @@ class ReferenceQuerySerializer(serializers.ModelSerializer):
                   )
 
 
-class ReferenceSerializer(ReferenceQuerySerializer):
-    reference_request = serializers.PrimaryKeyRelatedField(read_only=True, required=False, allow_null=True)
-
-    useful_count = serializers.SerializerMethodField()
-    objection_count = serializers.SerializerMethodField()
-    useful = serializers.SerializerMethodField('is_useful')
-    objection = serializers.SerializerMethodField('is_objection')
-    does_belong_to_user = serializers.SerializerMethodField()
-
-    class Meta:
-        model = ReferenceQuerySerializer.Meta.model
-        fields = ReferenceQuerySerializer.Meta.fields + (
-                  'useful', 'useful_count', 'objection', 'objection_count',
-                  'does_belong_to_user',
-                  # relationships:
-                  'user',
-                  )
-        read_only_fields = ('useful', 'useful_count', 'objection', 'objection_count',
-                            'does_belong_to_user')
-
-    def __init__(self, instance=None, data=empty, *args, **kwargs):
-        if settings.DEBUG:
-            # Allow mocking data in development to enable introspection of serializer
-            self.user = User()
-            super().__init__(instance, data, **kwargs)
-            return
-
-        if 'context' not in kwargs:
-            raise ValueError('No context provided for ReferenceSerializer')
-        self.user = self.request.user
-        super().__init__(instance, data, **kwargs)
-
-    def get_useful_count(self, instance):
-        return UserReferenceFeedback.objects.filter(user=self.user, reference=instance, useful=True).count()
-
-    def get_objection_count(self, instance):
-        return UserReferenceFeedback.objects.filter(user=self.user, reference=instance, objection=True).count()
-
-    def is_useful(self, instance):
-        return UserReferenceFeedback.objects.filter(user=self.user, reference=instance, useful=True).exists()
-
-    def is_objection(self, instance):
-        return UserReferenceFeedback.objects.filter(user=self.user, reference=instance, objection=True).exists()
-
-    def get_does_belong_to_user(self, instance):
-        return self.user.id == instance.user_id
-
-
 class ReferencePATCHQuerySerializer(serializers.Serializer):
-    type = serializers.CharField(required=True)
-
     class QueryAttributes(serializers.ModelSerializer):
         class Meta:
             model = Reference
             fields = ('priority', 'comment', 'reference_link', 'reference_link_title')
+
+    type = serializers.CharField(required=True)
     attributes = QueryAttributes()
 
 
