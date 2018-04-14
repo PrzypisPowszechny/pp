@@ -33,35 +33,38 @@ class ReferenceAPITest(TestCase):
         objection_count = UserReferenceFeedback.objects.filter(reference=reference).filter(objection=True).count()
 
         self.assertEqual(
-            json.loads(response.content.decode('utf8'))['data'],
-            {'id': str(reference.id),
-             'type': 'references',
-             'attributes': {
-                 'url': reference.url,
-                 'ranges': reference.ranges,
-                 'quote': reference.quote,
-                 'priority': reference.priority,
-                 'comment': reference.comment,
-                 'reference_link': reference.reference_link,
-                 'reference_link_title': reference.reference_link_title,
-                 'useful': urf.useful,
-                 'useful_count': useful_count,
-                 'objection': urf.objection,
-                 'objection_count': objection_count,
-                 'does_belong_to_user': True,
-             },
-             'relationships': {
-                 'reference_request': {'data': None},
-                 'user': {'data': {'type': 'users', 'id': str(self.user.id)}}
-             }
-             }
+            json.loads(response.content.decode('utf8')),
+            {
+                'data': {
+                    'id': reference.id,
+                    'type': 'references',
+                    'attributes': {
+                        'url': reference.url,
+                        'ranges': reference.ranges,
+                        'quote': reference.quote,
+                        'priority': reference.priority,
+                        'comment': reference.comment,
+                        'reference_link': reference.reference_link,
+                        'reference_link_title': reference.reference_link_title,
+                        'useful': urf.useful,
+                        'useful_count': useful_count,
+                        'objection': urf.objection,
+                        'objection_count': objection_count,
+                        'does_belong_to_user': True,
+                    },
+                    'relationships': {
+                        'reference_request': {'data': None},
+                        'user': {'data': {'type': 'users', 'id': self.user.id}}
+                    }
+                 }
+            }
         )
 
     def test_empty_search_return_json_200(self):
         search_base_url = "/api/references/search/&url={}"
         response = self.client.get(search_base_url.format('przypis powszechny'))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['content-type'], 'application/vnd.api+json')
+        self.assertEqual(response['content-type'], 'application/json')
 
         test_answer = []
         self.assertEqual(

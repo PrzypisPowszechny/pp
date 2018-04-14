@@ -25,13 +25,17 @@ def get_relationship_id(root_serializer, name):
 
 
 def set_relationship(root_data, obj_or_id, cls=None):
-    cls = cls if isinstance(obj_or_id, int) else obj_or_id.__class__
-    pk = obj_or_id if isinstance(obj_or_id, int) else obj_or_id.pk
-    root_data.setdefault('relationships', {})[inflection.underscore(cls.__name__)] = {
-        'data': {
+    if obj_or_id is None:
+        if cls is None:
+            raise ValueError("cls param must be provided when obj_or_id is None")
+        data = None
+    else:
+        pk = obj_or_id if isinstance(obj_or_id, int) else obj_or_id.pk
+        cls = cls if isinstance(obj_or_id, int) else obj_or_id.__class__
+        data = {
             'type': cls.JSONAPIMeta.resource_name, 'id': pk
         }
-    }
+    root_data.setdefault('relationships', {})[inflection.underscore(cls.__name__)] = {'data':  data}
 
 
 class ReferenceQueryJerializer(serializers.Serializer):

@@ -21,16 +21,20 @@ from apps.pp.serializers import ReferencePATCHSerializer, ReferenceListGETSerial
 class ReferenceDetail(APIView):
     resource_name = 'references'
 
-    @swagger_auto_schema(query_serializer=ReferenceSerializer, responses={200: ReferenceSerializer})
+    @swagger_auto_schema(responses={200: data_wrapped(ReferenceJerializer)})
     @method_decorator(allow_lazy_user)
+    @method_decorator(data_wrapped_view)
     def get(self, request, reference_id):
         try:
             reference = Reference.objects.select_related('reference_request').get(active=True, id=reference_id)
         except Reference.DoesNotExist:
             return ErrorResponse('Resource not found')
 
-        serializer = ReferenceSerializer(reference, context={'request': request})
-        return Response(serializer.data)
+        attributes_serializer = ReferenceJerializer.Attributes(reference, context={'request': request})
+        data = {'id': reference.id, 'type': self.resource_name, 'attributes': attributes_serializer.data}
+        set_relationship(data, reference.reference_request_id, cls=ReferenceRequest)
+        set_relationship(data, reference.user)
+        return data
 
     @method_decorator(allow_lazy_user)
     def patch(self, request, reference_id):
