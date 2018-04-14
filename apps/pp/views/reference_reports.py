@@ -5,13 +5,14 @@ from rest_framework.views import APIView
 from rest_framework_json_api.parsers import JSONParser
 
 from apps.pp.serializers import ReferenceReportSerializer
-from apps.pp.utils.views import ValidationErrorResponse
+from apps.pp.utils.views import ValidationErrorResponse, data_wrapped_view
 
 
 class ReferenceReportPOST(APIView):
     resource_name = 'reference_reports'
 
     @method_decorator(allow_lazy_user)
+    @method_decorator(data_wrapped_view)
     def post(self, request, reference_id):
         data = JSONParser().parse(request, parser_context={'request': request, 'view': ReferenceReportPOST})
         # KG: we need to help JSONParser with relationships: extract {'id': X} pairs to X

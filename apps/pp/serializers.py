@@ -11,13 +11,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.fields import empty
 
 
-
 def data_wrapped(serializer_class):
     return type('%sData' % serializer_class.__name__, (serializers.Serializer,), {'data': serializer_class()})
-
-
-def new_serializer(name, **kwargs):
-    return type('Nested%s' % name, (serializers.Serializer,), kwargs)()
 
 
 def get_relationship_id(root_serializer, name):

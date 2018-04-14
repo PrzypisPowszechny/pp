@@ -20,25 +20,25 @@ class ReferenceFeedbackAPITest(TestCase):
     def test_post_useful(self):
         reference = Reference.objects.create(user=self.user)
 
-        response = self.client.post(self.useful_url.format(reference.id), content_type='application/vnd.api+json')
+        response = self.client.post(self.useful_url.format(reference.id), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         usefuls = UserReferenceFeedback.objects.filter(user=self.user, reference=reference, useful=True).count()
         self.assertEqual(usefuls, 1)
 
         # Can't post second time
-        response = self.client.post(self.useful_url.format(reference.id), content_type='application/vnd.api+json')
+        response = self.client.post(self.useful_url.format(reference.id), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     def test_delete_useful(self):
         reference = Reference.objects.create(user=self.user)
 
         # Can't delete when there are none
-        response = self.client.delete(self.useful_url.format(reference.id), content_type='application/vnd.api+json')
-        self.assertEqual(response.status_code, 400)
+        response = self.client.delete(self.useful_url.format(reference.id), content_type='application/json')
+        self.assertEqual(response.status_code, 404)
 
         UserReferenceFeedback.objects.create(user=self.user, reference=reference, useful=True)
 
-        response = self.client.delete(self.useful_url.format(reference.id), content_type='application/vnd.api+json')
+        response = self.client.delete(self.useful_url.format(reference.id), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         usefuls = UserReferenceFeedback.objects.filter(user=self.user, reference=reference, useful=True).count()
         self.assertEqual(usefuls, 0)
@@ -46,25 +46,25 @@ class ReferenceFeedbackAPITest(TestCase):
     def test_post_objection(self):
         reference = Reference.objects.create(user=self.user)
 
-        response = self.client.post(self.objection_url.format(reference.id), content_type='application/vnd.api+json')
+        response = self.client.post(self.objection_url.format(reference.id), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         objections = UserReferenceFeedback.objects.filter(user=self.user, reference=reference, objection=True).count()
         self.assertEqual(objections, 1)
 
         # Can't post second time
-        response = self.client.post(self.objection_url.format(reference.id), content_type='application/vnd.api+json')
+        response = self.client.post(self.objection_url.format(reference.id), content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     def test_delete_objection(self):
         reference = Reference.objects.create(user=self.user)
 
         # Can't delete when there are none
-        response = self.client.delete(self.objection_url.format(reference.id), content_type='application/vnd.api+json')
-        self.assertEqual(response.status_code, 400)
+        response = self.client.delete(self.objection_url.format(reference.id), content_type='application/json')
+        self.assertEqual(response.status_code, 404)
 
         UserReferenceFeedback.objects.create(user=self.user, reference=reference, objection=True)
 
-        response = self.client.delete(self.objection_url.format(reference.id), content_type='application/vnd.api+json')
+        response = self.client.delete(self.objection_url.format(reference.id), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         objections = UserReferenceFeedback.objects.filter(user=self.user, reference=reference, objection=True).count()
         self.assertEqual(objections, 0)
