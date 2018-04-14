@@ -21,7 +21,7 @@ class ReferenceAPITest(TestCase):
         urf = UserReferenceFeedback.objects.create(user=self.user, reference=reference, useful=True, objection=False)
         response = self.client.get(self.base_url.format(reference.id))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['content-type'], 'application/vnd.api+json')
+        self.assertEqual(response['content-type'], 'application/json')
 
     def test_get_returns_reference(self):
         reference = Reference.objects.create(user=self.user, priority='NORMAL', comment="good job",
@@ -80,7 +80,7 @@ class ReferenceAPITest(TestCase):
                                               reference_link="www.przypispowszechny.com", reference_link_title="very nice again")
         response = self.client.get(search_base_url.format('przypis powszechny'))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['content-type'], 'application/vnd.api+json')
+        self.assertEqual(response['content-type'], 'application/json')
 
     def test_search_return_list(self):
         search_base_url = "/api/references/search/&url={}"

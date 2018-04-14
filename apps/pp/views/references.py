@@ -16,13 +16,13 @@ from drf_yasg.utils import swagger_auto_schema
 
 from apps.pp.models import Reference, UserReferenceFeedback, ReferenceRequest
 from apps.pp.serializers import ReferencePATCHQuerySerializer, ReferenceListGETSerializer, \
-    data_wrapped, ReferenceQueryJerializer, ReferenceJerializer, get_relationship_id, set_relationship
+    data_wrapped, ReferenceQuerySerializer, ReferenceSerializer, get_relationship_id, set_relationship
 
 
 class ReferenceDetail(APIView):
     resource_name = 'references'
 
-    @swagger_auto_schema(responses={200: data_wrapped(ReferenceJerializer)})
+    @swagger_auto_schema(responses={200: data_wrapped(ReferenceSerializer)})
     @method_decorator(allow_lazy_user)
     @method_decorator(data_wrapped_view)
     def get(self, request, reference_id):
@@ -31,14 +31,14 @@ class ReferenceDetail(APIView):
         except Reference.DoesNotExist:
             return ErrorResponse('Resource not found')
 
-        attributes_serializer = ReferenceJerializer.Attributes(reference, context={'request': request})
+        attributes_serializer = ReferenceSerializer.Attributes(reference, context={'request': request})
         data = {'id': reference.id, 'type': self.resource_name, 'attributes': attributes_serializer.data}
         set_relationship(data, reference.reference_request_id, cls=ReferenceRequest)
         set_relationship(data, reference.user)
         return data
 
     @swagger_auto_schema(request_body=data_wrapped(ReferencePATCHQuerySerializer),
-                         responses={200: data_wrapped(ReferenceJerializer)})
+                         responses={200: data_wrapped(ReferenceSerializer)})
     @method_decorator(allow_lazy_user)
     @method_decorator(data_wrapped_view)
     def patch(self, request, reference_id):
@@ -61,7 +61,7 @@ class ReferenceDetail(APIView):
             setattr(reference, k, v)
         reference.save()
 
-        attributes_serializer = ReferenceJerializer.Attributes(reference, context={'request': request})
+        attributes_serializer = ReferenceSerializer.Attributes(reference, context={'request': request})
         data = {'id': reference.id, 'type': self.resource_name, 'attributes': attributes_serializer.data}
         set_relationship(data, reference.reference_request_id, cls=ReferenceRequest)
         set_relationship(data, reference.user)
@@ -88,13 +88,12 @@ class ReferenceDetail(APIView):
 class ReferencePOST(APIView):
     resource_name = 'references'
 
-    @swagger_auto_schema(request_body=data_wrapped(ReferenceQueryJerializer),
-                         responses={200: data_wrapped(ReferenceJerializer)})
+    @swagger_auto_schema(request_body=data_wrapped(ReferenceQuerySerializer),
+                         responses={200: data_wrapped(ReferenceSerializer)})
     @method_decorator(allow_lazy_user)
     @method_decorator(data_wrapped_view)
     def post(self, request):
-        # TODO(TG): Jerializer is not a serious name, just to be distinguishable from pure serializers during transition
-        query_serializer = ReferenceQueryJerializer(data=request.data)
+        query_serializer = ReferenceQuerySerializer(data=request.data)
         if not query_serializer.is_valid():
             return ValidationErrorResponse(query_serializer.errors)
         reference = Reference(**query_serializer.data['attributes'])
@@ -102,7 +101,7 @@ class ReferencePOST(APIView):
         reference.reference_request_id = get_relationship_id(query_serializer, 'reference_request')
         reference.save()
 
-        attributes_serializer = ReferenceJerializer.Attributes(reference, context={'request': request})
+        attributes_serializer = ReferenceSerializer.Attributes(reference, context={'request': request})
         data = {'id': reference.id, 'type': self.resource_name, 'attributes': attributes_serializer.data}
         # alternative for line below: cls=reference._meta.get_field('reference_request').related_model
         set_relationship(data, reference.reference_request_id, cls=ReferenceRequest)

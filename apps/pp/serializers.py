@@ -38,7 +38,7 @@ def set_relationship(root_data, obj_or_id, cls=None):
     root_data.setdefault('relationships', {})[inflection.underscore(cls.__name__)] = {'data':  data}
 
 
-class ReferenceQueryJerializer(serializers.Serializer):
+class ReferenceQuerySerializer(serializers.Serializer):
     class AttributesQuery(serializers.ModelSerializer):
         comment = serializers.CharField(required=False)
 
@@ -59,8 +59,8 @@ class ReferenceQueryJerializer(serializers.Serializer):
     relationships = RelationshipsQuery(required=False)
 
 
-class ReferenceJerializer(ReferenceQueryJerializer):
-    class Attributes(ReferenceQueryJerializer.AttributesQuery):
+class ReferenceSerializer(ReferenceQuerySerializer):
+    class Attributes(ReferenceQuerySerializer.AttributesQuery):
         useful_count = serializers.SerializerMethodField()
         objection_count = serializers.SerializerMethodField()
         useful = serializers.SerializerMethodField('is_useful')
@@ -68,9 +68,9 @@ class ReferenceJerializer(ReferenceQueryJerializer):
         does_belong_to_user = serializers.SerializerMethodField()
 
         class Meta:
-            model = ReferenceQueryJerializer.AttributesQuery.Meta.model
+            model = ReferenceQuerySerializer.AttributesQuery.Meta.model
 
-            fields = ReferenceQueryJerializer.AttributesQuery.Meta.fields + (
+            fields = ReferenceQuerySerializer.AttributesQuery.Meta.fields + (
                 'useful', 'useful_count', 'objection', 'objection_count', 'does_belong_to_user',
             )
 
@@ -98,7 +98,7 @@ class ReferenceJerializer(ReferenceQueryJerializer):
             assert self.user is not None
             return self.user.id == instance.user_id
 
-    class Relationships(ReferenceQueryJerializer.RelationshipsQuery):
+    class Relationships(ReferenceQuerySerializer.RelationshipsQuery):
         class User(serializers.Serializer):
             type = serializers.CharField(),
             id = serializers.IntegerField()
@@ -143,17 +143,6 @@ class ReferenceListGETSerializer(serializers.Serializer):
     type = serializers.CharField(required=True)
     attributes = Attributes()
     relationships = Relationships()
-
-
-class ReferenceQuerySerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Reference
-        fields = ('url', 'ranges', 'quote',
-                  'priority', 'comment', 'reference_link', 'reference_link_title',
-                  # relationships:
-                  'reference_request',
-                  )
 
 
 class ReferencePATCHQuerySerializer(serializers.Serializer):
