@@ -13,7 +13,7 @@ from rest_framework_json_api.parsers import JSONParser
 from drf_yasg.utils import swagger_auto_schema
 
 
-from apps.pp.models import Reference, UserReferenceFeedback
+from apps.pp.models import Reference, UserReferenceFeedback, ReferenceRequest
 from apps.pp.serializers import ReferencePATCHSerializer, ReferenceListGETSerializer, ReferenceSerializer, \
     wrap_data, ReferenceQueryJerializer, ReferenceJerializer, ReferenceAttributesJerializer, get_relationship_id, \
     set_relationship
@@ -91,20 +91,16 @@ class ReferencePOST(APIView):
         query_serializer = ReferenceQueryJerializer(data=data)
         if not query_serializer.is_valid():
             return ValidationErrorResponse(query_serializer.errors)
-
         reference = Reference(**query_serializer.data['attributes'])
         reference.user_id = request.user.pk
         reference.reference_request_id = get_relationship_id(query_serializer, 'reference_request')
         reference.save()
 
-        data = query_serializer.data
-        data['id'] = reference.id
-        set_relationship(data, reference.user)
-
-        # TODO(TG): come up with better way of setting read only fields
         attributes_serializer = ReferenceAttributesJerializer(reference, context={'request': request})
-        data['attributes'] = attributes_serializer.data
-
+        data = {'id': reference.id, 'attributes': attributes_serializer.data}
+        # alternative for line below: cls=reference._meta.get_field('reference_request').related_model
+        set_relationship(data, reference.reference_request_id, cls=ReferenceRequest)
+        set_relationship(data, reference.user)
         return Response({'data': data})
 
 

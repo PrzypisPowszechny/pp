@@ -1,6 +1,8 @@
+import inflection
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from rest_framework_json_api.relations import ResourceRelatedField
+from rest_framework_json_api.utils import format_keys
 
 from apps.pp.models import ReferenceReport
 from apps.pp.models import ReferenceRequest
@@ -91,11 +93,12 @@ def get_relationship_id(root_serializer, name):
     return root_serializer.data.get('relationships', {}).get(name, {}).get('data', {}).get('id')
 
 
-def set_relationship(root_data, related_obj, name=None):
-    cls = related_obj.__class__
-    root_data.setdefault('relationships', {})[name or cls.__name__.lower()] = {
+def set_relationship(root_data, obj_or_id, cls=None):
+    cls = cls if isinstance(obj_or_id, int) else obj_or_id.__class__
+    pk = obj_or_id if isinstance(obj_or_id, int) else obj_or_id.pk
+    root_data.setdefault('relationships', {})[inflection.underscore(cls.__name__)] = {
         'data': {
-            'type': cls.JSONAPIMeta.resource_name, 'id': related_obj.pk
+            'type': cls.JSONAPIMeta.resource_name, 'id': pk
         }
     }
 
