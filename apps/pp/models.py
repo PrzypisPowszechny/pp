@@ -13,6 +13,7 @@ class User(AbstractUser):
 
 
 class UserInput(models.Model):
+    # TODO(TG): user django global setting, not direct model reference
     user = models.ForeignKey('pp.User')
     create_date = models.DateTimeField(auto_now_add=True)
 

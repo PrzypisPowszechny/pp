@@ -87,6 +87,19 @@ class UserRelationSerializer(serializers.Serializer):
     )
 
 
+def get_relationship_id(root_serializer, name):
+    return root_serializer.data.get('relationships', {}).get(name, {}).get('data', {}).get('id')
+
+
+def set_relationship(root_data, related_obj, name=None):
+    cls = related_obj.__class__
+    root_data.setdefault('relationships', {})[name or cls.__name__.lower()] = {
+        'data': {
+            'type': cls.JSONAPIMeta.resource_name, 'id': related_obj.pk
+        }
+    }
+
+
 class ReferenceRelationshipsQueryJerializer(serializers.Serializer):
     reference_request = RequestReferenceRelationSerializer(required=False, allow_null=True)
 
@@ -96,13 +109,13 @@ class ReferenceRelationshipsJerializer(ReferenceRelationshipsQueryJerializer):
 
 
 class ReferenceQueryJerializer(serializers.Serializer):
-    id = serializers.IntegerField()
     type = serializers.CharField()
     attributes = ReferenceAttributesQueryJerializer()
     relationships = ReferenceRelationshipsQueryJerializer(required=False)
 
 
 class ReferenceJerializer(ReferenceQueryJerializer):
+    id = serializers.IntegerField()
     attributes = ReferenceAttributesJerializer()
     relationships = ReferenceRelationshipsJerializer()
 

@@ -15,7 +15,8 @@ from drf_yasg.utils import swagger_auto_schema
 
 from apps.pp.models import Reference, UserReferenceFeedback
 from apps.pp.serializers import ReferencePATCHSerializer, ReferenceListGETSerializer, ReferenceSerializer, \
-    ReferenceQuerySerializer, wrap_data, ReferenceQueryJerializer, ReferenceJerializer
+    wrap_data, ReferenceQueryJerializer, ReferenceJerializer, ReferenceAttributesJerializer, get_relationship_id, \
+    set_relationship
 from apps.pp.utils.views import get_data_fk_value
 
 
@@ -85,20 +86,26 @@ class ReferencePOST(APIView):
                          responses={200: wrap_data(ReferenceJerializer)})
     @method_decorator(allow_lazy_user)
     def post(self, request):
-        data = request.data
-        data = JSONParser().parse(request, parser_context={'request': request, 'view': ReferencePOST})
-        # # KG: we need to help JSONParser with relationships: extract {'id': X} pairs to X
-        # data['reference_request'] = get_data_fk_value(data, 'reference_request')
-        # Set the user as the authenticated user
-        data['user'] = request.user.pk
-        print(data)
+        data = request.data.get('data', {})
+        # TODO(TG): Jerializer is not a serious name, just to be distinguishable from pure serializers during transition
+        query_serializer = ReferenceQueryJerializer(data=data)
+        if not query_serializer.is_valid():
+            return ValidationErrorResponse(query_serializer.errors)
 
-        serializer = ReferenceSerializer(data=data, context={'request': request})
-        if not serializer.is_valid():
-            return ValidationErrorResponse(serializer.errors)
-        reference = serializer.save()
-        reference_json = ReferenceSerializer(reference, context={'request': request})
-        return Response(reference_json.data)
+        reference = Reference(**query_serializer.data['attributes'])
+        reference.user_id = request.user.pk
+        reference.reference_request_id = get_relationship_id(query_serializer, 'reference_request')
+        reference.save()
+
+        data = query_serializer.data
+        data['id'] = reference.id
+        set_relationship(data, reference.user)
+
+        # TODO(TG): come up with better way of setting read only fields
+        attributes_serializer = ReferenceAttributesJerializer(reference, context={'request': request})
+        data['attributes'] = attributes_serializer.data
+
+        return Response({'data': data})
 
 
 class ReferenceList(APIView):
