@@ -14,7 +14,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 
 from apps.pp.models import Reference, UserReferenceFeedback, ReferenceRequest
-from apps.pp.serializers import ReferencePATCHSerializer, ReferenceListGETSerializer, ReferenceSerializer, \
+from apps.pp.serializers import ReferencePATCHQuerySerializer, ReferenceListGETSerializer, ReferenceSerializer, \
     data_wrapped, ReferenceQueryJerializer, ReferenceJerializer, get_relationship_id, set_relationship
 
 
@@ -36,7 +36,10 @@ class ReferenceDetail(APIView):
         set_relationship(data, reference.user)
         return data
 
+    @swagger_auto_schema(request_body=data_wrapped(ReferencePATCHQuerySerializer),
+                         responses={200: data_wrapped(ReferenceJerializer)})
     @method_decorator(allow_lazy_user)
+    @method_decorator(data_wrapped_view)
     def patch(self, request, reference_id):
         try:
             reference = Reference.objects.select_related('reference_request').get(active=True, id=reference_id)
@@ -46,23 +49,22 @@ class ReferenceDetail(APIView):
         # Check permissions
         if reference.user_id != request.user.id:
             return PermissionDenied()
-        data = JSONParser().parse(request, parser_context={'request': request, 'view': ReferencePOST})
-        serializer = ReferencePATCHSerializer(reference, context={'request': request}, data=data, partial=True)
+        serializer = ReferencePATCHQuerySerializer(data=request.data, context={'request': request}, partial=True)
         if not serializer.is_valid():
             return ErrorResponse(serializer.errors)
 
-        if len(serializer.validated_data) == 0:
+        patched_data = serializer.validated_data.get('attributes', {})
+        if not patched_data:
             return ErrorResponse()
+        for k, v in patched_data.items():
+            setattr(reference, k, v)
+        reference.save()
 
-        serializer.save()
-
-        try:
-            updated_reference = Reference.objects.get(id=reference_id)
-        except Reference.DoesNotExist:
-            return ErrorResponse()
-
-        serializer2 = ReferenceSerializer(updated_reference, context={'request': request})
-        return Response(serializer2.data)
+        attributes_serializer = ReferenceJerializer.Attributes(reference, context={'request': request})
+        data = {'id': reference.id, 'type': self.resource_name, 'attributes': attributes_serializer.data}
+        set_relationship(data, reference.reference_request_id, cls=ReferenceRequest)
+        set_relationship(data, reference.user)
+        return data
 
     @method_decorator(allow_lazy_user)
     def delete(self, request, reference_id):

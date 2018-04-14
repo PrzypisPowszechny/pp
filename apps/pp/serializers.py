@@ -188,10 +188,15 @@ class ReferenceSerializer(ReferenceQuerySerializer):
         return self.user.id == instance.user_id
 
 
-class ReferencePATCHSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Reference
-        fields = ('priority', 'comment', 'reference_link', 'reference_link_title')
+class ReferencePATCHQuerySerializer(serializers.Serializer):
+    type = serializers.CharField(required=True)
+
+    class QueryAttributes(serializers.ModelSerializer):
+        class Meta:
+            model = Reference
+            fields = ('priority', 'comment', 'reference_link', 'reference_link_title')
+    attributes = QueryAttributes()
+
 
 
 class ReferenceReportSerializer(serializers.ModelSerializer):
