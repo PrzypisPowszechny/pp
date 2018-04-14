@@ -6,7 +6,7 @@ from rest_framework import status
 
 # We answer all unsuccessful requests with 400 status (bad request) that indicates the client's fault.
 from rest_framework.response import Response
-from rest_framework.status import HTTP_400_BAD_REQUEST
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND, HTTP_403_FORBIDDEN
 
 
 default_error_status = status.HTTP_400_BAD_REQUEST
@@ -53,8 +53,13 @@ class ErrorResponse(JsonApiResponse):
         super().__init__(content, *args, status=status, **kwargs)
 
 
+class NotFoundResponse(ErrorResponse):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, status=HTTP_404_NOT_FOUND, **kwargs)
+
+
 class PermissionDenied(JsonApiResponse):
-    def __init__(self, *args, status=default_error_status, **kwargs):
+    def __init__(self, *args, status=HTTP_403_FORBIDDEN, **kwargs):
         super().__init__(*args, title='Permission Denied', status=status, **kwargs)
 
 
@@ -65,11 +70,14 @@ def data_wrapped_view(func):
         for k, v in data.items():
             request.data[k] = v
         response = func(request, *args, **kwargs)
-        if isinstance(response, dict):
+        if isinstance(response, (None.__class__, dict)):
             return DataResponse(response)
-        if not isinstance(response, JsonApiResponse):
-            response.data = {'data': response.data}
-        return response
+        if isinstance(response, JsonApiResponse):
+            return response
+        if not hasattr(response, 'data') or not isinstance(response.data, dict):
+            raise ValueError('%s requires view to return dict, None or response with data attribute'
+                             % data_wrapped_view.__name__)
+        response.data = {'data': response.data}
     return wraps(func)(wrapped)
 
 

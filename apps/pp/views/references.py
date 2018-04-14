@@ -1,4 +1,5 @@
-from apps.pp.utils.views import PermissionDenied, ValidationErrorResponse, ErrorResponse, data_wrapped_view
+from apps.pp.utils.views import PermissionDenied, ValidationErrorResponse, ErrorResponse, data_wrapped_view, \
+    NotFoundResponse
 from django.db.models import Case
 from django.db.models import IntegerField
 from django.db.models import Sum
@@ -14,7 +15,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 
 from apps.pp.models import Reference, UserReferenceFeedback, ReferenceRequest
-from apps.pp.serializers import ReferencePATCHQuerySerializer, ReferenceListGETSerializer, ReferenceSerializer, \
+from apps.pp.serializers import ReferencePATCHQuerySerializer, ReferenceListGETSerializer, \
     data_wrapped, ReferenceQueryJerializer, ReferenceJerializer, get_relationship_id, set_relationship
 
 
@@ -67,20 +68,21 @@ class ReferenceDetail(APIView):
         return data
 
     @method_decorator(allow_lazy_user)
+    @method_decorator(data_wrapped_view)
     def delete(self, request, reference_id):
         try:
-            reference = Reference.objects.select_related('reference_request').get(active=True, id=reference_id)
+            reference = Reference.objects.select_related('reference_request').get(id=reference_id)
         except Reference.DoesNotExist:
-            return Response()
+            return NotFoundResponse()
 
         # Check permissions
         if reference.user_id != request.user.id:
             return PermissionDenied()
 
-        reference.active = False
-        reference.save()
-        serializer = ReferenceSerializer(reference, context={'request': request})
-        return Response(serializer.data)
+        if reference.active:
+            reference.active = False
+            reference.save()
+        return None
 
 
 class ReferencePOST(APIView):
