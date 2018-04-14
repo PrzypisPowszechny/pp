@@ -1,4 +1,4 @@
-from apps.pp.utils.views import PermissionDenied, ValidationErrorResponse, ErrorResponse
+from apps.pp.utils.views import PermissionDenied, ValidationErrorResponse, ErrorResponse, data_wrapped_view
 from django.db.models import Case
 from django.db.models import IntegerField
 from django.db.models import Sum
@@ -16,7 +16,6 @@ from drf_yasg.utils import swagger_auto_schema
 from apps.pp.models import Reference, UserReferenceFeedback, ReferenceRequest
 from apps.pp.serializers import ReferencePATCHSerializer, ReferenceListGETSerializer, ReferenceSerializer, \
     data_wrapped, ReferenceQueryJerializer, ReferenceJerializer, get_relationship_id, set_relationship
-from apps.pp.utils.views import get_data_fk_value
 
 
 class ReferenceDetail(APIView):
@@ -84,10 +83,10 @@ class ReferencePOST(APIView):
     @swagger_auto_schema(request_body=data_wrapped(ReferenceQueryJerializer),
                          responses={200: data_wrapped(ReferenceJerializer)})
     @method_decorator(allow_lazy_user)
+    @method_decorator(data_wrapped_view)
     def post(self, request):
-        data = request.data.get('data', {})
         # TODO(TG): Jerializer is not a serious name, just to be distinguishable from pure serializers during transition
-        query_serializer = ReferenceQueryJerializer(data=data)
+        query_serializer = ReferenceQueryJerializer(data=request.data)
         if not query_serializer.is_valid():
             return ValidationErrorResponse(query_serializer.errors)
         reference = Reference(**query_serializer.data['attributes'])
@@ -96,11 +95,11 @@ class ReferencePOST(APIView):
         reference.save()
 
         attributes_serializer = ReferenceJerializer.Attributes(reference, context={'request': request})
-        data = {'id': reference.id, 'attributes': attributes_serializer.data}
+        data = {'id': reference.id, 'type': self.resource_name, 'attributes': attributes_serializer.data}
         # alternative for line below: cls=reference._meta.get_field('reference_request').related_model
         set_relationship(data, reference.reference_request_id, cls=ReferenceRequest)
         set_relationship(data, reference.user)
-        return Response({'data': data})
+        return data
 
 
 class ReferenceList(APIView):

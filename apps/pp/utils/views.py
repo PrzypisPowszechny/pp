@@ -1,5 +1,6 @@
 import json
 
+from functools import wraps
 from django.http.response import HttpResponseBase, HttpResponse
 from rest_framework import status
 
@@ -7,12 +8,27 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST
 
+
 default_error_status = status.HTTP_400_BAD_REQUEST
 # We answer all user-caused requests with 400status
 # Policy based on http://blog.restcase.com/rest-api-error-codes-101/
 
 
-class ValidationErrorResponse(Response):
+class JsonApiResponse(Response):
+    pass
+
+
+class DataResponse(JsonApiResponse):
+    def __init__(self, *args, **kwargs):
+        if args:
+            data = args[0]
+            args = args[1:]
+        else:
+            data = kwargs.pop('data')
+        super().__init__({'data': data}, *args, **kwargs)
+
+
+class ValidationErrorResponse(JsonApiResponse):
     def __init__(self, errors, *args, **kwargs):
         content = [{
                         'source': {
@@ -25,7 +41,7 @@ class ValidationErrorResponse(Response):
 
 
 # Based on http://jsonapi.org/examples/#error-objects-basics
-class ErrorResponse(Response):
+class ErrorResponse(JsonApiResponse):
     def __init__(self, error=None, title=None, *args, status=default_error_status, **kwargs):
         # Error is a detailed error message
         # Title is less specific and represents a class of errors
@@ -37,9 +53,24 @@ class ErrorResponse(Response):
         super().__init__(content, *args, status=status, **kwargs)
 
 
-class PermissionDenied(ErrorResponse):
+class PermissionDenied(JsonApiResponse):
     def __init__(self, *args, status=default_error_status, **kwargs):
         super().__init__(*args, title='Permission Denied', status=status, **kwargs)
+
+
+def data_wrapped_view(func):
+    def wrapped(request, *args, **kwargs):
+        # reshape data without setting request.data itself witch is immutable
+        data = request.data.pop('data', {})
+        for k, v in data.items():
+            request.data[k] = v
+        response = func(request, *args, **kwargs)
+        if isinstance(response, dict):
+            return DataResponse(response)
+        if not isinstance(response, JsonApiResponse):
+            response.data = {'data': response.data}
+        return response
+    return wraps(func)(wrapped)
 
 
 def get_data_fk_value(object, fk):

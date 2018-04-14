@@ -180,40 +180,42 @@ class ReferenceAPITest(TestCase):
                         'reference_link_title': 'very nice too',
                     },
                     'relationships': {
-                        'reference_request': {'data': {'id': str(reference_request.id)}},
+                        'reference_request': {'data': {'type': 'reference_requests', 'id': str(reference_request.id)}},
                     }
                 }
             }),
-            content_type='application/vnd.api+json')
+            content_type='application/json')
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200, msg=response.data)
         reference = Reference.objects.get(user=self.user)
 
         useful_count = UserReferenceFeedback.objects.filter(reference=reference).filter(useful=True).count()
         objection_count = UserReferenceFeedback.objects.filter(reference=reference).filter(objection=True).count()
         self.assertEqual(reference.ranges, "Od tad do tad")
-        self.assertEqual(
-            json.loads(response.content.decode('utf8'))['data'],
+        self.assertDictEqual(
+            json.loads(response.content.decode('utf8')),
             {
-                'id': str(reference.id),
-                'type': 'references',
-                'attributes': {
-                    'url': reference.url,
-                    'ranges': reference.ranges,
-                    'quote': reference.quote,
-                    'priority': reference.priority,
-                    'comment': reference.comment,
-                    'reference_link': reference.reference_link,
-                    'reference_link_title': reference.reference_link_title,
-                    'useful': False,
-                    'useful_count': useful_count,
-                    'objection': False,
-                    'objection_count': objection_count,
-                    'does_belong_to_user': True,
-                },
-                'relationships': {
-                    'reference_request': {'data': {'type': 'reference_requests', 'id': str(reference_request.id)}},
-                    'user': {'data': {'type': 'users', 'id': str(self.user.id)}}
+                'data': {
+                    'id': reference.id,
+                    'type': 'references',
+                    'attributes': {
+                        'url': reference.url,
+                        'ranges': reference.ranges,
+                        'quote': reference.quote,
+                        'priority': reference.priority,
+                        'comment': reference.comment,
+                        'reference_link': reference.reference_link,
+                        'reference_link_title': reference.reference_link_title,
+                        'useful': False,
+                        'useful_count': useful_count,
+                        'objection': False,
+                        'objection_count': objection_count,
+                        'does_belong_to_user': True,
+                    },
+                    'relationships': {
+                        'reference_request': {'data': {'type': 'reference_requests', 'id': reference_request.id}},
+                        'user': {'data': {'type': 'users', 'id': self.user.id}}
+                    }
                 }
             }
         )

@@ -50,7 +50,7 @@ class ReferenceQueryJerializer(serializers.Serializer):
 
         reference_request = data_wrapped(ReferenceRequest)(required=False, allow_null=True)
 
-    type = serializers.CharField()
+    type = serializers.CharField(required=True)
     attributes = AttributesQuery()
     relationships = RelationshipsQuery(required=False)
 
@@ -65,45 +65,42 @@ class ReferenceJerializer(ReferenceQueryJerializer):
 
         class Meta:
             model = ReferenceQueryJerializer.AttributesQuery.Meta.model
+
             fields = ReferenceQueryJerializer.AttributesQuery.Meta.fields + (
-                'useful', 'useful_count', 'objection', 'objection_count',
-                'does_belong_to_user',
+                'useful', 'useful_count', 'objection', 'objection_count', 'does_belong_to_user',
             )
 
         def __init__(self, instance=None, data=empty, *args, **kwargs):
-            if not settings.DEBUG:
-                if 'context' not in kwargs:
-                    raise ValueError('No context provided for ReferenceSerializer')
-                self.user = self.request.user
-            else:
-                # Allow mocking data in development to enable introspection of serializer
-                self.user = User()
             super().__init__(instance, data, **kwargs)
+            self.user = self.context['request'].user if self.context.get('request') else None
 
         def get_useful_count(self, instance):
+            assert self.user is not None
             return UserReferenceFeedback.objects.filter(user=self.user, reference=instance, useful=True).count()
 
         def get_objection_count(self, instance):
+            assert self.user is not None
             return UserReferenceFeedback.objects.filter(user=self.user, reference=instance, objection=True).count()
 
         def is_useful(self, instance):
+            assert self.user is not None
             return UserReferenceFeedback.objects.filter(user=self.user, reference=instance, useful=True).exists()
 
         def is_objection(self, instance):
+            assert self.user is not None
             return UserReferenceFeedback.objects.filter(user=self.user, reference=instance, objection=True).exists()
 
         def get_does_belong_to_user(self, instance):
+            assert self.user is not None
             return self.user.id == instance.user_id
 
     class Relationships(ReferenceQueryJerializer.RelationshipsQuery):
-
         class User(serializers.Serializer):
             type = serializers.CharField(),
             id = serializers.IntegerField()
-
         user = data_wrapped(User)(required=True)
 
-    id = serializers.IntegerField()
+    id = serializers.IntegerField(required=True)
     attributes = Attributes()
     relationships = Relationships()
 
