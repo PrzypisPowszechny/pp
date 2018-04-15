@@ -17,7 +17,7 @@ class LazySignupReferenceAPITest(TestCase):
                                              reference_link="www.przypispowszechny.com", reference_link_title="very nice")
         response = self.client.get(self.GET_base_url.format(reference.id))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['content-type'], 'application/vnd.api+json')
+        self.assertEqual(response['content-type'], 'application/json')
 
     def test_client_can_post_reference(self):
         response = self.client.post(
@@ -36,7 +36,7 @@ class LazySignupReferenceAPITest(TestCase):
                     }
                 }
             }),
-            content_type='application/vnd.api+json')
+            content_type='application/json')
         self.assertEqual(response.status_code, 200)
 
     # Even if the user doesn't log, two references posted by the same client should have
@@ -62,7 +62,7 @@ class LazySignupReferenceAPITest(TestCase):
         response = self.client.post(
             self.POST_url,
             reference_json,
-            content_type='application/vnd.api+json'
+            content_type='application/json'
         )
         self.assertEqual(response.status_code, 200)
         reference_id = json.loads(response.content.decode('utf8'))['data']['id']
@@ -70,7 +70,7 @@ class LazySignupReferenceAPITest(TestCase):
         response = self.client.post(
             self.POST_url,
             reference_json,
-            content_type='application/vnd.api+json'
+            content_type='application/json'
         )
         self.assertEqual(response.status_code, 200)
         reference_id2 = json.loads(response.content.decode('utf8'))['data']['id']

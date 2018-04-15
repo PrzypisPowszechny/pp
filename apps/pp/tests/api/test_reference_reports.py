@@ -22,7 +22,7 @@ class ReferenceReportAPITest(TestCase):
         report_data = {
             'reason': 'SPAM',
             'comment': "komentarz",
-            'reference': str(reference.id)
+            'reference': reference.id
         }
 
         body = json.dumps({
@@ -35,7 +35,7 @@ class ReferenceReportAPITest(TestCase):
                 }
             })
 
-        response = self.client.post(self.post_url.format(reference.id), body, content_type='application/vnd.api+json')
+        response = self.client.post(self.post_url.format(reference.id), body, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         response_data = json.loads(response.content.decode('utf8'))
 
@@ -43,15 +43,15 @@ class ReferenceReportAPITest(TestCase):
         report = ReferenceReport.objects.first()
         correct_response = {
             'data': {
-                'id': str(report.id),
+                'id': report.id,
                 'type': 'reference_reports',
                 'attributes': {
                     'reason': report_data['reason'],
                     'comment': report_data['comment'],
                 },
                 'relationships': {
-                    'reference': {'data': {'id': str(reference.id), 'type': 'references'}},
-                    'user': {'data': {'id': str(self.user.id), 'type': 'users'}},
+                    'reference': {'data': {'id': reference.id, 'type': 'references'}},
+                    'user': {'data': {'id': self.user.id, 'type': 'users'}},
                 }
             }
         }

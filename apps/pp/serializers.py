@@ -34,7 +34,7 @@ def set_relationship(root_data, obj_or_id, cls=None):
 
 
 class ReferenceQuerySerializer(serializers.Serializer):
-    class AttributesQuery(serializers.ModelSerializer):
+    class QueryAttributes(serializers.ModelSerializer):
         comment = serializers.CharField(required=False)
 
         class Meta:
@@ -50,12 +50,12 @@ class ReferenceQuerySerializer(serializers.Serializer):
         reference_request = data_wrapped(ReferenceRequest)(required=False, allow_null=True)
 
     type = serializers.CharField(required=True)
-    attributes = AttributesQuery()
+    attributes = QueryAttributes()
     relationships = RelationshipsQuery(required=False)
 
 
 class ReferenceSerializer(ReferenceQuerySerializer):
-    class Attributes(ReferenceQuerySerializer.AttributesQuery):
+    class Attributes(ReferenceQuerySerializer.QueryAttributes):
         useful_count = serializers.SerializerMethodField()
         objection_count = serializers.SerializerMethodField()
         useful = serializers.SerializerMethodField('is_useful')
@@ -63,9 +63,9 @@ class ReferenceSerializer(ReferenceQuerySerializer):
         does_belong_to_user = serializers.SerializerMethodField()
 
         class Meta:
-            model = ReferenceQuerySerializer.AttributesQuery.Meta.model
+            model = ReferenceQuerySerializer.QueryAttributes.Meta.model
 
-            fields = ReferenceQuerySerializer.AttributesQuery.Meta.fields + (
+            fields = ReferenceQuerySerializer.QueryAttributes.Meta.fields + (
                 'useful', 'useful_count', 'objection', 'objection_count', 'does_belong_to_user',
             )
 
@@ -141,20 +141,41 @@ class ReferenceListGETSerializer(serializers.Serializer):
 
 
 class ReferencePATCHQuerySerializer(serializers.Serializer):
-    class QueryAttributes(serializers.ModelSerializer):
+    class PATCHQueryAttributes(serializers.ModelSerializer):
         class Meta:
             model = Reference
             fields = ('priority', 'comment', 'reference_link', 'reference_link_title')
 
     type = serializers.CharField(required=True)
-    attributes = QueryAttributes()
+    attributes = PATCHQueryAttributes()
 
 
+class ReferenceReportQuerySerializer(serializers.Serializer):
+    class ReferenceReportQueryAttributes(serializers.ModelSerializer):
+        class Meta:
+            model = ReferenceReport
+            fields = ('reason', 'comment')
 
-class ReferenceReportSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ReferenceReport
-        fields = ('reason', 'comment',
-              # relationships:
-              'user', 'reference'
-              )
+    type = serializers.CharField(required=True)
+    attributes = ReferenceReportQueryAttributes()
+
+
+class ReferenceReportSerializer(ReferenceReportQuerySerializer):
+    class ReferenceReportAttributes(ReferenceReportQuerySerializer.ReferenceReportQueryAttributes):
+        pass
+
+    class ReferenceReportRelationships(serializers.Serializer):
+        class User(serializers.Serializer):
+            type = serializers.CharField()
+            id = serializers.IntegerField()
+
+        class Reference(serializers.Serializer):
+            type = serializers.CharField()
+            id = serializers.IntegerField()
+
+        user = data_wrapped(User)(required=True, allow_null=True)
+        reference = data_wrapped(Reference)(required=True, allow_null=True)
+
+    id = serializers.IntegerField(required=True)
+    relationships = ReferenceReportRelationships()
+    attributes = ReferenceReportAttributes()
