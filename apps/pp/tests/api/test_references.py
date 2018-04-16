@@ -1,5 +1,6 @@
 import json
-from datetime import datetime, timedelta
+from datetime import timedelta
+from django.utils import timezone
 from django.test import TestCase
 from apps.pp.models import Reference, UserReferenceFeedback
 from apps.pp.tests.utils import create_test_user
@@ -36,7 +37,7 @@ class ReferenceAPITest(TestCase):
             json.loads(response.content.decode('utf8')),
             {
                 'data': {
-                    'id': reference.id,
+                    'id': str(reference.id),
                     'type': 'references',
                     'attributes': {
                         'url': reference.url,
@@ -54,7 +55,7 @@ class ReferenceAPITest(TestCase):
                     },
                     'relationships': {
                         'reference_request': {'data': None},
-                        'user': {'data': {'type': 'users', 'id': self.user.id}}
+                        'user': {'data': {'type': 'users', 'id': str(self.user.id)}}
                     }
                  }
             }
@@ -88,8 +89,8 @@ class ReferenceAPITest(TestCase):
         reference = Reference.objects.create(user=self.user, priority='NORMAL', comment="more good job",
                                              url='www.przypis.pl', reference_link="www.przypispowszechny.com",
                                              reference_link_title="very nice again",
-                                             create_date=datetime.now() + timedelta(seconds=-1000))
-        reference.create_date = datetime.now() + timedelta(seconds=1000)
+                                             create_date=timezone.now() + timedelta(seconds=-1000))
+        reference.create_date = timezone.now() + timedelta(seconds=1000)
         reference.save()
         reference = Reference.objects.get(id=reference.id)
 
@@ -97,7 +98,7 @@ class ReferenceAPITest(TestCase):
         reference2 = Reference.objects.create(user=self.user, priority='NORMAL', comment="good job",
                                               url='www.przypis.pl',
                                               reference_link="www.przypispowszechny2.com", reference_link_title="very nice",
-                                              create_date=datetime.now())
+                                              create_date=timezone.now())
         reference2.save()
 
         urf = UserReferenceFeedback.objects.create(user=self.user, reference=reference, useful=True, objection=False)
@@ -111,10 +112,10 @@ class ReferenceAPITest(TestCase):
 
         raw_response = self.client.get(search_base_url.format(reference.url))
         response = json.loads(raw_response.content.decode('utf8'))['data']
-        response_reference = next(row for row in response if row['id'] == reference.id)
-        response_reference2 = next(row for row in response if row['id'] == reference2.id)
+        response_reference = next(row for row in response if str(row['id']) == str(reference.id))
+        response_reference2 = next(row for row in response if str(row['id']) == str(reference2.id))
         self.assertEqual(response_reference,
-                         {'id': reference.id,
+                         {'id': str(reference.id),
                           'type': 'references',
                           'attributes': {
                               'url': reference.url,
@@ -132,12 +133,12 @@ class ReferenceAPITest(TestCase):
                           },
                           'relationships': {
                               'reference_request': {'data': None},
-                              'user': {'data': {'type': 'users', 'id': self.user.id}}
+                              'user': {'data': {'type': 'users', 'id': str(self.user.id)}}
                           }
                           })
 
         self.assertEqual(response_reference2,
-                         {'id': reference2.id,
+                         {'id': str(reference2.id),
                           'type': 'references',
                           'attributes': {
                               'url': reference2.url,
@@ -155,7 +156,7 @@ class ReferenceAPITest(TestCase):
                           },
                           'relationships': {
                               'reference_request': {'data': None},
-                              'user': {'data': {'type': 'users', 'id': self.user.id}}
+                              'user': {'data': {'type': 'users', 'id': str(self.user.id)}}
                           }
                           })
 
@@ -199,7 +200,7 @@ class ReferenceAPITest(TestCase):
             json.loads(response.content.decode('utf8')),
             {
                 'data': {
-                    'id': reference.id,
+                    'id': str(reference.id),
                     'type': 'references',
                     'attributes': {
                         'url': reference.url,
@@ -216,8 +217,8 @@ class ReferenceAPITest(TestCase):
                         'does_belong_to_user': True,
                     },
                     'relationships': {
-                        'reference_request': {'data': {'type': 'reference_requests', 'id': reference_request.id}},
-                        'user': {'data': {'type': 'users', 'id': self.user.id}}
+                        'reference_request': {'data': {'type': 'reference_requests', 'id': str(reference_request.id)}},
+                        'user': {'data': {'type': 'users', 'id': str(self.user.id)}}
                     }
                 }
             }
@@ -251,7 +252,7 @@ class ReferenceAPITest(TestCase):
         self.assertEqual(
             json.loads(response.content.decode('utf8'))['data'],
 
-            {'id': reference.id,
+            {'id': str(reference.id),
              'type': 'references',
              'attributes': {
                  'url': reference.url,
@@ -269,7 +270,7 @@ class ReferenceAPITest(TestCase):
              },
              'relationships': {
                  'reference_request': {'data': None},
-                 'user': {'data': {'type': 'users', 'id': self.user.id}}
+                 'user': {'data': {'type': 'users', 'id': str(self.user.id)}}
              }
              }
 

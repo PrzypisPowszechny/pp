@@ -43,15 +43,15 @@ class ReferenceReportAPITest(TestCase):
         report = ReferenceReport.objects.first()
         correct_response = {
             'data': {
-                'id': report.id,
+                'id': str(report.id),
                 'type': 'reference_reports',
                 'attributes': {
                     'reason': report_data['reason'],
                     'comment': report_data['comment'],
                 },
                 'relationships': {
-                    'reference': {'data': {'id': reference.id, 'type': 'references'}},
-                    'user': {'data': {'id': self.user.id, 'type': 'users'}},
+                    'reference': {'data': {'id': str(reference.id), 'type': 'references'}},
+                    'user': {'data': {'id': str(self.user.id), 'type': 'users'}},
                 }
             }
         }

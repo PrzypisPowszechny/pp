@@ -114,7 +114,8 @@ def data_wrapped_view(func):
             return response
         if isinstance(response, (None.__class__, dict, list, tuple)):
             return DataResponse(response)
-        if not hasattr(response, 'data') or not isinstance(response.data, (dict, None.__class__)):
+        if not isinstance(response, Response) or not hasattr(response, 'data') \
+                or not isinstance(response.data, (dict, None.__class__)):
             raise ValueError('%s requires view to return dict, list, tuple, None or response with data attribute, '
                              'got: %s' % (data_wrapped_view.__name__, response.__class__.__name__))
         response.data = {'data': response.data}

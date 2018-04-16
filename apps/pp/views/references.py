@@ -31,11 +31,10 @@ class ReferenceDetail(APIView):
         except Reference.DoesNotExist:
             return ErrorResponse('Resource not found')
 
-        attributes_serializer = ReferenceSerializer.Attributes(reference, context={'request': request})
-        data = {'id': reference.id, 'type': self.resource_name, 'attributes': attributes_serializer.data}
+        data = {'id': reference.id, 'type': self.resource_name, 'attributes': reference}
         set_relationship(data, reference.reference_request_id, cls=ReferenceRequest)
         set_relationship(data, reference.user)
-        return data
+        return ReferenceSerializer(data, context={'request': request}).data
 
     @swagger_auto_schema(request_body=data_wrapped(ReferencePATCHQuerySerializer),
                          responses={200: data_wrapped(ReferenceSerializer)})
@@ -50,22 +49,21 @@ class ReferenceDetail(APIView):
         # Check permissions
         if reference.user_id != request.user.id:
             return PermissionDenied()
-        serializer = ReferencePATCHQuerySerializer(data=request.data, context={'request': request}, partial=True)
-        if not serializer.is_valid():
-            return ErrorResponse(serializer.errors)
+        deserializer = ReferencePATCHQuerySerializer(data=request.data, context={'request': request}, partial=True)
+        if not deserializer.is_valid():
+            return ErrorResponse(deserializer.errors)
 
-        patched_data = serializer.validated_data.get('attributes', {})
+        patched_data = deserializer.validated_data.get('attributes', {})
         if not patched_data:
             return ErrorResponse()
         for k, v in patched_data.items():
             setattr(reference, k, v)
         reference.save()
 
-        attributes_serializer = ReferenceSerializer.Attributes(reference, context={'request': request})
-        data = {'id': reference.id, 'type': self.resource_name, 'attributes': attributes_serializer.data}
+        data = {'id': reference.id, 'type': self.resource_name, 'attributes': reference}
         set_relationship(data, reference.reference_request_id, cls=ReferenceRequest)
         set_relationship(data, reference.user)
-        return data
+        return ReferenceSerializer(data, context={'request': request}).data
 
     @method_decorator(allow_lazy_user)
     @method_decorator(data_wrapped_view)
@@ -96,17 +94,15 @@ class ReferencePOST(APIView):
         query_serializer = ReferenceQuerySerializer(data=request.data)
         if not query_serializer.is_valid():
             return ValidationErrorResponse(query_serializer.errors)
-        reference = Reference(**query_serializer.data['attributes'])
+        reference = Reference(**query_serializer.validated_data['attributes'])
         reference.user_id = request.user.pk
         reference.reference_request_id = get_relationship_id(query_serializer, 'reference_request')
         reference.save()
 
-        attributes_serializer = ReferenceSerializer.Attributes(reference, context={'request': request})
-        data = {'id': reference.id, 'type': self.resource_name, 'attributes': attributes_serializer.data}
-        # alternative for line below: cls=reference._meta.get_field('reference_request').related_model
+        data = {'id': reference.id, 'type': self.resource_name, 'attributes': reference}
         set_relationship(data, reference.reference_request_id, cls=ReferenceRequest)
         set_relationship(data, reference.user)
-        return data
+        return ReferenceSerializer(data, context={'request': request}).data
 
 
 class ReferenceList(APIView):
@@ -139,6 +135,7 @@ class ReferenceList(APIView):
         )
         return queryset
 
+    @swagger_auto_schema(responses={200: data_wrapped(ReferenceListGETSerializer(many=True))})
     @method_decorator(allow_lazy_user)
     @method_decorator(data_wrapped_view)
     def get(self, request, *args, **kwargs):
@@ -169,4 +166,4 @@ class ReferenceList(APIView):
             set_relationship(data, reference.user_id, cls=reference._meta.get_field('user_id').related_model)
             set_relationship(data, reference.reference_request_id, cls=ReferenceRequest)
             data_list.append(data)
-        return data_list
+        return ReferenceListGETSerializer(data_list, many=True).data

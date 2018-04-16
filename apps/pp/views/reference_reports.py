@@ -27,13 +27,12 @@ class ReferenceReportPOST(APIView):
         serializer = ReferenceReportQuerySerializer(data=request.data, context={'request': request})
         if not serializer.is_valid():
             return ValidationErrorResponse(serializer.errors)
-        report = ReferenceReport(**serializer.data['attributes'])
+        report = ReferenceReport(**serializer.validated_data['attributes'])
         report.user_id = request.user.pk
         report.reference_id = reference.pk
         report.save()
 
-        attrs_serializer = ReferenceReportSerializer.ReferenceReportAttributes(report, context={'request': request})
-        data = {'id': report.id, 'type': self.resource_name, 'attributes': attrs_serializer.data}
+        data = {'id': report.id, 'type': self.resource_name, 'attributes': report}
         set_relationship(data, report.reference_id, cls=Reference)
         set_relationship(data, reference.user_id, cls=User)
-        return data
+        return ReferenceReportSerializer(data, context={'request': request}).data
