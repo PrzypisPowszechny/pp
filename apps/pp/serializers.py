@@ -69,8 +69,8 @@ class ResourceSerializer(ResourceIdSerializer, ResourceTypeSerializer):
     pass
 
 
-class ReferenceQuerySerializer(ResourceTypeSerializer):
-    class QueryAttributes(serializers.ModelSerializer):
+class ReferenceDeserializer(ResourceTypeSerializer):
+    class Attributes(serializers.ModelSerializer):
         comment = serializers.CharField(required=False)
 
         class Meta:
@@ -78,19 +78,19 @@ class ReferenceQuerySerializer(ResourceTypeSerializer):
             fields = ('url', 'ranges', 'quote',
                       'priority', 'comment', 'reference_link', 'reference_link_title')
 
-    class RelationshipsQuery(serializers.Serializer):
+    class Relationships(serializers.Serializer):
         class ReferenceRequest(ResourceSerializer):
             pass
 
         reference_request = data_wrapped(ReferenceRequest)(required=False, allow_null=True)
 
-    attributes = QueryAttributes()
-    relationships = RelationshipsQuery(required=False)
+    attributes = Attributes()
+    relationships = Relationships(required=False)
 
 
-class ReferenceSerializer(ResourceSerializer, ReferenceQuerySerializer):
+class ReferenceSerializer(ResourceSerializer, ReferenceDeserializer):
 
-    class Attributes(ReferenceQuerySerializer.QueryAttributes):
+    class Attributes(ReferenceDeserializer.Attributes):
         useful_count = serializers.SerializerMethodField()
         objection_count = serializers.SerializerMethodField()
         useful = serializers.SerializerMethodField('is_useful')
@@ -98,9 +98,9 @@ class ReferenceSerializer(ResourceSerializer, ReferenceQuerySerializer):
         does_belong_to_user = serializers.SerializerMethodField()
 
         class Meta:
-            model = ReferenceQuerySerializer.QueryAttributes.Meta.model
+            model = ReferenceDeserializer.Attributes.Meta.model
 
-            fields = ReferenceQuerySerializer.QueryAttributes.Meta.fields + (
+            fields = ReferenceDeserializer.Attributes.Meta.fields + (
                 'useful', 'useful_count', 'objection', 'objection_count', 'does_belong_to_user',
             )
 
@@ -132,7 +132,7 @@ class ReferenceSerializer(ResourceSerializer, ReferenceQuerySerializer):
             assert self.request_user is not None
             return self.request_user.id == instance.user_id
 
-    class Relationships(ReferenceQuerySerializer.RelationshipsQuery):
+    class Relationships(ReferenceDeserializer.Relationships):
         class User(ResourceSerializer):
             pass
 
@@ -142,7 +142,7 @@ class ReferenceSerializer(ResourceSerializer, ReferenceQuerySerializer):
     relationships = Relationships()
 
 
-class ReferenceListGETSerializer(ResourceSerializer):
+class ReferenceListSerializer(ResourceSerializer):
     class Attributes(serializers.ModelSerializer):
         useful_count = serializers.IntegerField(default=0)
         objection_count = serializers.IntegerField(default=0)
@@ -174,29 +174,26 @@ class ReferenceListGETSerializer(ResourceSerializer):
     relationships = Relationships()
 
 
-class ReferencePATCHQuerySerializer(ResourceSerializer):
-    class PATCHQueryAttributes(serializers.ModelSerializer):
+class ReferencePatchDeserializer(ResourceSerializer):
+    class Attributes(serializers.ModelSerializer):
         class Meta:
             model = Reference
             fields = ('priority', 'comment', 'reference_link', 'reference_link_title')
 
-    attributes = PATCHQueryAttributes()
+    attributes = Attributes()
 
 
-class ReferenceReportQuerySerializer(ResourceTypeSerializer):
-    class ReferenceReportQueryAttributes(serializers.ModelSerializer):
+class ReferenceReportDeserializer(ResourceTypeSerializer):
+    class Attributes(serializers.ModelSerializer):
         class Meta:
             model = ReferenceReport
             fields = ('reason', 'comment')
 
-    attributes = ReferenceReportQueryAttributes()
+    attributes = Attributes()
 
 
-class ReferenceReportSerializer(ResourceSerializer, ReferenceReportQuerySerializer):
-    class ReferenceReportAttributes(ReferenceReportQuerySerializer.ReferenceReportQueryAttributes):
-        pass
-
-    class ReferenceReportRelationships(serializers.Serializer):
+class ReferenceReportSerializer(ResourceSerializer, ReferenceReportDeserializer):
+    class Relationships(serializers.Serializer):
         class User(ResourceSerializer):
             pass
 
@@ -206,5 +203,7 @@ class ReferenceReportSerializer(ResourceSerializer, ReferenceReportQuerySerializ
         user = data_wrapped(User)(required=True, allow_null=True)
         reference = data_wrapped(Reference)(required=True, allow_null=True)
 
-    relationships = ReferenceReportRelationships()
-    attributes = ReferenceReportAttributes()
+    relationships = Relationships()
+
+
+

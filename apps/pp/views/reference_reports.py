@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework_json_api.parsers import JSONParser
 
 from apps.pp.models import Reference, ReferenceReport, User
-from apps.pp.serializers import ReferenceReportSerializer, ReferenceReportQuerySerializer, set_relationship, \
+from apps.pp.serializers import ReferenceReportSerializer, ReferenceReportDeserializer, set_relationship, \
     data_wrapped
 from apps.pp.utils.views import ValidationErrorResponse, data_wrapped_view, NotFoundResponse
 
@@ -14,7 +14,7 @@ from apps.pp.utils.views import ValidationErrorResponse, data_wrapped_view, NotF
 class ReferenceReportPOST(APIView):
     resource_name = 'reference_reports'
 
-    @swagger_auto_schema(request_body=data_wrapped(ReferenceReportQuerySerializer),
+    @swagger_auto_schema(request_body=data_wrapped(ReferenceReportDeserializer),
                          responses={200: data_wrapped(ReferenceReportSerializer)})
     @method_decorator(allow_lazy_user)
     @method_decorator(data_wrapped_view)
@@ -24,7 +24,7 @@ class ReferenceReportPOST(APIView):
         except Reference.DoesNotExist:
             return NotFoundResponse()
 
-        serializer = ReferenceReportQuerySerializer(data=request.data, context={'request': request})
+        serializer = ReferenceReportDeserializer(data=request.data, context={'request': request})
         if not serializer.is_valid():
             return ValidationErrorResponse(serializer.errors)
         report = ReferenceReport(**serializer.validated_data['attributes'])
