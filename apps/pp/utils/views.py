@@ -1,19 +1,17 @@
-import json
-
 from functools import wraps
-from django.http.response import HttpResponseBase, HttpResponse
-
-# We answer all unsuccessful requests with 400 status (bad request) that indicates the client's fault.
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND, HTTP_403_FORBIDDEN
 from simplejson import OrderedDict
 
-default_error_status = HTTP_400_BAD_REQUEST
 # We answer all user-caused requests with 400status
 # Policy based on http://blog.restcase.com/rest-api-error-codes-101/
+default_error_status = HTTP_400_BAD_REQUEST
 
 
 class JsonApiResponse(Response):
+    """
+    Inherit from that class when creating new JSON API compliant `Response` type
+    """
     pass
 
 
@@ -29,39 +27,80 @@ class DataResponse(JsonApiResponse):
 
 # Based on http://jsonapi.org/examples/#error-objects-basics
 class ErrorResponse(JsonApiResponse):
-    def __init__(self, error=None, title=None, *args, status=default_error_status, **kwargs):
-        errors_content = kwargs.get('data', [])
+    def __init__(self, error_details=None, error_title=None,
+                 *args, status=default_error_status, **kwargs):
+        """
+        :param error_details: detailed error message
+        :param error_title: less specific and represents a class of errors
+        """
+        errors_content = kwargs.pop('data', [])
         if not isinstance(errors_content, (list, tuple)):
             raise ValueError('%s expects data to be None or list of errors' % ErrorResponse.__name__)
-        # Error is a detailed error message
-        # Title is less specific and represents a class of errors
-        error_content = [OrderedDict()]
-        # Set title first as it is in that order when printing
-        if title:
-            error_content[0]['title'] = title
-        error_content[0]['details'] = error or 'No details provided'
-        super().__init__({'errors': tuple(errors_content) + tuple(error_content)}, *args, status=status, **kwargs)
+        if error_title or error_details:
+            error_content = OrderedDict()
+            # Set title first to appear on the top when printing
+            if error_title:
+                error_content['title'] = error_title
+            error_content['details'] = error_details or 'No details provided'
+            errors_content = tuple(errors_content) + (error_content,)
+        super().__init__({'errors': errors_content}, *args, status=status, **kwargs)
 
 
 class ValidationErrorResponse(ErrorResponse):
     def __init__(self, errors, *args, status=HTTP_400_BAD_REQUEST, **kwargs):
-        errors_content = [{
-            'source': {
-                'field': field
+        """
+        Flatten errors and format to source-reason dicts.
+
+        From structure below:
+            {'attributes': {
+                'url': ["This field is required"]
             },
-            'details': reason
-        } for field, reason in errors.items()]
-        super().__init__(errors_content, *args, status=status, **kwargs)
+             'relationships': {
+                'user': {
+                    'data': {
+                        'id': ["A valid integer is required.",
+                               "This field is required",]
+                    }
+                }
+            }}
+        to such structure like that:
+            [{'source': {
+                'pointer': 'attributes/url'
+            },
+                'reason': ["This field is required"]
+            }, {
+                'source': {
+                    'pointer': 'relationships/user/data/id'
+                },
+                'reason': ["A valid integer is required.",
+                           "This field is required"]
+            }]
+        """
+        nested_errors = [(('', field), reason) for field, reason in errors.items()]
+        errors_content = []
+        while nested_errors:
+            field_path, reason = nested_errors.pop(0)
+            if isinstance(reason, dict):
+                for subfield, subreason in reason.items():
+                    nested_errors.append((field_path + (subfield,), subreason))
+            else:
+                errors_content.append({
+                    'source': {
+                        'pointer': '/'.join(field_path)
+                    },
+                    'details': reason
+                })
+        super().__init__(*args, data=errors_content, status=status, **kwargs)
 
 
 class NotFoundResponse(ErrorResponse):
     def __init__(self, *args, status=HTTP_404_NOT_FOUND, **kwargs):
-        super().__init__(*args, title='Resource not found', status=status, **kwargs)
+        super().__init__(*args, error_title='Resource not found', status=status, **kwargs)
 
 
 class PermissionDenied(ErrorResponse):
     def __init__(self, *args, status=HTTP_403_FORBIDDEN, **kwargs):
-        super().__init__(*args, title='Permission Denied', status=status, **kwargs)
+        super().__init__(*args, error_title='Permission Denied', status=status, **kwargs)
 
 
 def data_wrapped_view(func):
@@ -81,35 +120,3 @@ def data_wrapped_view(func):
         response.data = {'data': response.data}
         return response
     return wraps(func)(wrapped)
-
-
-def get_data_fk_value(object, fk):
-    """
-    A helper function that compensates a JSON-API django module quirk.
-    It extract foreign key fields from request body for POST & PATCH mathods
-    ...
-
-    The relationship body is
-    "relationships": {
-        "related_object": {
-            "id": "2"
-        }
-    }
-    JSON-API parser parses the request body so that we receive
-    ...
-    "related_object": {
-        "id": "2"
-    }
-
-    Before we can safely pass request body to a django_rest.serializer we need to correct it with:
-    data["related_object"] = get_data_fk_value(data, "related_object")
-
-    :param object: the data part of a JSON-API data object
-    :param fk: The relationship attribute
-    :return: this relationship's id value
-    """
-    relationship_field = object.get(fk, {})
-    if isinstance(relationship_field, dict):
-        return relationship_field.get('id')
-    else:
-        return None
