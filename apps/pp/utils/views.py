@@ -1,4 +1,7 @@
 from functools import wraps
+
+from rest_framework.parsers import JSONParser
+from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND, HTTP_403_FORBIDDEN
 from simplejson import OrderedDict
@@ -121,3 +124,13 @@ def data_wrapped_view(func):
         response.data = {'data': response.data}
         return response
     return wraps(func)(wrapped)
+
+
+class JSONRenderer(JSONRenderer):
+    media_type = 'application/vnd.api+json'
+    format = 'vnd.api+json'
+
+
+class JSONParser(JSONParser):
+    media_type = 'application/vnd.api+json'
+    renderer_class = JSONRenderer

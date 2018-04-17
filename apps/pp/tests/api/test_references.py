@@ -22,7 +22,7 @@ class ReferenceAPITest(TestCase):
         urf = UserReferenceFeedback.objects.create(user=self.user, reference=reference, useful=True, objection=False)
         response = self.client.get(self.base_url.format(reference.id))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['content-type'], 'application/json')
+        self.assertEqual(response['content-type'], 'application/vnd.api+json')
 
     def test_get_returns_reference(self):
         reference = Reference.objects.create(user=self.user, priority='NORMAL', comment="good job",
@@ -65,7 +65,7 @@ class ReferenceAPITest(TestCase):
         search_base_url = "/api/references/search/&url={}"
         response = self.client.get(search_base_url.format('przypis powszechny'))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['content-type'], 'application/json')
+        self.assertEqual(response['content-type'], 'application/vnd.api+json')
 
         test_answer = []
         self.assertEqual(
@@ -81,7 +81,7 @@ class ReferenceAPITest(TestCase):
                                               reference_link="www.przypispowszechny.com", reference_link_title="very nice again")
         response = self.client.get(search_base_url.format('przypis powszechny'))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['content-type'], 'application/json')
+        self.assertEqual(response['content-type'], 'application/vnd.api+json')
 
     def test_search_return_list(self):
         search_base_url = "/api/references/search/&url={}"
@@ -188,7 +188,7 @@ class ReferenceAPITest(TestCase):
                     }
                 }
             }),
-            content_type='application/json')
+            content_type='application/vnd.api+json')
 
         self.assertEqual(response.status_code, 200, msg=response.data)
         reference = Reference.objects.get(user=self.user)
@@ -241,7 +241,7 @@ class ReferenceAPITest(TestCase):
             }
         })
         response = self.client.patch(self.base_url.format(reference.id), put_data,
-                                     content_type='application/json')
+                                     content_type='application/vnd.api+json')
         reference = Reference.objects.get(id=reference.id)
 
         useful_count = UserReferenceFeedback.objects.filter(reference=reference).filter(useful=True).count()
@@ -295,7 +295,7 @@ class ReferenceAPITest(TestCase):
         }
         )
         response = self.client.patch(self.base_url.format(reference.id), put_data,
-                                     content_type='application/json')
+                                     content_type='application/vnd.api+json')
         reference = Reference.objects.get(id=reference.id)
         self.assertEqual(response.status_code, 400)
         self.assertNotEqual(reference.comment, put_string)
@@ -311,18 +311,18 @@ class ReferenceAPITest(TestCase):
         good_id = reference.id
         non_existing_id = good_id + 100000000
 
-        response = self.client.delete(self.base_url.format(good_id), content_type='application/json')
+        response = self.client.delete(self.base_url.format(good_id), content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 200)
 
         # After removing is not accessible
-        response = self.client.get(self.base_url.format(good_id), content_type='application/json')
+        response = self.client.get(self.base_url.format(good_id), content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 400)
 
         # Removing again is still good
-        response = self.client.delete(self.base_url.format(good_id), content_type='application/json')
+        response = self.client.delete(self.base_url.format(good_id), content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 200)
 
         # Removing never existing is bad
-        response = self.client.delete(self.base_url.format(non_existing_id), content_type='application/json')
+        response = self.client.delete(self.base_url.format(non_existing_id), content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 404)
 

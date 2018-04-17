@@ -35,7 +35,7 @@ class ReferenceReportAPITest(TestCase):
                 }
             })
 
-        response = self.client.post(self.post_url.format(reference.id), body, content_type='application/json')
+        response = self.client.post(self.post_url.format(reference.id), body, content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 200)
         response_data = json.loads(response.content.decode('utf8'))
 

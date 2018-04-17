@@ -146,21 +146,17 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': ['apps.pp.auth.DjangoRestUseDjangoAuthenticator'],
     'PAGE_SIZE': 10,
     'DEFAULT_PAGINATION_CLASS': 'rest_framework_json_api.pagination.LimitOffsetPagination',
-  
-    # Settings recommended for rest_framework_json_api   https://github.com/django-json-api/django-rest-framework-json-api
-    # 'EXCEPTION_HANDLER': 'rest_framework_json_api.exceptions.exception_handler',
-    # 'DEFAULT_PAGINATION_CLASS':
-    #     'rest_framework_json_api.pagination.LimitOffsetPagination',
-    # 'DEFAULT_PARSER_CLASSES': (
-    #     # 'rest_framework_json_api.parsers.JSONParser',
-    #     'rest_framework.parsers'
-    #     'rest_framework.parsers.FormParser',
-    #     'rest_framework.parsers.MultiPartParser'
-    # ),
-    # 'DEFAULT_RENDERER_CLASSES': (
-    #     'rest_framework_json_api.renderers.JSONRenderer',
-    #     'rest_framework.renderers.BrowsableAPIRenderer',
-    # ),
+    'DEFAULT_PARSER_CLASSES': (
+        'apps.pp.utils.views.JSONParser',
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser'
+    ),
+    'DEFAULT_RENDERER_CLASSES': (
+        'apps.pp.utils.views.JSONRenderer',
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ),
     # 'DEFAULT_METADATA_CLASS': 'rest_framework_json_api.metadata.JSONAPIMetadata',
 
 }
