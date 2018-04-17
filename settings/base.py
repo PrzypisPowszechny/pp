@@ -145,6 +145,7 @@ REST_FRAMEWORK = {
     # User our own authenticator that uses Django authentication instead of Django Rest Framework's
     'DEFAULT_AUTHENTICATION_CLASSES': ['apps.pp.auth.DjangoRestUseDjangoAuthenticator'],
     'PAGE_SIZE': 10,
+    'ORDERING_PARAM': 'sort',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework_json_api.pagination.LimitOffsetPagination',
     'DEFAULT_PARSER_CLASSES': (
         'apps.pp.utils.views.JSONParser',
