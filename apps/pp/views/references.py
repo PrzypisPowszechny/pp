@@ -101,8 +101,9 @@ class ReferencePOST(APIView):
 
 class ReferenceList(APIView):
     resource_name = 'references'
-
     pagination_class = LimitOffsetPagination
+    # Paginator attribute is instance of pagination_class for schema introspection by drf-yasg
+    paginator = pagination_class()
     default_page_size = 100
     default_sort = "-create_date"
 
@@ -132,10 +133,11 @@ class ReferenceList(APIView):
     @swagger_auto_schema(responses={200: ReferenceListSerializer(many=True)})
     @method_decorator(allow_lazy_user)
     def get(self, request, *args, **kwargs):
+        paginator = self.pagination_class()
         queryset = self.get_queryset(request)
 
         # Paginate the queryset
-        references = LimitOffsetPagination().paginate_queryset(queryset, request)
+        references = paginator.paginate_queryset(queryset, request)
 
         # Get ids on the current page
         reference_ids = set(reference.id for reference in references)
@@ -159,4 +161,4 @@ class ReferenceList(APIView):
             set_relationship(data, reference, attr='reference_request_id')
             set_relationship(data, reference.user, attr='id')
             data_list.append(data)
-        return Response(ReferenceListSerializer(data_list, many=True).data)
+        return paginator.get_paginated_response(ReferenceListSerializer(data_list, many=True).data)
