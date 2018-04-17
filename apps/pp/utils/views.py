@@ -1,4 +1,4 @@
-from rest_framework  import parsers
+from rest_framework import parsers
 from rest_framework import renderers
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND, HTTP_403_FORBIDDEN

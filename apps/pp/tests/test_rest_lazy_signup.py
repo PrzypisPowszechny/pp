@@ -14,7 +14,8 @@ class LazySignupReferenceAPITest(TestCase):
         self.user, self.password = create_test_user()
 
         reference = Reference.objects.create(user=self.user, priority='NORMAL', comment="good job",
-                                             reference_link="www.przypispowszechny.com", reference_link_title="very nice")
+                                             reference_link="www.przypispowszechny.com",
+                                             reference_link_title="very nice")
         response = self.client.get(self.GET_base_url.format(reference.id))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/vnd.api+json')
@@ -44,19 +45,19 @@ class LazySignupReferenceAPITest(TestCase):
     # Within the second one, it is recognised based on session cookies
     def test_client_maintains_identity_across_requests(self):
         reference_json = json.dumps({
-                'data': {
-                    'type': 'references',
-                    'attributes': {
-                        'url': "www.przypis.pl",
-                        'ranges': "Od tad do tad",
-                        'quote': 'very nice',
-                        'priority': 'NORMAL',
-                        'comment': "komentarz",
-                        'reference_link': 'www.przypispowszechny.com',
-                        'reference_link_title': 'very nice too'
-                    }
+            'data': {
+                'type': 'references',
+                'attributes': {
+                    'url': "www.przypis.pl",
+                    'ranges': "Od tad do tad",
+                    'quote': 'very nice',
+                    'priority': 'NORMAL',
+                    'comment': "komentarz",
+                    'reference_link': 'www.przypispowszechny.com',
+                    'reference_link_title': 'very nice too'
                 }
-            })
+            }
+        })
 
         # Post two references
         response = self.client.post(
@@ -74,7 +75,6 @@ class LazySignupReferenceAPITest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         reference_id2 = json.loads(response.content.decode('utf8'))['data']['id']
-
 
         reference = Reference.objects.get(id=reference_id)
         reference2 = Reference.objects.get(id=reference_id2)

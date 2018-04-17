@@ -26,14 +26,14 @@ class ReferenceReportAPITest(TestCase):
         }
 
         body = json.dumps({
-                'data': {
-                    'type': 'reference_reports',
-                    'attributes': {
-                        'reason': report_data['reason'],
-                        'comment': report_data['comment'],
-                    }
+            'data': {
+                'type': 'reference_reports',
+                'attributes': {
+                    'reason': report_data['reason'],
+                    'comment': report_data['comment'],
                 }
-            })
+            }
+        })
 
         response = self.client.post(self.post_url.format(reference.id), body, content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 200)

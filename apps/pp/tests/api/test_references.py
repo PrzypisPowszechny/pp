@@ -20,7 +20,8 @@ class ReferenceAPITest(TestCase):
 
     def test_get_returns_json_200(self):
         reference = Reference.objects.create(user=self.user, priority='NORMAL', comment="good job",
-                                             reference_link="www.przypispowszechny.com", reference_link_title="very nice")
+                                             reference_link="www.przypispowszechny.com",
+                                             reference_link_title="very nice")
         urf = UserReferenceFeedback.objects.create(user=self.user, reference=reference, useful=True, objection=False)
         response = self.client.get(self.base_url.format(reference.id))
         self.assertEqual(response.status_code, 200)
@@ -28,7 +29,8 @@ class ReferenceAPITest(TestCase):
 
     def test_get_returns_reference(self):
         reference = Reference.objects.create(user=self.user, priority='NORMAL', comment="good job",
-                                             reference_link="www.przypispowszechny.com", reference_link_title="very nice")
+                                             reference_link="www.przypispowszechny.com",
+                                             reference_link_title="very nice")
         urf = UserReferenceFeedback.objects.create(user=self.user, reference=reference, useful=True, objection=False)
         response = self.client.get(self.base_url.format(reference.id))
 
@@ -59,7 +61,7 @@ class ReferenceAPITest(TestCase):
                         'reference_request': {'data': None},
                         'user': {'data': {'type': 'users', 'id': str(self.user.id)}}
                     }
-                 }
+                }
             }
         )
 
@@ -78,9 +80,11 @@ class ReferenceAPITest(TestCase):
     def test_nonempty_search_return_json_200(self):
         search_base_url = "/api/references/search/&url={}"
         reference = Reference.objects.create(user=self.user, priority='NORMAL', comment="good job",
-                                             reference_link="www.przypispowszechny.com", reference_link_title="very nice")
+                                             reference_link="www.przypispowszechny.com",
+                                             reference_link_title="very nice")
         reference2 = Reference.objects.create(user=self.user, priority='NORMAL', comment="more good job",
-                                              reference_link="www.przypispowszechny.com", reference_link_title="very nice again")
+                                              reference_link="www.przypispowszechny.com",
+                                              reference_link_title="very nice again")
         response = self.client.get(search_base_url.format('przypis powszechny'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/vnd.api+json')
@@ -99,7 +103,8 @@ class ReferenceAPITest(TestCase):
         # Second reference
         reference2 = Reference.objects.create(user=self.user, priority='NORMAL', comment="good job",
                                               url='www.przypis.pl',
-                                              reference_link="www.przypispowszechny2.com", reference_link_title="very nice",
+                                              reference_link="www.przypispowszechny2.com",
+                                              reference_link_title="very nice",
                                               create_date=timezone.now())
         reference2.save()
 
@@ -293,7 +298,8 @@ class ReferenceAPITest(TestCase):
     def test_patch_reference(self):
         reference = Reference.objects.create(user=self.user, priority='NORMAL', url='www.przypis.pl',
                                              comment="good job",
-                                             reference_link="www.przypispowszechny.com", reference_link_title="very nice",
+                                             reference_link="www.przypispowszechny.com",
+                                             reference_link_title="very nice",
                                              quote='not this time')
         urf = UserReferenceFeedback.objects.create(user=self.user, reference=reference, useful=True, objection=False)
         put_string = 'not so well'
@@ -391,4 +397,3 @@ class ReferenceAPITest(TestCase):
         # Removing never existing is bad
         response = self.client.delete(self.base_url.format(non_existing_id), content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 404)
-

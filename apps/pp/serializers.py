@@ -42,7 +42,7 @@ def set_relationship(root_data, obj, attr):
         data = {
             'type': resource, 'id': val
         }
-    root_data.setdefault('relationships', {})[resource[:-1]] = {'data':  data}
+    root_data.setdefault('relationships', {})[resource[:-1]] = {'data': data}
 
 
 class IDField(serializers.IntegerField):
@@ -63,9 +63,9 @@ class IDFieldInspector(SimpleFieldInspector):
 class RootSerializerInspector(FieldInspector):
     def process_result(self, result, method_name, obj, **kwargs):
         if (
-            isinstance(obj, serializers.BaseSerializer) and
-            obj.parent is None and
-            method_name == 'field_to_swagger_object'
+                isinstance(obj, serializers.BaseSerializer) and
+                obj.parent is None and
+                method_name == 'field_to_swagger_object'
         ):
             return self.decorate_with_data(result)
         return result
@@ -105,14 +105,14 @@ class ReferenceDeserializer(ResourceTypeSerializer):
         class ReferenceRequest(ResourceSerializer):
             pass
 
-        reference_request = data_wrapped(ReferenceRequest(required=False, allow_null=True))(required=False, allow_null=True)
+        reference_request = data_wrapped(ReferenceRequest(required=False, allow_null=True))(required=False,
+                                                                                            allow_null=True)
 
     attributes = Attributes()
     relationships = Relationships(required=False)
 
 
 class ReferenceSerializer(ResourceSerializer, ReferenceDeserializer):
-
     class Attributes(ReferenceDeserializer.Attributes):
         useful_count = serializers.SerializerMethodField()
         objection_count = serializers.SerializerMethodField()
@@ -133,23 +133,23 @@ class ReferenceSerializer(ResourceSerializer, ReferenceDeserializer):
 
         def get_useful_count(self, instance):
             assert self.request_user is not None
-            return UserReferenceFeedback.objects.filter(user=self.request_user, reference=instance, useful=True)\
-                                        .count()
+            return UserReferenceFeedback.objects.filter(user=self.request_user, reference=instance, useful=True) \
+                .count()
 
         def get_objection_count(self, instance):
             assert self.request_user is not None
-            return UserReferenceFeedback.objects.filter(user=self.request_user, reference=instance, objection=True)\
-                                        .count()
+            return UserReferenceFeedback.objects.filter(user=self.request_user, reference=instance, objection=True) \
+                .count()
 
         def is_useful(self, instance):
             assert self.request_user is not None
-            return UserReferenceFeedback.objects.filter(user=self.request_user, reference=instance, useful=True)\
-                                        .exists()
+            return UserReferenceFeedback.objects.filter(user=self.request_user, reference=instance, useful=True) \
+                .exists()
 
         def is_objection(self, instance):
             assert self.request_user is not None
-            return UserReferenceFeedback.objects.filter(user=self.request_user, reference=instance, objection=True)\
-                                        .exists()
+            return UserReferenceFeedback.objects.filter(user=self.request_user, reference=instance, objection=True) \
+                .exists()
 
         def get_does_belong_to_user(self, instance):
             assert self.request_user is not None
