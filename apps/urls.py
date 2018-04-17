@@ -40,14 +40,13 @@ yasg_schema_view = get_schema_view(
 
 
 urlpatterns = [
-    url(r'^admin/',admin.site.urls),
-    url(r'^api/',include('apps.pp.urls')),
-    url(r'^api/docs/', include_docs_urls(title='My API title', public=False)),
-    url(r'^api/docs-swagger/$', get_swagger_view(title='Pastebin API')),
-    url(r'^api/docs-yasg/swagger(?P<format>\.json|\.yaml)$',
+    url(r'^admin/', admin.site.urls),
+    url(r'^api/', include('apps.pp.urls')),
+    url(r'^api/docs/swagger(?P<format>\.json|\.yaml)$',
         yasg_schema_view.without_ui(cache_timeout=None), name='schema-json'),
-    url(r'^api/docs-yasg/swagger/$',
+    url(r'^api/docs/$',
         yasg_schema_view.with_ui('swagger', cache_timeout=None), name='schema-swagger-ui'),
-    url(r'^api/docs-yasg/redoc/$',
+    url(r'^api/docs-redoc/$',
         yasg_schema_view.with_ui('redoc', cache_timeout=None), name='schema-redoc'),
+    url(r'^api/docs-rest/', include_docs_urls(public=False)),
 ]
