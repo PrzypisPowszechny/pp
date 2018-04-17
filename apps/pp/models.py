@@ -1,7 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from apps.pp import consts
 from simple_history.models import HistoricalRecords
+
+from apps.pp import consts
 
 
 class User(AbstractUser):

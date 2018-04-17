@@ -1,24 +1,22 @@
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.generics import GenericAPIView
-
-from apps.pp.utils.views import PermissionDenied, ValidationErrorResponse, ErrorResponse, NotFoundResponse
 from django.db.models import Case
 from django.db.models import IntegerField
 from django.db.models import Sum
 from django.db.models import When
 from django.db.models.functions import Coalesce
 from django.utils.decorators import method_decorator
+from django_filters.rest_framework import DjangoFilterBackend
+from drf_yasg.utils import swagger_auto_schema
 from lazysignup.decorators import allow_lazy_user
+from rest_framework.filters import OrderingFilter
+from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_json_api.pagination import LimitOffsetPagination
-from drf_yasg.utils import swagger_auto_schema
-
 
 from apps.pp.models import Reference, UserReferenceFeedback
 from apps.pp.serializers import ReferencePatchDeserializer, ReferenceListSerializer, ReferenceDeserializer, \
     ReferenceSerializer, get_relationship_id, set_relationship
+from apps.pp.utils.views import PermissionDenied, ValidationErrorResponse, ErrorResponse, NotFoundResponse
 
 
 class ReferenceDetail(APIView):

@@ -1,5 +1,6 @@
-from settings.base import *
 import sys
+
+from settings.base import *
 
 if 'test' in sys.argv:
     DATABASES['default'] = {

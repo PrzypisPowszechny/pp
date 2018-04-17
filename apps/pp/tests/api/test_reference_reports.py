@@ -1,10 +1,10 @@
 import json
-from datetime import datetime, timedelta
+
 from django.test import TestCase
-from apps.pp.models import Reference, UserReferenceFeedback
+
+from apps.pp.models import Reference
 from apps.pp.models import ReferenceReport
 from apps.pp.tests.utils import create_test_user
-from apps.pp.models import ReferenceRequest
 
 
 class ReferenceReportAPITest(TestCase):

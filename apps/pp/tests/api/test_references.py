@@ -1,10 +1,12 @@
 import json
 from datetime import timedelta
-from django.utils import timezone
+
 from django.test import TestCase
+from django.utils import timezone
+
 from apps.pp.models import Reference, UserReferenceFeedback
-from apps.pp.tests.utils import create_test_user
 from apps.pp.models import ReferenceRequest
+from apps.pp.tests.utils import create_test_user
 
 
 class ReferenceAPITest(TestCase):

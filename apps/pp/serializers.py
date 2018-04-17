@@ -1,10 +1,11 @@
 from collections import OrderedDict
+
 from drf_yasg import openapi
 from drf_yasg.inspectors import SimpleFieldInspector, NotHandled, FieldInspector
+from rest_framework import serializers
 
 from apps.pp.models import ReferenceReport
 from .models import Reference, UserReferenceFeedback
-from rest_framework import serializers
 
 
 def data_wrapped(serializer):
