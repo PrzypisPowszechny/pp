@@ -224,6 +224,70 @@ class ReferenceAPITest(TestCase):
             }
         )
 
+    def test_post_new_reference_with_null_relation(self):
+        base_url = "/api/references/"
+
+        reference_request = ReferenceRequest.objects.create(
+            user=self.user,
+            ranges="Od tad do tad",
+            quote='very nice',
+        )
+
+        response = self.client.post(
+            base_url,
+            json.dumps({
+                'data': {
+                    'type': 'references',
+                    'attributes': {
+                        'url': "www.przypis.pl",
+                        'ranges': "Od tad do tad",
+                        'quote': 'very nice',
+                        'priority': 'NORMAL',
+                        'comment': "komentarz",
+                        'reference_link': 'www.przypispowszechny.com',
+                        'reference_link_title': 'very nice too',
+                    },
+                    'relationships': {
+                        'reference_request': {'data': None},
+                    }
+                }
+            }),
+            content_type='application/vnd.api+json')
+
+        self.assertEqual(response.status_code, 200, msg=response.data)
+        reference = Reference.objects.get(user=self.user)
+
+        useful_count = UserReferenceFeedback.objects.filter(reference=reference).filter(useful=True).count()
+        objection_count = UserReferenceFeedback.objects.filter(reference=reference).filter(objection=True).count()
+        self.assertEqual(reference.ranges, "Od tad do tad")
+        self.assertDictEqual(
+            json.loads(response.content.decode('utf8')),
+            {
+                'data': {
+                    'id': str(reference.id),
+                    'type': 'references',
+                    'attributes': {
+                        'url': reference.url,
+                        'ranges': reference.ranges,
+                        'quote': reference.quote,
+                        'priority': reference.priority,
+                        'comment': reference.comment,
+                        'reference_link': reference.reference_link,
+                        'reference_link_title': reference.reference_link_title,
+                        'useful': False,
+                        'useful_count': useful_count,
+                        'objection': False,
+                        'objection_count': objection_count,
+                        'does_belong_to_user': True,
+                    },
+                    'relationships': {
+                        'reference_request': {'data': None},
+                        'user': {'data': {'type': 'users', 'id': str(self.user.id)}}
+                    }
+                }
+            }
+        )
+
     def test_patch_reference(self):
         reference = Reference.objects.create(user=self.user, priority='NORMAL', url='www.przypis.pl',
                                              comment="good job",

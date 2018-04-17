@@ -1,7 +1,4 @@
 from collections import OrderedDict
-
-import inflection
-from django.db import models
 from drf_yasg import openapi
 from drf_yasg.inspectors import SimpleFieldInspector, NotHandled, FieldInspector
 
@@ -21,26 +18,30 @@ def data_wrapped(serializer):
 
 
 def get_relationship_id(root_serializer, name):
-    return root_serializer.validated_data.get('relationships', {}).get(name, {}).get('data', {}).get('id')
+    path = ['relationships', name, 'data', 'id']
+    val = root_serializer.validated_data
+    while path and val:
+        key = path.pop(0)
+        val = val.get(key)
+    return val
 
 
-def set_relationship(root_data, obj_or_id, cls=None):
-    if obj_or_id is None:
-        if cls is None:
-            raise ValueError("cls param must be provided when obj_or_id is None")
+def get_resource_name(model, attr=None):
+    if attr not in (None, 'pk', 'id'):
+        model = model._meta.get_field(attr).related_model
+    return model.JSONAPIMeta.resource_name
+
+
+def set_relationship(root_data, obj, attr):
+    resource = get_resource_name(obj, attr)
+    val = getattr(obj, attr)
+    if val is None:
         data = None
     else:
-        if isinstance(obj_or_id, int):
-            pk = obj_or_id
-        elif isinstance(obj_or_id, models.Model):
-            pk = obj_or_id.pk
-        else:
-            raise ValueError('obj_or_id should be int or Model, got %s' % obj_or_id.__class__.__name__)
-        cls = cls if isinstance(obj_or_id, int) else obj_or_id.__class__
         data = {
-            'type': cls.JSONAPIMeta.resource_name, 'id': pk
+            'type': resource, 'id': val
         }
-    root_data.setdefault('relationships', {})[inflection.underscore(cls.__name__)] = {'data':  data}
+    root_data.setdefault('relationships', {})[resource[:-1]] = {'data':  data}
 
 
 class IDField(serializers.IntegerField):
@@ -103,7 +104,7 @@ class ReferenceDeserializer(ResourceTypeSerializer):
         class ReferenceRequest(ResourceSerializer):
             pass
 
-        reference_request = data_wrapped(ReferenceRequest)(required=False, allow_null=True)
+        reference_request = data_wrapped(ReferenceRequest(required=False, allow_null=True))(required=False, allow_null=True)
 
     attributes = Attributes()
     relationships = Relationships(required=False)
@@ -225,6 +226,3 @@ class ReferenceReportSerializer(ResourceSerializer, ReferenceReportDeserializer)
         reference = data_wrapped(Reference)(required=True, allow_null=True)
 
     relationships = Relationships()
-
-
-

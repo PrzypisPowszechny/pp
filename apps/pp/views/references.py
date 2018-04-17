@@ -12,9 +12,9 @@ from rest_framework_json_api.pagination import LimitOffsetPagination
 from drf_yasg.utils import swagger_auto_schema
 
 
-from apps.pp.models import Reference, UserReferenceFeedback, ReferenceRequest
-from apps.pp.serializers import ReferencePatchDeserializer, ReferenceListSerializer, \
-    data_wrapped, ReferenceDeserializer, ReferenceSerializer, get_relationship_id, set_relationship
+from apps.pp.models import Reference, UserReferenceFeedback
+from apps.pp.serializers import ReferencePatchDeserializer, ReferenceListSerializer, ReferenceDeserializer, \
+    ReferenceSerializer, get_relationship_id, set_relationship
 
 
 class ReferenceDetail(APIView):
@@ -29,8 +29,8 @@ class ReferenceDetail(APIView):
             return ErrorResponse('Resource not found')
 
         data = {'id': reference.id, 'type': self.resource_name, 'attributes': reference}
-        set_relationship(data, reference.reference_request_id, cls=ReferenceRequest)
-        set_relationship(data, reference.user)
+        set_relationship(data, reference, attr='reference_request_id')
+        set_relationship(data, reference.user, attr='id')
         return Response(ReferenceSerializer(data, context={'request': request}).data)
 
     @swagger_auto_schema(request_body=ReferencePatchDeserializer,
@@ -57,8 +57,8 @@ class ReferenceDetail(APIView):
         reference.save()
 
         data = {'id': reference.id, 'type': self.resource_name, 'attributes': reference}
-        set_relationship(data, reference.reference_request_id, cls=ReferenceRequest)
-        set_relationship(data, reference.user)
+        set_relationship(data, reference, attr='reference_request_id')
+        set_relationship(data, reference.user, attr='id')
         return Response(ReferenceSerializer(data, context={'request': request}).data)
 
     @method_decorator(allow_lazy_user)
@@ -94,8 +94,8 @@ class ReferencePOST(APIView):
         reference.save()
 
         data = {'id': reference.id, 'type': self.resource_name, 'attributes': reference}
-        set_relationship(data, reference.reference_request_id, cls=ReferenceRequest)
-        set_relationship(data, reference.user)
+        set_relationship(data, reference, attr='reference_request_id')
+        set_relationship(data, reference.user, attr='id')
         return Response(ReferenceSerializer(data, context={'request': request}).data)
 
 
@@ -156,7 +156,7 @@ class ReferenceList(APIView):
                 reference.does_belong_to_user = reference.id in user_reference_ids
             attributes_serializer = ReferenceListSerializer.Attributes(reference, context={'request': request})
             data = {'id': reference.id, 'type': 'references', 'attributes': attributes_serializer.data}
-            set_relationship(data, reference.user_id, cls=reference._meta.get_field('user_id').related_model)
-            set_relationship(data, reference.reference_request_id, cls=ReferenceRequest)
+            set_relationship(data, reference, attr='reference_request_id')
+            set_relationship(data, reference.user, attr='id')
             data_list.append(data)
         return Response(ReferenceListSerializer(data_list, many=True).data)

@@ -3,11 +3,9 @@ from drf_yasg.utils import swagger_auto_schema
 from lazysignup.decorators import allow_lazy_user
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_json_api.parsers import JSONParser
 
-from apps.pp.models import Reference, ReferenceReport, User
-from apps.pp.serializers import ReferenceReportSerializer, ReferenceReportDeserializer, set_relationship, \
-    data_wrapped
+from apps.pp.models import Reference, ReferenceReport
+from apps.pp.serializers import ReferenceReportSerializer, ReferenceReportDeserializer, set_relationship
 from apps.pp.utils.views import ValidationErrorResponse, NotFoundResponse
 
 
@@ -32,6 +30,6 @@ class ReferenceReportPOST(APIView):
         report.save()
 
         data = {'id': report.id, 'type': self.resource_name, 'attributes': report}
-        set_relationship(data, report.reference_id, cls=Reference)
-        set_relationship(data, reference.user_id, cls=User)
+        set_relationship(data, report, attr='reference_id')
+        set_relationship(data, reference, attr='user_id')
         return Response(ReferenceReportSerializer(data, context={'request': request}).data)
