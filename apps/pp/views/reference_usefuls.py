@@ -5,14 +5,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.pp.models import UserReferenceFeedback
-from apps.pp.utils.views import ErrorResponse, NotFoundResponse, data_wrapped_view
+from apps.pp.utils.views import ErrorResponse, NotFoundResponse
 
 
 class ReferenceUsefulChange(APIView):
     resource_name = 'reference_usefuls'
 
     @method_decorator(allow_lazy_user)
-    @method_decorator(data_wrapped_view)
     def post(self, request, reference_id):
         try:
             UserReferenceFeedback.objects.create(reference_id=reference_id, user=request.user, useful=True)
@@ -21,7 +20,6 @@ class ReferenceUsefulChange(APIView):
         return Response(data=None)
 
     @method_decorator(allow_lazy_user)
-    @method_decorator(data_wrapped_view)
     def delete(self, request, reference_id):
         try:
             model = UserReferenceFeedback.objects.get(reference_id=reference_id, user=request.user, useful=True)

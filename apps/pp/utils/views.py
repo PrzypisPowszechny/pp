@@ -1,7 +1,7 @@
 from functools import wraps
 
-from rest_framework.parsers import JSONParser
-from rest_framework.renderers import JSONRenderer
+from rest_framework  import parsers
+from rest_framework import renderers
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND, HTTP_403_FORBIDDEN
 from simplejson import OrderedDict
@@ -106,31 +106,25 @@ class PermissionDenied(ErrorResponse):
         super().__init__(*args, error_title='Permission Denied', status=status, **kwargs)
 
 
-def data_wrapped_view(func):
-    def wrapped(request, *args, **kwargs):
-        # Reshape data without setting request.data itself witch is immutable
-        data = request.data.pop('data', {})
-        for k, v in data.items():
-            request.data[k] = v
-        response = func(request, *args, **kwargs)
-        if isinstance(response, JsonApiResponse):
-            return response
-        if isinstance(response, (None.__class__, dict, list, tuple)):
-            return DataResponse(response)
-        if not isinstance(response, Response) or not hasattr(response, 'data') \
-                or not isinstance(response.data, (dict, None.__class__)):
-            raise ValueError('%s requires view to return dict, list, tuple, None or response with data attribute, '
-                             'got: %s' % (data_wrapped_view.__name__, response.__class__.__name__))
-        response.data = {'data': response.data}
-        return response
-    return wraps(func)(wrapped)
-
-
-class JSONRenderer(JSONRenderer):
+class JSONRenderer(renderers.JSONRenderer):
     media_type = 'application/vnd.api+json'
     format = 'vnd.api+json'
 
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        response = renderer_context.get('response', None)
+        if response is not None and response.status_code == 204:
+            data = None
+        elif data is None or ('data' not in data and 'errors' not in 'data'):
+            data = {'data': data}
+        return super().render(data, accepted_media_type, renderer_context)
 
-class JSONParser(JSONParser):
+
+class JSONParser(parsers.JSONParser):
     media_type = 'application/vnd.api+json'
     renderer_class = JSONRenderer
+
+    def parse(self, *args, **kwargs):
+        """
+        Parses the incoming bytestream as JSON and returns the resulting data
+        """
+        return super().parse(*args, **kwargs).get('data')

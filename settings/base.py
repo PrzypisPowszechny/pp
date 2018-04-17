@@ -163,9 +163,13 @@ REST_FRAMEWORK = {
 
 SWAGGER_SETTINGS = {
     'DEFAULT_FIELD_INSPECTORS': [
+        'apps.pp.serializers.RootSerializerInspector',
         'apps.pp.serializers.IDFieldInspector',
         'drf_yasg.inspectors.CamelCaseJSONFilter',
-        'drf_yasg.inspectors.ReferencingSerializerInspector',
+        # ReferencingS... replaced with InlineS... which does not create serializers definitions index,
+        # but does not require serializers class names to be unique across whole application
+        # 'drf_yasg.inspectors.ReferencingSerializerInspector',
+        'drf_yasg.inspectors.InlineSerializerInspector',
         'drf_yasg.inspectors.RelatedFieldInspector',
         'drf_yasg.inspectors.ChoiceFieldInspector',
         'drf_yasg.inspectors.FileFieldInspector',

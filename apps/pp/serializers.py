@@ -1,8 +1,9 @@
+from collections import OrderedDict
 
 import inflection
 from django.db import models
 from drf_yasg import openapi
-from drf_yasg.inspectors import SimpleFieldInspector, NotHandled
+from drf_yasg.inspectors import SimpleFieldInspector, NotHandled, FieldInspector
 
 from apps.pp.models import ReferenceReport
 from .models import Reference, UserReferenceFeedback
@@ -55,6 +56,26 @@ class IDFieldInspector(SimpleFieldInspector):
 
         SwaggerType, ChildSwaggerType = self._get_partial_types(field, **kwargs)
         return SwaggerType(type=openapi.TYPE_STRING, format='ID')
+
+
+class RootSerializerInspector(FieldInspector):
+    def process_result(self, result, method_name, obj, **kwargs):
+        if (
+            isinstance(obj, serializers.BaseSerializer) and
+            obj.parent is None and
+            method_name == 'field_to_swagger_object'
+        ):
+            return self.decorate_with_data(result)
+        return result
+
+    def decorate_with_data(self, result):
+        return openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['data'],
+            properties=OrderedDict((
+                ('data', result),
+            ))
+        )
 
 
 class ResourceIdSerializer(serializers.Serializer):

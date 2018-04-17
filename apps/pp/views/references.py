@@ -1,5 +1,4 @@
-from apps.pp.utils.views import PermissionDenied, ValidationErrorResponse, ErrorResponse, data_wrapped_view, \
-    NotFoundResponse
+from apps.pp.utils.views import PermissionDenied, ValidationErrorResponse, ErrorResponse, NotFoundResponse
 from django.db.models import Case
 from django.db.models import IntegerField
 from django.db.models import Sum
@@ -10,7 +9,6 @@ from lazysignup.decorators import allow_lazy_user
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_json_api.pagination import LimitOffsetPagination
-from rest_framework_json_api.parsers import JSONParser
 from drf_yasg.utils import swagger_auto_schema
 
 
@@ -22,9 +20,8 @@ from apps.pp.serializers import ReferencePatchDeserializer, ReferenceListSeriali
 class ReferenceDetail(APIView):
     resource_name = 'references'
 
-    @swagger_auto_schema(responses={200: data_wrapped(ReferenceSerializer)})
+    @swagger_auto_schema(responses={200: ReferenceSerializer})
     @method_decorator(allow_lazy_user)
-    @method_decorator(data_wrapped_view)
     def get(self, request, reference_id):
         try:
             reference = Reference.objects.select_related('reference_request').get(active=True, id=reference_id)
@@ -34,12 +31,11 @@ class ReferenceDetail(APIView):
         data = {'id': reference.id, 'type': self.resource_name, 'attributes': reference}
         set_relationship(data, reference.reference_request_id, cls=ReferenceRequest)
         set_relationship(data, reference.user)
-        return ReferenceSerializer(data, context={'request': request}).data
+        return Response(ReferenceSerializer(data, context={'request': request}).data)
 
-    @swagger_auto_schema(request_body=data_wrapped(ReferencePatchDeserializer),
-                         responses={200: data_wrapped(ReferenceSerializer)})
+    @swagger_auto_schema(request_body=ReferencePatchDeserializer,
+                         responses={200: ReferenceSerializer})
     @method_decorator(allow_lazy_user)
-    @method_decorator(data_wrapped_view)
     def patch(self, request, reference_id):
         try:
             reference = Reference.objects.select_related('reference_request').get(active=True, id=reference_id)
@@ -63,10 +59,9 @@ class ReferenceDetail(APIView):
         data = {'id': reference.id, 'type': self.resource_name, 'attributes': reference}
         set_relationship(data, reference.reference_request_id, cls=ReferenceRequest)
         set_relationship(data, reference.user)
-        return ReferenceSerializer(data, context={'request': request}).data
+        return Response(ReferenceSerializer(data, context={'request': request}).data)
 
     @method_decorator(allow_lazy_user)
-    @method_decorator(data_wrapped_view)
     def delete(self, request, reference_id):
         try:
             reference = Reference.objects.select_related('reference_request').get(id=reference_id)
@@ -80,16 +75,15 @@ class ReferenceDetail(APIView):
         if reference.active:
             reference.active = False
             reference.save()
-        return None
+        return Response()
 
 
 class ReferencePOST(APIView):
     resource_name = 'references'
 
-    @swagger_auto_schema(request_body=data_wrapped(ReferenceDeserializer),
-                         responses={200: data_wrapped(ReferenceSerializer)})
+    @swagger_auto_schema(request_body=ReferenceDeserializer,
+                         responses={200: ReferenceSerializer})
     @method_decorator(allow_lazy_user)
-    @method_decorator(data_wrapped_view)
     def post(self, request):
         query_serializer = ReferenceDeserializer(data=request.data)
         if not query_serializer.is_valid():
@@ -102,7 +96,7 @@ class ReferencePOST(APIView):
         data = {'id': reference.id, 'type': self.resource_name, 'attributes': reference}
         set_relationship(data, reference.reference_request_id, cls=ReferenceRequest)
         set_relationship(data, reference.user)
-        return ReferenceSerializer(data, context={'request': request}).data
+        return Response(ReferenceSerializer(data, context={'request': request}).data)
 
 
 class ReferenceList(APIView):
@@ -135,9 +129,8 @@ class ReferenceList(APIView):
         )
         return queryset
 
-    @swagger_auto_schema(responses={200: data_wrapped(ReferenceListSerializer(many=True))})
+    @swagger_auto_schema(responses={200: ReferenceListSerializer(many=True)})
     @method_decorator(allow_lazy_user)
-    @method_decorator(data_wrapped_view)
     def get(self, request, *args, **kwargs):
         queryset = self.get_queryset(request)
 
@@ -166,4 +159,4 @@ class ReferenceList(APIView):
             set_relationship(data, reference.user_id, cls=reference._meta.get_field('user_id').related_model)
             set_relationship(data, reference.reference_request_id, cls=ReferenceRequest)
             data_list.append(data)
-        return ReferenceListSerializer(data_list, many=True).data
+        return Response(ReferenceListSerializer(data_list, many=True).data)
