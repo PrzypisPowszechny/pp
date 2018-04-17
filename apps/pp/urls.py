@@ -4,7 +4,7 @@ from .views import references, reference_reports, reference_usefuls, reference_o
 
 reference_urls = [
     url(r'^(?P<reference_id>[0-9]+)/$', references.ReferenceDetail.as_view()),
-    url(r'^$', references.ReferenceDetail.as_view()),
+    url(r'^$', references.ReferencePOST.as_view()),
     url(r'^search/', references.ReferenceList.as_view()),
 
     url(r'^(?P<reference_id>[0-9]+)/reports/$', reference_reports.ReferenceReportPOST.as_view()),
