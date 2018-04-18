@@ -1,4 +1,3 @@
-
 class DjangoRestUseDjangoAuthenticator(object):
     def authenticate(self, request=None):
         # Extract user from the encapsulated Django HTTP Request object to use Django authentication

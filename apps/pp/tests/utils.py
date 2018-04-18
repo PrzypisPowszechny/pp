@@ -9,5 +9,5 @@ def create_test_user(unique=False):
     if unique:
         username = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))
     else:
-        username='Alibaba'
+        username = 'Alibaba'
     return get_user_model().objects.create_user(username=username, password=password), password

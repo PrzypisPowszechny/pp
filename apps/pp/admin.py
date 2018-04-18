@@ -12,10 +12,12 @@ admin.site.register(get_user_model(), UserAdmin)
 class ReferenceAdmin(SimpleHistoryAdmin):
     pass
 
+
 admin.site.register(Reference, ReferenceAdmin)
 
 
 class ReferenceRequestAdmin(SimpleHistoryAdmin):
     pass
+
 
 admin.site.register(ReferenceRequest, ReferenceRequestAdmin)

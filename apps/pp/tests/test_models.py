@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
+
 from apps.pp.models import Reference, UserReferenceFeedback, UserReferenceRequestFeedback, ReferenceRequest
 
 
@@ -21,7 +22,8 @@ class UserReferenceFeedbackModelTest(TestCase):
         cls.user = get_user_model().objects.create_user(username="Alibaba")
         cls.user2 = get_user_model().objects.create_user(username="Rozbójnik")
         cls.reference = Reference.objects.create(user=cls.user, priority='NORMAL', comment="good job",
-                                             reference_link="www.przypispowszechny.com", reference_link_title="very nice")
+                                                 reference_link="www.przypispowszechny.com",
+                                                 reference_link_title="very nice")
 
     def test_creating(self):
         UserReferenceFeedback.objects.create(user=self.user, reference=self.reference, useful=True, objection=True)

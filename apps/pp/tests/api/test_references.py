@@ -1,9 +1,12 @@
 import json
-from datetime import datetime, timedelta
+from datetime import timedelta
+
 from django.test import TestCase
+from django.utils import timezone
+
 from apps.pp.models import Reference, UserReferenceFeedback
-from apps.pp.tests.utils import create_test_user
 from apps.pp.models import ReferenceRequest
+from apps.pp.tests.utils import create_test_user
 
 
 class ReferenceAPITest(TestCase):
@@ -17,7 +20,8 @@ class ReferenceAPITest(TestCase):
 
     def test_get_returns_json_200(self):
         reference = Reference.objects.create(user=self.user, priority='NORMAL', comment="good job",
-                                             reference_link="www.przypispowszechny.com", reference_link_title="very nice")
+                                             reference_link="www.przypispowszechny.com",
+                                             reference_link_title="very nice")
         urf = UserReferenceFeedback.objects.create(user=self.user, reference=reference, useful=True, objection=False)
         response = self.client.get(self.base_url.format(reference.id))
         self.assertEqual(response.status_code, 200)
@@ -25,7 +29,8 @@ class ReferenceAPITest(TestCase):
 
     def test_get_returns_reference(self):
         reference = Reference.objects.create(user=self.user, priority='NORMAL', comment="good job",
-                                             reference_link="www.przypispowszechny.com", reference_link_title="very nice")
+                                             reference_link="www.przypispowszechny.com",
+                                             reference_link_title="very nice")
         urf = UserReferenceFeedback.objects.create(user=self.user, reference=reference, useful=True, objection=False)
         response = self.client.get(self.base_url.format(reference.id))
 
@@ -33,28 +38,31 @@ class ReferenceAPITest(TestCase):
         objection_count = UserReferenceFeedback.objects.filter(reference=reference).filter(objection=True).count()
 
         self.assertEqual(
-            json.loads(response.content.decode('utf8'))['data'],
-            {'id': str(reference.id),
-             'type': 'references',
-             'attributes': {
-                 'url': reference.url,
-                 'ranges': reference.ranges,
-                 'quote': reference.quote,
-                 'priority': reference.priority,
-                 'comment': reference.comment,
-                 'reference_link': reference.reference_link,
-                 'reference_link_title': reference.reference_link_title,
-                 'useful': urf.useful,
-                 'useful_count': useful_count,
-                 'objection': urf.objection,
-                 'objection_count': objection_count,
-                 'does_belong_to_user': True,
-             },
-             'relationships': {
-                 'reference_request': {'data': None},
-                 'user': {'data': {'type': 'users', 'id': str(self.user.id)}}
-             }
-             }
+            json.loads(response.content.decode('utf8')),
+            {
+                'data': {
+                    'id': str(reference.id),
+                    'type': 'references',
+                    'attributes': {
+                        'url': reference.url,
+                        'ranges': reference.ranges,
+                        'quote': reference.quote,
+                        'priority': reference.priority,
+                        'comment': reference.comment,
+                        'reference_link': reference.reference_link,
+                        'reference_link_title': reference.reference_link_title,
+                        'useful': urf.useful,
+                        'useful_count': useful_count,
+                        'objection': urf.objection,
+                        'objection_count': objection_count,
+                        'does_belong_to_user': True,
+                    },
+                    'relationships': {
+                        'reference_request': {'data': None},
+                        'user': {'data': {'type': 'users', 'id': str(self.user.id)}}
+                    }
+                }
+            }
         )
 
     def test_empty_search_return_json_200(self):
@@ -72,9 +80,11 @@ class ReferenceAPITest(TestCase):
     def test_nonempty_search_return_json_200(self):
         search_base_url = "/api/references/search/&url={}"
         reference = Reference.objects.create(user=self.user, priority='NORMAL', comment="good job",
-                                             reference_link="www.przypispowszechny.com", reference_link_title="very nice")
+                                             reference_link="www.przypispowszechny.com",
+                                             reference_link_title="very nice")
         reference2 = Reference.objects.create(user=self.user, priority='NORMAL', comment="more good job",
-                                              reference_link="www.przypispowszechny.com", reference_link_title="very nice again")
+                                              reference_link="www.przypispowszechny.com",
+                                              reference_link_title="very nice again")
         response = self.client.get(search_base_url.format('przypis powszechny'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/vnd.api+json')
@@ -85,16 +95,17 @@ class ReferenceAPITest(TestCase):
         reference = Reference.objects.create(user=self.user, priority='NORMAL', comment="more good job",
                                              url='www.przypis.pl', reference_link="www.przypispowszechny.com",
                                              reference_link_title="very nice again",
-                                             create_date=datetime.now() + timedelta(seconds=-1000))
-        reference.create_date = datetime.now() + timedelta(seconds=1000)
+                                             create_date=timezone.now() + timedelta(seconds=-1000))
+        reference.create_date = timezone.now() + timedelta(seconds=1000)
         reference.save()
         reference = Reference.objects.get(id=reference.id)
 
         # Second reference
         reference2 = Reference.objects.create(user=self.user, priority='NORMAL', comment="good job",
                                               url='www.przypis.pl',
-                                              reference_link="www.przypispowszechny2.com", reference_link_title="very nice",
-                                              create_date=datetime.now())
+                                              reference_link="www.przypispowszechny2.com",
+                                              reference_link_title="very nice",
+                                              create_date=timezone.now())
         reference2.save()
 
         urf = UserReferenceFeedback.objects.create(user=self.user, reference=reference, useful=True, objection=False)
@@ -108,8 +119,8 @@ class ReferenceAPITest(TestCase):
 
         raw_response = self.client.get(search_base_url.format(reference.url))
         response = json.loads(raw_response.content.decode('utf8'))['data']
-        response_reference = next(row for row in response if row['id'] == str(reference.id))
-        response_reference2 = next(row for row in response if row['id'] == str(reference2.id))
+        response_reference = next(row for row in response if str(row['id']) == str(reference.id))
+        response_reference2 = next(row for row in response if str(row['id']) == str(reference2.id))
         self.assertEqual(response_reference,
                          {'id': str(reference.id),
                           'type': 'references',
@@ -180,40 +191,106 @@ class ReferenceAPITest(TestCase):
                         'reference_link_title': 'very nice too',
                     },
                     'relationships': {
-                        'reference_request': {'data': {'id': str(reference_request.id)}},
+                        'reference_request': {'data': {'type': 'reference_requests', 'id': str(reference_request.id)}},
                     }
                 }
             }),
             content_type='application/vnd.api+json')
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200, msg=response.data)
         reference = Reference.objects.get(user=self.user)
 
         useful_count = UserReferenceFeedback.objects.filter(reference=reference).filter(useful=True).count()
         objection_count = UserReferenceFeedback.objects.filter(reference=reference).filter(objection=True).count()
         self.assertEqual(reference.ranges, "Od tad do tad")
-        self.assertEqual(
-            json.loads(response.content.decode('utf8'))['data'],
+        self.assertDictEqual(
+            json.loads(response.content.decode('utf8')),
             {
-                'id': str(reference.id),
-                'type': 'references',
-                'attributes': {
-                    'url': reference.url,
-                    'ranges': reference.ranges,
-                    'quote': reference.quote,
-                    'priority': reference.priority,
-                    'comment': reference.comment,
-                    'reference_link': reference.reference_link,
-                    'reference_link_title': reference.reference_link_title,
-                    'useful': False,
-                    'useful_count': useful_count,
-                    'objection': False,
-                    'objection_count': objection_count,
-                    'does_belong_to_user': True,
-                },
-                'relationships': {
-                    'reference_request': {'data': {'type': 'reference_requests', 'id': str(reference_request.id)}},
-                    'user': {'data': {'type': 'users', 'id': str(self.user.id)}}
+                'data': {
+                    'id': str(reference.id),
+                    'type': 'references',
+                    'attributes': {
+                        'url': reference.url,
+                        'ranges': reference.ranges,
+                        'quote': reference.quote,
+                        'priority': reference.priority,
+                        'comment': reference.comment,
+                        'reference_link': reference.reference_link,
+                        'reference_link_title': reference.reference_link_title,
+                        'useful': False,
+                        'useful_count': useful_count,
+                        'objection': False,
+                        'objection_count': objection_count,
+                        'does_belong_to_user': True,
+                    },
+                    'relationships': {
+                        'reference_request': {'data': {'type': 'reference_requests', 'id': str(reference_request.id)}},
+                        'user': {'data': {'type': 'users', 'id': str(self.user.id)}}
+                    }
+                }
+            }
+        )
+
+    def test_post_new_reference_with_null_relation(self):
+        base_url = "/api/references/"
+
+        reference_request = ReferenceRequest.objects.create(
+            user=self.user,
+            ranges="Od tad do tad",
+            quote='very nice',
+        )
+
+        response = self.client.post(
+            base_url,
+            json.dumps({
+                'data': {
+                    'type': 'references',
+                    'attributes': {
+                        'url': "www.przypis.pl",
+                        'ranges': "Od tad do tad",
+                        'quote': 'very nice',
+                        'priority': 'NORMAL',
+                        'comment': "komentarz",
+                        'reference_link': 'www.przypispowszechny.com',
+                        'reference_link_title': 'very nice too',
+                    },
+                    'relationships': {
+                        'reference_request': {'data': None},
+                    }
+                }
+            }),
+            content_type='application/vnd.api+json')
+
+        self.assertEqual(response.status_code, 200, msg=response.data)
+        reference = Reference.objects.get(user=self.user)
+
+        useful_count = UserReferenceFeedback.objects.filter(reference=reference).filter(useful=True).count()
+        objection_count = UserReferenceFeedback.objects.filter(reference=reference).filter(objection=True).count()
+        self.assertEqual(reference.ranges, "Od tad do tad")
+        self.assertDictEqual(
+            json.loads(response.content.decode('utf8')),
+            {
+                'data': {
+                    'id': str(reference.id),
+                    'type': 'references',
+                    'attributes': {
+                        'url': reference.url,
+                        'ranges': reference.ranges,
+                        'quote': reference.quote,
+                        'priority': reference.priority,
+                        'comment': reference.comment,
+                        'reference_link': reference.reference_link,
+                        'reference_link_title': reference.reference_link_title,
+                        'useful': False,
+                        'useful_count': useful_count,
+                        'objection': False,
+                        'objection_count': objection_count,
+                        'does_belong_to_user': True,
+                    },
+                    'relationships': {
+                        'reference_request': {'data': None},
+                        'user': {'data': {'type': 'users', 'id': str(self.user.id)}}
+                    }
                 }
             }
         )
@@ -221,7 +298,8 @@ class ReferenceAPITest(TestCase):
     def test_patch_reference(self):
         reference = Reference.objects.create(user=self.user, priority='NORMAL', url='www.przypis.pl',
                                              comment="good job",
-                                             reference_link="www.przypispowszechny.com", reference_link_title="very nice",
+                                             reference_link="www.przypispowszechny.com",
+                                             reference_link_title="very nice",
                                              quote='not this time')
         urf = UserReferenceFeedback.objects.create(user=self.user, reference=reference, useful=True, objection=False)
         put_string = 'not so well'
@@ -270,17 +348,18 @@ class ReferenceAPITest(TestCase):
 
         )
 
-    def test_patch_wrong_field_reference(self):
-        reference = Reference.objects.create(user=self.user, priority='NORMAL', url='www.przypis.pl',
-                                             comment="good job",
-                                             reference_link="www.przypispowszechny.com", reference_link_title="very nice",
-                                             quote='not this time')
+    def test_patch_inaccessible_field_reference(self):
+        reference = Reference.objects.create(
+            user=self.user, priority='NORMAL', url='www.przypis.pl', comment="good job",
+            reference_link="www.przypispowszechny.com", reference_link_title="very nice",
+            quote='not this time'
+        )
         UserReferenceFeedback.objects.create(user=self.user, reference=reference, useful=True, objection=False)
         put_string = 'not so well'
         put_data = json.dumps({
             'data': {
                 'type': 'references',
-                'id': str(reference.id),
+                'id': reference.id,
                 'attributes': {
                     'quote': put_string
                 }
@@ -294,13 +373,27 @@ class ReferenceAPITest(TestCase):
         self.assertNotEqual(reference.comment, put_string)
 
     def test_delete_reference(self):
-        reference = Reference.objects.create(user=self.user, priority='NORMAL', url='www.przypis.pl',
-                                             comment="good job",
-                                             reference_link="www.przypispowszechny.com", reference_link_title="very nice",
-                                             quote='not this time')
+        reference = Reference.objects.create(
+            user=self.user, priority='NORMAL', url='www.przypis.pl', comment="good job",
+            reference_link="www.przypispowszechny.com", reference_link_title="very nice",
+            quote='not this time'
+        )
         UserReferenceFeedback.objects.create(user=self.user, reference=reference, useful=True, objection=False)
-        id = reference.id
-        response = self.client.delete(self.base_url.format(reference.id), content_type='application/vnd.api+json')
+
+        good_id = reference.id
+        non_existing_id = good_id + 100000000
+
+        response = self.client.delete(self.base_url.format(good_id), content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 200)
-        response2 = self.client.get(self.base_url.format(id))
-        self.assertEqual(response2.status_code, 400)
+
+        # After removing is not accessible
+        response = self.client.get(self.base_url.format(good_id), content_type='application/vnd.api+json')
+        self.assertEqual(response.status_code, 400)
+
+        # Removing again is still good
+        response = self.client.delete(self.base_url.format(good_id), content_type='application/vnd.api+json')
+        self.assertEqual(response.status_code, 200)
+
+        # Removing never existing is bad
+        response = self.client.delete(self.base_url.format(non_existing_id), content_type='application/vnd.api+json')
+        self.assertEqual(response.status_code, 404)

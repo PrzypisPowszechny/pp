@@ -49,8 +49,9 @@ INSTALLED_APPS = [
     'apps.pp',
 
     # Ann app that saves models' states as they change together with the user who produced the change
-    'simple_history'
+    'simple_history',
 
+    'drf_yasg',
 ]
 
 # Set PPUser as Django user model
@@ -142,22 +143,40 @@ REST_FRAMEWORK = {
     # User our own authenticator that uses Django authentication instead of Django Rest Framework's
     'DEFAULT_AUTHENTICATION_CLASSES': ['apps.pp.auth.DjangoRestUseDjangoAuthenticator'],
     'PAGE_SIZE': 10,
-  
-    # Settings recommended for rest_framework_json_api   https://github.com/django-json-api/django-rest-framework-json-api
-    'EXCEPTION_HANDLER': 'rest_framework_json_api.exceptions.exception_handler',
-    'DEFAULT_PAGINATION_CLASS':
-        'rest_framework_json_api.pagination.LimitOffsetPagination',
+    'ORDERING_PARAM': 'sort',
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework_json_api.pagination.LimitOffsetPagination',
     'DEFAULT_PARSER_CLASSES': (
-        'rest_framework_json_api.parsers.JSONParser',
+        'apps.pp.parsers.JSONAPIParser',
+        'rest_framework.parsers.JSONParser',
         'rest_framework.parsers.FormParser',
         'rest_framework.parsers.MultiPartParser'
     ),
     'DEFAULT_RENDERER_CLASSES': (
-        'rest_framework_json_api.renderers.JSONRenderer',
+        'apps.pp.renderers.JSONAPIRenderer',
+        'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
     ),
-    'DEFAULT_METADATA_CLASS': 'rest_framework_json_api.metadata.JSONAPIMetadata',
+    # 'DEFAULT_METADATA_CLASS': 'rest_framework_json_api.metadata.JSONAPIMetadata',
 
+}
+
+SWAGGER_SETTINGS = {
+    'DEFAULT_FIELD_INSPECTORS': [
+        'apps.pp.inspectors.RootSerializerInspector',
+        'apps.pp.inspectors.IDFieldInspector',
+        'drf_yasg.inspectors.CamelCaseJSONFilter',
+        # ReferencingS... replaced with InlineS... which does not create serializers definitions index,
+        # but does not require serializers class names to be unique across whole application
+        # 'drf_yasg.inspectors.ReferencingSerializerInspector',
+        'drf_yasg.inspectors.InlineSerializerInspector',
+        'drf_yasg.inspectors.RelatedFieldInspector',
+        'drf_yasg.inspectors.ChoiceFieldInspector',
+        'drf_yasg.inspectors.FileFieldInspector',
+        'drf_yasg.inspectors.DictFieldInspector',
+        'drf_yasg.inspectors.HiddenFieldInspector',
+        'drf_yasg.inspectors.SimpleFieldInspector',
+        'drf_yasg.inspectors.StringDefaultFieldInspector',
+    ]
 }
 
 # Internationalization

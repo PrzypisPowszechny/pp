@@ -1,10 +1,7 @@
-import json
-from datetime import datetime, timedelta
 from django.test import TestCase
+
 from apps.pp.models import Reference, UserReferenceFeedback
-from apps.pp.models import ReferenceReport
 from apps.pp.tests.utils import create_test_user
-from apps.pp.models import ReferenceRequest
 
 
 class ReferenceFeedbackAPITest(TestCase):
@@ -34,7 +31,7 @@ class ReferenceFeedbackAPITest(TestCase):
 
         # Can't delete when there are none
         response = self.client.delete(self.useful_url.format(reference.id), content_type='application/vnd.api+json')
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 404)
 
         UserReferenceFeedback.objects.create(user=self.user, reference=reference, useful=True)
 
@@ -60,7 +57,7 @@ class ReferenceFeedbackAPITest(TestCase):
 
         # Can't delete when there are none
         response = self.client.delete(self.objection_url.format(reference.id), content_type='application/vnd.api+json')
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 404)
 
         UserReferenceFeedback.objects.create(user=self.user, reference=reference, objection=True)
 

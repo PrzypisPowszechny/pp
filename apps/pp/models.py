@@ -1,7 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from apps.pp import consts
 from simple_history.models import HistoricalRecords
+
+from apps.pp import consts
 
 
 class User(AbstractUser):
@@ -13,6 +14,7 @@ class User(AbstractUser):
 
 
 class UserInput(models.Model):
+    # TODO(TG): user django global setting, not direct model reference
     user = models.ForeignKey('pp.User')
     create_date = models.DateTimeField(auto_now_add=True)
 

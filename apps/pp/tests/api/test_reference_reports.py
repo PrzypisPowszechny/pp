@@ -1,10 +1,10 @@
 import json
-from datetime import datetime, timedelta
+
 from django.test import TestCase
-from apps.pp.models import Reference, UserReferenceFeedback
+
+from apps.pp.models import Reference
 from apps.pp.models import ReferenceReport
 from apps.pp.tests.utils import create_test_user
-from apps.pp.models import ReferenceRequest
 
 
 class ReferenceReportAPITest(TestCase):
@@ -22,18 +22,18 @@ class ReferenceReportAPITest(TestCase):
         report_data = {
             'reason': 'SPAM',
             'comment': "komentarz",
-            'reference': str(reference.id)
+            'reference': reference.id
         }
 
         body = json.dumps({
-                'data': {
-                    'type': 'reference_reports',
-                    'attributes': {
-                        'reason': report_data['reason'],
-                        'comment': report_data['comment'],
-                    }
+            'data': {
+                'type': 'reference_reports',
+                'attributes': {
+                    'reason': report_data['reason'],
+                    'comment': report_data['comment'],
                 }
-            })
+            }
+        })
 
         response = self.client.post(self.post_url.format(reference.id), body, content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 200)

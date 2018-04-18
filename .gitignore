@@ -1,4 +1,9 @@
-.idea/.*  # PyCharm project folder
+# PyCharm project folder
+.idea/
+# Local files of development databases
+db.*
+
+
 
 ### Git python preset
 
