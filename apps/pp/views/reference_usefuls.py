@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.pp.models import UserReferenceFeedback
-from apps.pp.utils.views import ErrorResponse, NotFoundResponse
+from apps.pp.responses import ErrorResponse, NotFoundResponse
 
 
 class ReferenceUsefulChange(APIView):

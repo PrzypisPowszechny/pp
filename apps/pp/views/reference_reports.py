@@ -5,8 +5,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.pp.models import Reference, ReferenceReport
-from apps.pp.serializers import ReferenceReportSerializer, ReferenceReportDeserializer, set_relationship
-from apps.pp.utils.views import ValidationErrorResponse, NotFoundResponse
+from apps.pp.serializers import ReferenceReportSerializer, ReferenceReportDeserializer
+from apps.pp.responses import ValidationErrorResponse, NotFoundResponse
+from apps.pp.utils import set_relationship
 
 
 class ReferenceReportPOST(APIView):

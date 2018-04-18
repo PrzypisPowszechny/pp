@@ -1,8 +1,8 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.filters import OrderingFilter
 from rest_framework.generics import GenericAPIView
 
-from apps.pp.utils.views import PermissionDenied, ValidationErrorResponse, ErrorResponse, NotFoundResponse
+from apps.pp.responses import PermissionDenied, ValidationErrorResponse, ErrorResponse, NotFoundResponse
 from django.db.models import Case
 from django.db.models import IntegerField
 from django.db.models import Sum
@@ -18,7 +18,8 @@ from drf_yasg.utils import swagger_auto_schema
 
 from apps.pp.models import Reference, UserReferenceFeedback
 from apps.pp.serializers import ReferencePatchDeserializer, ReferenceListSerializer, ReferenceDeserializer, \
-    ReferenceSerializer, get_relationship_id, set_relationship
+    ReferenceSerializer
+from apps.pp.utils import get_relationship_id, set_relationship
 
 
 class ReferenceDetail(APIView):

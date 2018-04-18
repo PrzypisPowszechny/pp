@@ -1,5 +1,3 @@
-from rest_framework import parsers
-from rest_framework import renderers
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND, HTTP_403_FORBIDDEN
 from simplejson import OrderedDict
@@ -103,34 +101,3 @@ class PermissionDenied(ErrorResponse):
     def __init__(self, *args, status=HTTP_403_FORBIDDEN, **kwargs):
         super().__init__(*args, error_title='Permission Denied', status=status, **kwargs)
 
-
-class JSONRenderer(renderers.JSONRenderer):
-    media_type = 'application/vnd.api+json'
-    format = 'vnd.api+json'
-
-    def render(self, data, accepted_media_type=None, renderer_context=None):
-        response = renderer_context.get('response', None)
-        if response is not None and response.status_code == 204:
-            data = None
-        elif data is None:
-            data = {'data': None}
-        # One of those MUST be in valid response, so if it isn't we assume data var is actual val of data key
-        elif 'data' not in data and 'errors' not in data and 'meta' not in data:
-            data = {'data': data}
-
-        # Pagination case: response consists of results, meta and links, just replace results key with data
-        if 'results' in data:
-            data['data'] = data.pop('results')
-
-        return super().render(data, accepted_media_type, renderer_context)
-
-
-class JSONParser(parsers.JSONParser):
-    media_type = 'application/vnd.api+json'
-    renderer_class = JSONRenderer
-
-    def parse(self, *args, **kwargs):
-        """
-        Parses the incoming bytestream as JSON and returns the resulting data
-        """
-        return super().parse(*args, **kwargs).get('data')

@@ -51,8 +51,6 @@ INSTALLED_APPS = [
     # Ann app that saves models' states as they change together with the user who produced the change
     'simple_history',
 
-    'rest_framework_swagger',
-
     'drf_yasg',
 ]
 
@@ -148,13 +146,13 @@ REST_FRAMEWORK = {
     'ORDERING_PARAM': 'sort',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework_json_api.pagination.LimitOffsetPagination',
     'DEFAULT_PARSER_CLASSES': (
-        'apps.pp.utils.views.JSONParser',
+        'apps.pp.parsers.JSONAPIParser',
         'rest_framework.parsers.JSONParser',
         'rest_framework.parsers.FormParser',
         'rest_framework.parsers.MultiPartParser'
     ),
     'DEFAULT_RENDERER_CLASSES': (
-        'apps.pp.utils.views.JSONRenderer',
+        'apps.pp.renderers.JSONAPIRenderer',
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
     ),
@@ -164,8 +162,8 @@ REST_FRAMEWORK = {
 
 SWAGGER_SETTINGS = {
     'DEFAULT_FIELD_INSPECTORS': [
-        'apps.pp.serializers.RootSerializerInspector',
-        'apps.pp.serializers.IDFieldInspector',
+        'apps.pp.inspectors.RootSerializerInspector',
+        'apps.pp.inspectors.IDFieldInspector',
         'drf_yasg.inspectors.CamelCaseJSONFilter',
         # ReferencingS... replaced with InlineS... which does not create serializers definitions index,
         # but does not require serializers class names to be unique across whole application
