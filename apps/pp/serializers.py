@@ -36,8 +36,8 @@ class ReferenceDeserializer(ResourceTypeSerializer):
         class ReferenceRequest(ResourceSerializer):
             pass
 
-        reference_request = data_wrapped(ReferenceRequest(required=False, allow_null=True))(required=False,
-                                                                                            allow_null=True)
+        reference_request = data_wrapped(required=False, allow_null=True,
+                                         wrapped_serializer=ReferenceRequest(required=False, allow_null=True))
 
     attributes = Attributes()
     relationships = Relationships(required=False)
@@ -90,7 +90,12 @@ class ReferenceSerializer(ResourceSerializer, ReferenceDeserializer):
         class User(ResourceSerializer):
             pass
 
-        user = data_wrapped(User)(required=True)
+        class ReferenceRequest(ResourceSerializer):
+            pass
+
+        user = data_wrapped(required=True, wrapped_serializer=User())
+        reference_request = data_wrapped(required=True,
+                                         wrapped_serializer=ReferenceRequest(required=False, allow_null=True))
 
     attributes = Attributes()
     relationships = Relationships()
@@ -121,8 +126,9 @@ class ReferenceListSerializer(ResourceSerializer):
         class ReferenceRequest(ResourceSerializer):
             pass
 
-        user = data_wrapped(User)(required=True)
-        reference_request = data_wrapped(ReferenceRequest)(required=False, allow_null=True)
+        user = data_wrapped(required=True, wrapped_serializer=User())
+        reference_request = data_wrapped(required=True,
+                                         wrapped_serializer=ReferenceRequest(required=False, allow_null=True))
 
     attributes = Attributes()
     relationships = Relationships()
@@ -154,7 +160,7 @@ class ReferenceReportSerializer(ResourceSerializer, ReferenceReportDeserializer)
         class Reference(ResourceSerializer):
             pass
 
-        user = data_wrapped(User)(required=True, allow_null=True)
-        reference = data_wrapped(Reference)(required=True, allow_null=True)
+        user = data_wrapped(required=True, wrapped_serializer=User())
+        reference = data_wrapped(required=True, wrapped_serializer=Reference())
 
     relationships = Relationships()
