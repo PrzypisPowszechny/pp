@@ -19,7 +19,7 @@ from drf_yasg.utils import swagger_auto_schema
 from apps.pp.models import Reference, UserReferenceFeedback
 from apps.pp.serializers import ReferencePatchDeserializer, ReferenceListSerializer, ReferenceDeserializer, \
     ReferenceSerializer
-from apps.pp.utils import get_relationship_id, set_relationship
+from apps.pp.utils import get_relationship_id, set_relationship, set_self_link
 
 
 class ReferenceDetail(APIView):
@@ -83,11 +83,17 @@ class ReferenceDetail(APIView):
         return Response()
 
 
-class ReferencePOST(APIView):
+class ReferenceList(GenericAPIView):
     resource_name = 'references'
+    pagination_class = LimitOffsetPagination
+    filter_backends = (OrderingFilter, DjangoFilterBackend)
+    ordering_fields = ('create_date', 'id')
+    ordering = "-create_date"
+    filter_fields = ('url',)
 
     @swagger_auto_schema(request_body=ReferenceDeserializer,
-                         responses={200: ReferenceSerializer})
+                         responses={200: ReferenceSerializer},
+                         )
     @method_decorator(allow_lazy_user)
     def post(self, request):
         query_serializer = ReferenceDeserializer(data=request.data)
@@ -102,15 +108,6 @@ class ReferencePOST(APIView):
         set_relationship(data, reference, attr='reference_request_id')
         set_relationship(data, reference.user, attr='id')
         return Response(ReferenceSerializer(data, context={'request': request}).data)
-
-
-class ReferenceList(GenericAPIView):
-    resource_name = 'references'
-    pagination_class = LimitOffsetPagination
-    filter_backends = (OrderingFilter, DjangoFilterBackend)
-    ordering_fields = ('create_date', 'id')
-    ordering = "-create_date"
-    filter_fields = ('url',)
 
     def get_queryset(self):
         queryset = Reference.objects.select_related('reference_request').filter(active=True).annotate(
@@ -146,7 +143,8 @@ class ReferenceList(GenericAPIView):
         data_list = []
         for reference in queryset:
             attributes_serializer = ReferenceListSerializer.Attributes(reference, context={'request': self.request})
-            data = {'id': reference.id, 'type': 'references', 'attributes': attributes_serializer.data}
+            data = {'id': reference.id, 'type': self.resource_name, 'attributes': attributes_serializer.data}
+            set_self_link(data, reference)
             set_relationship(data, reference, attr='reference_request_id')
             set_relationship(data, reference.user, attr='id')
             data_list.append(data)

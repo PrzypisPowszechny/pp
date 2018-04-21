@@ -119,19 +119,37 @@ class ReferenceListSerializer(ResourceSerializer):
             read_only_fields = ('useful', 'useful_count', 'objection', 'objection_count',
                                 'does_belong_to_user')
 
+    # TODO: 1. relationships, as they are now, because the resources they point to are not accessible
+    # TODO: 2. objections, usefuls, reports are those which should be included (with endpoint links) in relationships
     class Relationships(serializers.Serializer):
-        class User(ResourceSerializer):
-            pass
+        class User(serializers.Serializer):
+            class UserData(ResourceSerializer):
+                pass
 
-        class ReferenceRequest(ResourceSerializer):
-            pass
+            class UserLinks(serializers.Serializer):
+                related = serializers.URLField(required=True)
+            data = UserData()
+            # TODO: link available only after we create User endpoint
+            # links = UserLinks()
 
-        user = data_wrapped(required=True, wrapped_serializer=User())
-        reference_request = data_wrapped(required=True,
-                                         wrapped_serializer=ReferenceRequest(required=False, allow_null=True))
+        class ReferenceRequest(serializers.Serializer):
+            class ReferenceRequestData(ResourceSerializer):
+                pass
+
+            class ReferenceRequestLinks(serializers.Serializer):
+                related = serializers.URLField(required=True)
+            data = ReferenceRequestData(required=False, allow_null=True)
+            # TODO: link available only after we create ReferenceRequest endpoint
+            # links = ReferenceRequestLinks(required=False, allow_null=True)
+        user = User(required=True)
+        reference_request = ReferenceRequest(required=True)
+
+    class ReferenceLinks(serializers.Serializer):
+        self = serializers.URLField(required=True)
 
     attributes = Attributes()
     relationships = Relationships()
+    links = ReferenceLinks()
 
 
 class ReferencePatchDeserializer(ResourceSerializer):

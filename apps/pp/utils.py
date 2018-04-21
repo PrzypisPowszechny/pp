@@ -1,3 +1,4 @@
+from django.urls import reverse
 from rest_framework import serializers
 
 
@@ -28,7 +29,6 @@ def get_resource_name(model, attr=None):
         model = model._meta.get_field(attr).related_model
     return model.JSONAPIMeta.resource_name
 
-
 def set_relationship(root_data, obj, attr):
     resource = get_resource_name(obj, attr)
     val = getattr(obj, attr)
@@ -39,3 +39,12 @@ def set_relationship(root_data, obj, attr):
             'type': resource, 'id': val
         }
     root_data.setdefault('relationships', {})[resource[:-1]] = {'data': data}
+
+
+def get_resource_self_link(obj):
+    return reverse(obj.JSONAPIMeta.resource_link_url_name,
+                   kwargs={obj.JSONAPIMeta.resource_link_url_kwarg: obj.pk})
+
+
+def set_self_link(root_data, obj):
+    root_data.setdefault('links', {})['self'] = get_resource_self_link(obj)

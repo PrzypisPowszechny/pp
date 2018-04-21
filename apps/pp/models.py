@@ -54,6 +54,8 @@ class Reference(Annotation):
 
     class JSONAPIMeta:
         resource_name = 'references'
+        resource_link_url_name = 'api:reference'
+        resource_link_url_kwarg = 'reference_id'
 
     priority = models.CharField(choices=consts.annotation_priorities, max_length=100)
     comment = models.TextField(max_length=100)
@@ -64,7 +66,7 @@ class Reference(Annotation):
     reference_link_title = models.CharField(max_length=100)
     # Short summary of the page referred to
 
-    reference_request = models.ForeignKey(ReferenceRequest, null=True)
+    reference_request = models.ForeignKey('ReferenceRequest', null=True)
     # Null when the annotation has not been created on request
 
     history = HistoricalRecords()

@@ -2,6 +2,7 @@ import json
 from datetime import timedelta
 
 from django.test import TestCase
+from django.urls import reverse
 from django.utils import timezone
 
 from apps.pp.models import Reference, UserReferenceFeedback
@@ -66,7 +67,7 @@ class ReferenceAPITest(TestCase):
         )
 
     def test_empty_search_return_json_200(self):
-        search_base_url = "/api/references/search/&url={}"
+        search_base_url = "/api/references/?url={}"
         response = self.client.get(search_base_url.format('przypis powszechny'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/vnd.api+json')
@@ -78,7 +79,7 @@ class ReferenceAPITest(TestCase):
         )
 
     def test_nonempty_search_return_json_200(self):
-        search_base_url = "/api/references/search/&url={}"
+        search_base_url = "/api/references/?&url={}"
         reference = Reference.objects.create(user=self.user, priority='NORMAL', comment="good job",
                                              reference_link="www.przypispowszechny.com",
                                              reference_link_title="very nice")
@@ -90,7 +91,7 @@ class ReferenceAPITest(TestCase):
         self.assertEqual(response['content-type'], 'application/vnd.api+json')
 
     def test_search_return_list(self):
-        search_base_url = "/api/references/search/&url={}"
+        search_base_url = "/api/references/?url={}"
         # First reference
         reference = Reference.objects.create(user=self.user, priority='NORMAL', comment="more good job",
                                              url='www.przypis.pl', reference_link="www.przypispowszechny.com",
@@ -141,6 +142,9 @@ class ReferenceAPITest(TestCase):
                           'relationships': {
                               'reference_request': {'data': None},
                               'user': {'data': {'type': 'users', 'id': str(self.user.id)}}
+                          },
+                          'links': {
+                              'self': reverse('api:reference', kwargs={'reference_id': reference.id})
                           }
                           })
 
@@ -164,7 +168,10 @@ class ReferenceAPITest(TestCase):
                           'relationships': {
                               'reference_request': {'data': None},
                               'user': {'data': {'type': 'users', 'id': str(self.user.id)}}
-                          }
+                          },
+                          'links': {
+                              'self': reverse('api:reference', kwargs={'reference_id': reference2.id})
+                          },
                           })
 
     def test_post_new_reference(self):
