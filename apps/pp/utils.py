@@ -1,3 +1,4 @@
+from django.db import models
 from django.urls import reverse
 from rest_framework import serializers
 
@@ -24,10 +25,19 @@ def get_relationship_id(root_serializer, name):
     return val
 
 
-def get_resource_name(model, attr=None):
-    if attr not in (None, 'pk', 'id'):
-        model = model._meta.get_field(attr).related_model
-    return model.JSONAPIMeta.resource_name
+def get_jsonapimeta(obj, attr=None):
+    model = obj
+    if isinstance(obj, models.Model):
+        if attr not in (None, 'pk', 'id'):
+            model = obj._meta.get_field(attr).related_model
+    elif isinstance(obj, models.QuerySet):
+        model = obj.model
+    return model.JSONAPIMeta
+
+
+def get_resource_name(obj, attr=None):
+    return get_jsonapimeta(obj, attr).resource_name
+
 
 def set_relationship(root_data, obj, attr):
     resource = get_resource_name(obj, attr)
@@ -36,9 +46,26 @@ def set_relationship(root_data, obj, attr):
         data = None
     else:
         data = {
-            'type': resource, 'id': val
+            'type': resource, 'id': val,
+            'links': obj.id
         }
     root_data.setdefault('relationships', {})[resource[:-1]] = {'data': data}
+
+
+def set_relationship_many(root_data, obj, attr, override_val=None):
+    resource = get_resource_name(obj, attr)
+    objs = override_val if override_val is not None else getattr(obj, attr)
+    if isinstance(objs, models.Manager):
+        objs = objs.all()
+    data_list = []
+    for obj in objs:
+        data_list.append({
+            'type': resource, 'id': obj.id
+        })
+    root_data.setdefault('relationships', {})[resource] = {
+        'data': data_list,
+        'links': obj.id
+    }
 
 
 def get_resource_self_link(obj):

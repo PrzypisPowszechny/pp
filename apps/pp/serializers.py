@@ -1,4 +1,9 @@
+from collections import OrderedDict
+
+from django.urls import reverse
 from rest_framework import serializers
+from rest_framework.fields import SkipField
+from rest_framework_json_api import serializers as serializers_json_api
 
 from apps.pp.models import ReferenceReport
 from apps.pp.utils import data_wrapped
@@ -21,6 +26,35 @@ class ResourceTypeSerializer(serializers.Serializer):
 
 class ResourceSerializer(ResourceIdSerializer, ResourceTypeSerializer):
     pass
+
+
+class LinkField(serializers.SerializerMethodField, serializers.URLField):
+    pass
+
+
+class RelationLinksSerializer(serializers.Serializer):
+    related = LinkField()
+
+    def get_related(self, instance):
+        serializer = self
+        while not isinstance(serializer, RelationManySerializer):
+            if serializer.parent is None:
+                raise AssertionError('%s should be a child of %s serializer' %
+                                     self.__class__.__name__,
+                                     RelationManySerializer.__name__)
+            serializer = serializer.parent
+        return reverse(serializer.related_link_url_name, args=(instance,))
+
+
+class RelationSerializer(serializers.Serializer):
+    links = RelationLinksSerializer(required=True)
+    data = ResourceSerializer(required=False)
+
+
+class RelationManySerializer(serializers.Serializer):
+    related_link_url_name = None
+    links = RelationLinksSerializer(required=True)
+    data = ResourceSerializer(required=False, many=True)
 
 
 class ReferenceDeserializer(ResourceTypeSerializer):
@@ -141,8 +175,16 @@ class ReferenceListSerializer(ResourceSerializer):
             data = ReferenceRequestData(required=False, allow_null=True)
             # TODO: link available only after we create ReferenceRequest endpoint
             # links = ReferenceRequestLinks(required=False, allow_null=True)
+
         user = User(required=True)
         reference_request = ReferenceRequest(required=True)
+        # objection = RelationSerializer()
+        # useful = RelationSerializer()
+
+        class ReportsRelationMany(RelationManySerializer):
+            related_link_url_name = 'api:reference_reports'
+
+        reports = ReportsRelationMany()
 
     class ReferenceLinks(serializers.Serializer):
         self = serializers.URLField(required=True)

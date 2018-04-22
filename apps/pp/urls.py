@@ -5,12 +5,14 @@ from .views import references, reference_reports, reference_usefuls, reference_o
 reference_urls = [
     url(r'^(?P<reference_id>[0-9]+)/$', references.ReferenceDetail.as_view(),
         name='reference'),
-    url(r'^$', references.ReferenceList.as_view()),
-
-    url(r'^(?P<reference_id>[0-9]+)/reports/$', reference_reports.ReferenceReportPOST.as_view()),
-
-    url(r'^(?P<reference_id>[0-9]+)/usefuls/$', reference_usefuls.ReferenceUsefulChange.as_view()),
-    url(r'^(?P<reference_id>[0-9]+)/objections/$', reference_objections.ReferenceObjectionChange.as_view()),
+    url(r'^$', references.ReferenceList.as_view(),
+        name='reference'),
+    url(r'^(?P<reference_id>[0-9]+)/reports/$', reference_reports.ReferenceReportPOST.as_view(),
+        name='reference_reports'),
+    url(r'^(?P<reference_id>[0-9]+)/useful/$', reference_usefuls.ReferenceUsefulChange.as_view(),
+        name='reference_useful'),
+    url(r'^(?P<reference_id>[0-9]+)/objection/$', reference_objections.ReferenceObjectionChange.as_view(),
+        name='reference_objection'),
 ]
 
 urlpatterns = [

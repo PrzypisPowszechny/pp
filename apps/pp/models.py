@@ -92,9 +92,11 @@ class ReferenceReport(UserInput):
         app_label = 'pp'
 
     class JSONAPIMeta:
-        resource_name = 'reference_reports'
+        resource_name = 'reports'
+        resource_link_url_name = 'api:reference_report'
+        resource_link_url_kwarg = 'reference_id'
 
-    reference = models.ForeignKey(Reference, on_delete=models.CASCADE)
+    reference = models.ForeignKey(Reference, on_delete=models.CASCADE, related_name='reference_reports')
     reason = models.CharField(choices=consts.reference_report_reasons, max_length=100)
     comment = models.TextField(max_length=100)
 
@@ -112,6 +114,9 @@ class UserReferenceFeedback(UserInput):
     # todo not a very neat representation, should probably be changed to a single choice field
     useful = models.BooleanField(blank=True, default=False)
     objection = models.BooleanField(blank=True, default=False)
+
+
+
 
 
 class UserReferenceRequestFeedback(models.Model):

@@ -3,7 +3,7 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.generics import GenericAPIView
 
 from apps.pp.responses import PermissionDenied, ValidationErrorResponse, ErrorResponse, NotFoundResponse
-from django.db.models import Case
+from django.db.models import Case, Prefetch
 from django.db.models import IntegerField
 from django.db.models import Sum
 from django.db.models import When
@@ -16,10 +16,10 @@ from rest_framework_json_api.pagination import LimitOffsetPagination
 from drf_yasg.utils import swagger_auto_schema
 
 
-from apps.pp.models import Reference, UserReferenceFeedback
+from apps.pp.models import Reference, UserReferenceFeedback, ReferenceReport
 from apps.pp.serializers import ReferencePatchDeserializer, ReferenceListSerializer, ReferenceDeserializer, \
     ReferenceSerializer
-from apps.pp.utils import get_relationship_id, set_relationship, set_self_link
+from apps.pp.utils import get_relationship_id, set_relationship, set_self_link, set_relationship_many
 
 
 class ReferenceDetail(APIView):
@@ -110,14 +110,19 @@ class ReferenceList(GenericAPIView):
         return Response(ReferenceSerializer(data, context={'request': request}).data)
 
     def get_queryset(self):
-        queryset = Reference.objects.select_related('reference_request').filter(active=True).annotate(
-            useful_count=Coalesce(
-                Sum(Case(When(feedbacks__useful=True, then=1)), default=0, output_field=IntegerField()),
-                0),
-            objection_count=Coalesce(
-                Sum(Case(When(feedbacks__objection=True, then=1)), default=0, output_field=IntegerField()),
-                0)
-        )
+        queryset = Reference.objects\
+            .select_related('reference_request')\
+            .filter(active=True).annotate(
+                useful_count=Coalesce(
+                    Sum(Case(When(feedbacks__useful=True, then=1)), default=0, output_field=IntegerField()),
+                    0),
+                objection_count=Coalesce(
+                    Sum(Case(When(feedbacks__objection=True, then=1)), default=0, output_field=IntegerField()),
+                    0)
+            ).prefetch_related(
+                Prefetch('reference_reports', queryset=ReferenceReport.objects.filter(user=self.request.user),
+                         to_attr='user_reference_reports')
+            )
         return queryset
 
     def annotate_fetched_queryset(self, queryset):
@@ -147,6 +152,8 @@ class ReferenceList(GenericAPIView):
             set_self_link(data, reference)
             set_relationship(data, reference, attr='reference_request_id')
             set_relationship(data, reference.user, attr='id')
+            set_relationship_many(data, reference,  attr='reference_reports',
+                                  override_val=reference.reference_reports)
             data_list.append(data)
         return data_list
 
