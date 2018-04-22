@@ -1,14 +1,17 @@
 from rest_framework import serializers
 
 
-def data_wrapped(serializer):
-    if isinstance(serializer, serializers.BaseSerializer):
-        serializer_class = serializer.__class__
+def data_wrapped(wrapped_serializer, *args, **kwargs):
+    if isinstance(wrapped_serializer, serializers.BaseSerializer):
+        wrapped_serializer_class = wrapped_serializer.__class__
     else:
         # Initialize if class was passed instead of instance
-        serializer_class = serializer
-        serializer = serializer_class()
-    return type('%sData' % serializer_class.__name__, (serializers.Serializer,), {'data': serializer})
+        wrapped_serializer_class = wrapped_serializer
+        wrapped_serializer = wrapped_serializer_class()
+    wrapper_field_class = type('%sData' % wrapped_serializer_class.__name__,
+                               (serializers.Serializer,),
+                               {'data': wrapped_serializer})
+    return wrapper_field_class(*args, **kwargs)
 
 
 def get_relationship_id(root_serializer, name):
