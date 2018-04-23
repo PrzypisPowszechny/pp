@@ -111,16 +111,16 @@ class ReferenceList(GenericAPIView):
         queryset = Reference.objects \
             .select_related('reference_request') \
             .filter(active=True).annotate(
-            useful_count=Coalesce(
-                Sum(Case(When(feedbacks__useful=True, then=1)), default=0, output_field=IntegerField()),
-                0),
-            objection_count=Coalesce(
-                Sum(Case(When(feedbacks__objection=True, then=1)), default=0, output_field=IntegerField()),
-                0)
-        ).prefetch_related(
-            Prefetch('reference_reports', queryset=ReferenceReport.objects.filter(user=self.request.user),
-                     to_attr='user_reference_reports')
-        )
+                useful_count=Coalesce(
+                    Sum(Case(When(feedbacks__useful=True, then=1)), default=0, output_field=IntegerField()),
+                    0),
+                objection_count=Coalesce(
+                    Sum(Case(When(feedbacks__objection=True, then=1)), default=0, output_field=IntegerField()),
+                    0)
+            ).prefetch_related(
+                Prefetch('reference_reports', queryset=ReferenceReport.objects.filter(user=self.request.user),
+                         to_attr='user_reference_reports')
+            )
         return queryset
 
     def annotate_fetched_queryset(self, queryset):

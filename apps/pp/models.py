@@ -91,8 +91,6 @@ class ReferenceReport(UserInput):
 
     class JSONAPIMeta:
         resource_name = 'reference_reports'
-        resource_link_url_name = 'api:reference_report'
-        resource_link_url_kwarg = 'reference_id'
 
     reference = models.ForeignKey(Reference, on_delete=models.CASCADE, related_name='reference_reports')
     reason = models.CharField(choices=consts.reference_report_reasons, max_length=100)

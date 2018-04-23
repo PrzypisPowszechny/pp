@@ -1,8 +1,5 @@
-from collections import OrderedDict
-
 from django.urls import reverse
 from rest_framework import serializers
-from rest_framework_json_api import serializers as serializers_json_api
 
 from apps.pp.models import ReferenceReport
 from apps.pp.utils import data_wrapped
@@ -34,7 +31,6 @@ class LinkField(serializers.SerializerMethodField, serializers.URLField):
 
 
 # Relation
-
 
 class ResourceLinksSerializer(serializers.Serializer):
     self = LinkField()
