@@ -1,4 +1,5 @@
 from django.db import models
+from django.forms import model_to_dict
 from django.urls import reverse
 from rest_framework import serializers
 
@@ -35,21 +36,35 @@ def get_jsonapimeta(obj, attr=None):
     return model.JSONAPIMeta
 
 
-def get_resource_name(obj, attr=None):
-    return get_jsonapimeta(obj, attr).resource_name
+def get_resource_name(obj, attr=None, jsonapimeta=None):
+    meta = jsonapimeta or get_jsonapimeta(obj, attr)
+    name = getattr(meta, 'resource_name', None)
+    if name is not None:
+        return name
+    get_names = getattr(meta, 'get_resource_names', None)
+    if get_names is not None:
+        return get_names(obj.__dict__ if obj else {})
+    raise ValueError('obj need to have either resource_name or get_resource_names defined')
 
 
-def set_relationship(root_data, obj, attr):
-    resource = get_resource_name(obj, attr)
-    val = getattr(obj, attr)
-    if val is None:
-        data = None
+def set_relationship(root_data, root_obj, obj, attr=None, jsonapimeta=None):
+    resource = get_resource_name(obj, attr, jsonapimeta)
+    if not isinstance(resource, dict):
+        resources = {resource: True}
     else:
-        data = {
-            'type': resource, 'id': val,
-            'links': obj.id
+        resources = resource
+    val = getattr(obj, attr) if obj and attr else None
+    for resource, resource_is_not_none in resources.items():
+        if val is None or not resource_is_not_none:
+            data = None
+        else:
+            data = {
+                'type': resource, 'id': val,
+            }
+        root_data.setdefault('relationships', {})[resource[:-1]] = {
+            'data': data,
+            'links': root_obj.id
         }
-    root_data.setdefault('relationships', {})[resource[:-1]] = {'data': data}
 
 
 def set_relationship_many(root_data, obj, attr, override_val=None):

@@ -37,7 +37,7 @@ class RelationLinksSerializer(serializers.Serializer):
 
     def get_related(self, instance):
         serializer = self
-        while not isinstance(serializer, RelationManySerializer):
+        while not isinstance(serializer, (RelationManySerializer, RelationSerializer)):
             if serializer.parent is None:
                 raise AssertionError('%s should be a child of %s serializer' %
                                      self.__class__.__name__,
@@ -47,6 +47,7 @@ class RelationLinksSerializer(serializers.Serializer):
 
 
 class RelationSerializer(serializers.Serializer):
+    related_link_url_name = None
     links = RelationLinksSerializer(required=True)
     data = ResourceSerializer(required=False)
 
@@ -176,15 +177,20 @@ class ReferenceListSerializer(ResourceSerializer):
             # TODO: link available only after we create ReferenceRequest endpoint
             # links = ReferenceRequestLinks(required=False, allow_null=True)
 
-        user = User(required=True)
-        reference_request = ReferenceRequest(required=True)
-        # objection = RelationSerializer()
-        # useful = RelationSerializer()
+        class ObjectionRelation(RelationSerializer):
+            related_link_url_name = 'api:reference_objection'
+
+        class UsefulRelation(RelationSerializer):
+            related_link_url_name = 'api:reference_useful'
 
         class ReportsRelationMany(RelationManySerializer):
             related_link_url_name = 'api:reference_reports'
 
-        reports = ReportsRelationMany()
+        user = User(required=True)
+        reference_request = ReferenceRequest(required=True)
+        useful = UsefulRelation()
+        objection = ObjectionRelation()
+        reference_reports = ReportsRelationMany()
 
     class ReferenceLinks(serializers.Serializer):
         self = serializers.URLField(required=True)

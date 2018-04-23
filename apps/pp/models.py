@@ -92,7 +92,7 @@ class ReferenceReport(UserInput):
         app_label = 'pp'
 
     class JSONAPIMeta:
-        resource_name = 'reports'
+        resource_name = 'reference_reports'
         resource_link_url_name = 'api:reference_report'
         resource_link_url_kwarg = 'reference_id'
 
@@ -106,7 +106,16 @@ class UserReferenceFeedback(UserInput):
         app_label = 'pp'
         unique_together = [('user', 'reference')]
 
-    # No JSONAPIMeta information; the model corresponds to two resources, not just one
+    class JSONAPIMeta:
+        useful_resource_name = 'usefuls'
+        objection_resource_name = 'objections'
+
+        @classmethod
+        def get_resource_names(cls, obj_attr):
+            return {
+                cls.useful_resource_name: obj_attr.get('useful'),
+                cls.objection_resource_name: obj_attr.get('objection'),
+            }
 
     reference = models.ForeignKey(Reference, related_name='feedbacks')
 
@@ -114,7 +123,6 @@ class UserReferenceFeedback(UserInput):
     # todo not a very neat representation, should probably be changed to a single choice field
     useful = models.BooleanField(blank=True, default=False)
     objection = models.BooleanField(blank=True, default=False)
-
 
 
 
