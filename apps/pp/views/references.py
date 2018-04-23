@@ -15,11 +15,10 @@ from rest_framework.views import APIView
 from rest_framework_json_api.pagination import LimitOffsetPagination
 from drf_yasg.utils import swagger_auto_schema
 
-
 from apps.pp.models import Reference, UserReferenceFeedback, ReferenceReport
 from apps.pp.serializers import ReferencePatchDeserializer, ReferenceListSerializer, ReferenceDeserializer, \
     ReferenceSerializer
-from apps.pp.utils import get_relationship_id, set_relationship, get_resource_name, DataPreSetter
+from apps.pp.utils import get_relationship_id, set_relationship, get_resource_name, DataPreSerializer
 
 
 class ReferenceDetail(APIView):
@@ -92,8 +91,7 @@ class ReferenceList(GenericAPIView):
     filter_fields = ('url',)
 
     @swagger_auto_schema(request_body=ReferenceDeserializer,
-                         responses={200: ReferenceSerializer},
-                         )
+                         responses={200: ReferenceSerializer})
     @method_decorator(allow_lazy_user)
     def post(self, request):
         query_serializer = ReferenceDeserializer(data=request.data)
@@ -110,19 +108,19 @@ class ReferenceList(GenericAPIView):
         return Response(ReferenceSerializer(data, context={'request': request}).data)
 
     def get_queryset(self):
-        queryset = Reference.objects\
-            .select_related('reference_request')\
+        queryset = Reference.objects \
+            .select_related('reference_request') \
             .filter(active=True).annotate(
-                useful_count=Coalesce(
-                    Sum(Case(When(feedbacks__useful=True, then=1)), default=0, output_field=IntegerField()),
-                    0),
-                objection_count=Coalesce(
-                    Sum(Case(When(feedbacks__objection=True, then=1)), default=0, output_field=IntegerField()),
-                    0)
-            ).prefetch_related(
-                Prefetch('reference_reports', queryset=ReferenceReport.objects.filter(user=self.request.user),
-                         to_attr='user_reference_reports')
-            )
+            useful_count=Coalesce(
+                Sum(Case(When(feedbacks__useful=True, then=1)), default=0, output_field=IntegerField()),
+                0),
+            objection_count=Coalesce(
+                Sum(Case(When(feedbacks__objection=True, then=1)), default=0, output_field=IntegerField()),
+                0)
+        ).prefetch_related(
+            Prefetch('reference_reports', queryset=ReferenceReport.objects.filter(user=self.request.user),
+                     to_attr='user_reference_reports')
+        )
         return queryset
 
     def annotate_fetched_queryset(self, queryset):
@@ -139,25 +137,27 @@ class ReferenceList(GenericAPIView):
         for reference in queryset:
             feedback = reference_to_feedback.get(reference.id)
             if feedback:
+                # TODO: setting useful and objection attrs duplicates corresponding relationships, consider removing
                 reference.useful = feedback.useful
                 reference.objection = feedback.objection
                 reference.does_belong_to_user = reference.id in user_reference_ids
             reference.user_feedback = feedback
         return queryset
 
-    def preserialize_queryset(self, queryset):
+    def pre_serialize_queryset(self, queryset):
         data_list = []
         for reference in queryset:
-            pre_setter = DataPreSetter(reference, {'attributes': reference})
-            pre_setter.set_relation(get_resource_name(reference, related_field='reference_request_id'),
-                                    resource_id=reference.reference_request_id)
-            pre_setter.set_relation(get_resource_name(reference.user),
-                                    resource_id=reference.user.id)
-            pre_setter.set_relation(get_resource_name(reference.user_feedback, model=UserReferenceFeedback),
-                                    resource_id=reference.user_feedback)
-            pre_setter.set_relation(get_resource_name(reference, related_field='reference_reports'),
-                                    resource_id=reference.user_reference_reports)
-            data_list.append(pre_setter.data)
+            data = {'attributes': reference}
+            pre_serializer = DataPreSerializer(reference, data)
+            pre_serializer.set_relation(get_resource_name(reference, related_field='reference_request_id'),
+                                        resource_id=reference.reference_request_id)
+            pre_serializer.set_relation(get_resource_name(reference.user),
+                                        resource_id=reference.user.id)
+            pre_serializer.set_relation(get_resource_name(reference.user_feedback, model=UserReferenceFeedback),
+                                        resource_id=reference.user_feedback)
+            pre_serializer.set_relation(get_resource_name(reference, related_field='reference_reports'),
+                                        resource_id=reference.user_reference_reports)
+            data_list.append(pre_serializer.data)
         return data_list
 
     @swagger_auto_schema(responses={200: ReferenceListSerializer(many=True)})
@@ -169,6 +169,6 @@ class ReferenceList(GenericAPIView):
 
         queryset = self.annotate_fetched_queryset(queryset)
 
-        data_list = self.preserialize_queryset(queryset)
+        data_list = self.pre_serialize_queryset(queryset)
 
         return self.get_paginated_response(ReferenceListSerializer(data_list, many=True).data)

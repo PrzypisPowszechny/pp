@@ -54,8 +54,6 @@ class Reference(Annotation):
 
     class JSONAPIMeta:
         resource_name = 'references'
-        resource_link_url_name = 'api:reference'
-        resource_link_url_kwarg = 'reference_id'
 
     priority = models.CharField(choices=consts.annotation_priorities, max_length=100)
     comment = models.TextField(max_length=100)
@@ -123,8 +121,6 @@ class UserReferenceFeedback(UserInput):
     # todo not a very neat representation, should probably be changed to a single choice field
     useful = models.BooleanField(blank=True, default=False)
     objection = models.BooleanField(blank=True, default=False)
-
-
 
 
 class UserReferenceRequestFeedback(models.Model):

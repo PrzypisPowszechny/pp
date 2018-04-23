@@ -2,13 +2,14 @@ from collections import OrderedDict
 
 from django.urls import reverse
 from rest_framework import serializers
-from rest_framework.fields import SkipField
 from rest_framework_json_api import serializers as serializers_json_api
 
 from apps.pp.models import ReferenceReport
 from apps.pp.utils import data_wrapped
 from .models import Reference, UserReferenceFeedback
 
+
+# Resource
 
 class IDField(serializers.IntegerField):
     def to_representation(self, value):
@@ -32,18 +33,33 @@ class LinkField(serializers.SerializerMethodField, serializers.URLField):
     pass
 
 
+# Relation
+
+
+class ResourceLinksSerializer(serializers.Serializer):
+    self = LinkField()
+    self_link_url_name = None
+
+    def get_self(self, instance):
+        obj_id = getattr(instance, 'id', None) or instance
+        return reverse(self.self_link_url_name, args=(obj_id,))
+
+
 class RelationLinksSerializer(serializers.Serializer):
     related = LinkField()
+    related_link_url_name = None
 
     def get_related(self, instance):
         serializer = self
-        while not isinstance(serializer, (RelationManySerializer, RelationSerializer)):
-            if serializer.parent is None:
-                raise AssertionError('%s should be a child of %s serializer' %
-                                     self.__class__.__name__,
-                                     RelationManySerializer.__name__)
+        related_link_url_name = getattr(serializer, 'related_link_url_name', None)
+        while related_link_url_name is None and serializer.parent is not None:
             serializer = serializer.parent
-        return reverse(serializer.related_link_url_name, args=(instance,))
+            related_link_url_name = getattr(serializer, 'related_link_url_name', None)
+        assert related_link_url_name is not None, \
+            "%s requires at least one parent to set related_link_url_name" % RelationLinksSerializer.__name__
+
+        obj_id = getattr(instance, 'id', None) or instance
+        return reverse(related_link_url_name, args=(obj_id,))
 
 
 class RelationSerializer(serializers.Serializer):
@@ -57,6 +73,8 @@ class RelationManySerializer(serializers.Serializer):
     links = RelationLinksSerializer(required=True)
     data = ResourceSerializer(required=False, many=True)
 
+
+# Reference
 
 class ReferenceDeserializer(ResourceTypeSerializer):
     class Attributes(serializers.ModelSerializer):
@@ -154,50 +172,38 @@ class ReferenceListSerializer(ResourceSerializer):
             read_only_fields = ('useful', 'useful_count', 'objection', 'objection_count',
                                 'does_belong_to_user')
 
-    # TODO: 1. relationships, as they are now, because the resources they point to are not accessible
-    # TODO: 2. objections, usefuls, reports are those which should be included (with endpoint links) in relationships
     class Relationships(serializers.Serializer):
-        class User(serializers.Serializer):
-            class UserData(ResourceSerializer):
-                pass
-
-            class UserLinks(serializers.Serializer):
-                related = serializers.URLField(required=True)
-            data = UserData()
-            # TODO: link available only after we create User endpoint
-            # links = UserLinks()
-
-        class ReferenceRequest(serializers.Serializer):
-            class ReferenceRequestData(ResourceSerializer):
-                pass
-
-            class ReferenceRequestLinks(serializers.Serializer):
-                related = serializers.URLField(required=True)
-            data = ReferenceRequestData(required=False, allow_null=True)
+        class User(RelationSerializer):
             # TODO: link available only after we create ReferenceRequest endpoint
-            # links = ReferenceRequestLinks(required=False, allow_null=True)
+            related_link_url_name = None
+            links = None
 
-        class ObjectionRelation(RelationSerializer):
+        class ReferenceRequest(RelationSerializer):
+            # TODO: link available only after we create ReferenceRequest endpoint
+            related_link_url_name = None
+            links = None
+
+        class Objection(RelationSerializer):
             related_link_url_name = 'api:reference_objection'
 
-        class UsefulRelation(RelationSerializer):
+        class Useful(RelationSerializer):
             related_link_url_name = 'api:reference_useful'
 
-        class ReportsRelationMany(RelationManySerializer):
+        class ReferenceReports(RelationManySerializer):
             related_link_url_name = 'api:reference_reports'
 
         user = User(required=True)
         reference_request = ReferenceRequest(required=True)
-        useful = UsefulRelation()
-        objection = ObjectionRelation()
-        reference_reports = ReportsRelationMany()
+        useful = Useful()
+        objection = Objection()
+        reference_reports = ReferenceReports()
 
-    class ReferenceLinks(serializers.Serializer):
-        self = serializers.URLField(required=True)
+    class Links(ResourceLinksSerializer):
+        self_link_url_name = 'api:reference'
 
     attributes = Attributes()
     relationships = Relationships()
-    links = ReferenceLinks()
+    links = Links()
 
 
 class ReferencePatchDeserializer(ResourceSerializer):
@@ -208,6 +214,8 @@ class ReferencePatchDeserializer(ResourceSerializer):
 
     attributes = Attributes()
 
+
+# Report
 
 class ReferenceReportDeserializer(ResourceTypeSerializer):
     class Attributes(serializers.ModelSerializer):
