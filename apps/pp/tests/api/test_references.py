@@ -122,57 +122,103 @@ class ReferenceAPITest(TestCase):
         response = json.loads(raw_response.content.decode('utf8'))['data']
         response_reference = next(row for row in response if str(row['id']) == str(reference.id))
         response_reference2 = next(row for row in response if str(row['id']) == str(reference2.id))
-        self.assertEqual(response_reference,
-                         {'id': str(reference.id),
-                          'type': 'references',
-                          'attributes': {
-                              'url': reference.url,
-                              'ranges': reference.ranges,
-                              'quote': reference.quote,
-                              'priority': reference.priority,
-                              'comment': reference.comment,
-                              'reference_link': reference.reference_link,
-                              'reference_link_title': reference.reference_link_title,
-                              'useful': urf.useful,
-                              'useful_count': useful_count,
-                              'objection': urf.objection,
-                              'objection_count': objection_count,
-                              'does_belong_to_user': True,
-                          },
-                          'relationships': {
-                              'reference_request': {'data': None},
-                              'user': {'data': {'type': 'users', 'id': str(self.user.id)}}
-                          },
-                          'links': {
-                              'self': reverse('api:reference', kwargs={'reference_id': reference.id})
-                          }
-                          })
+        self.assertEqual(
+            response_reference,
+            {'id': str(reference.id),
+             'type': 'references',
+             'attributes': {
+                 'url': reference.url,
+                 'ranges': reference.ranges,
+                 'quote': reference.quote,
+                 'priority': reference.priority,
+                 'comment': reference.comment,
+                 'reference_link': reference.reference_link,
+                 'reference_link_title': reference.reference_link_title,
+                 'useful': urf.useful,
+                 'useful_count': useful_count,
+                 'objection': urf.objection,
+                 'objection_count': objection_count,
+                 'does_belong_to_user': True,
+             },
+             'relationships': {
+                 'reference_request': {
+                     'data': None
+                 },
+                 'user': {
+                     'data': {'type': 'users', 'id': str(self.user.id)}
+                 },
+                 'objection': {
+                     'links': {
+                         'related': reverse('api:reference_objection', kwargs={'reference_id': reference.id})
+                     },
+                     'data': None
+                 },
+                 'useful': {
+                     'links': {
+                         'related': reverse('api:reference_useful', kwargs={'reference_id': reference.id})
+                     },
+                     'data': {'type': 'usefuls', 'id': str(urf.id)}
+                 },
+                 'reference_reports': {
+                     'links': {
+                         'related': reverse('api:reference_reports', kwargs={'reference_id': reference.id})
+                     },
+                     'data': []
+                 },
+             },
+             'links': {
+                 'self': reverse('api:reference', kwargs={'reference_id': reference.id})
+             }
+             })
 
-        self.assertEqual(response_reference2,
-                         {'id': str(reference2.id),
-                          'type': 'references',
-                          'attributes': {
-                              'url': reference2.url,
-                              'ranges': reference2.ranges,
-                              'quote': reference2.quote,
-                              'priority': reference2.priority,
-                              'comment': reference2.comment,
-                              'reference_link': reference2.reference_link,
-                              'reference_link_title': reference2.reference_link_title,
-                              'useful': urf2.useful,
-                              'useful_count': useful_count2,
-                              'objection': urf2.objection,
-                              'objection_count': objection_count2,
-                              'does_belong_to_user': True,
-                          },
-                          'relationships': {
-                              'reference_request': {'data': None},
-                              'user': {'data': {'type': 'users', 'id': str(self.user.id)}}
-                          },
-                          'links': {
-                              'self': reverse('api:reference', kwargs={'reference_id': reference2.id})
-                          },
-                          })
+        self.assertEqual(
+            response_reference2,
+            {'id': str(reference2.id),
+             'type': 'references',
+             'attributes': {
+                 'url': reference2.url,
+                 'ranges': reference2.ranges,
+                 'quote': reference2.quote,
+                 'priority': reference2.priority,
+                 'comment': reference2.comment,
+                 'reference_link': reference2.reference_link,
+                 'reference_link_title': reference2.reference_link_title,
+                 'useful': urf2.useful,
+                 'useful_count': useful_count2,
+                 'objection': urf2.objection,
+                 'objection_count': objection_count2,
+                 'does_belong_to_user': True,
+             },
+             'relationships': {
+                 'reference_request': {
+                     'data': None
+                 },
+                 'user': {
+                     'data': {'type': 'users', 'id': str(self.user.id)}
+                 },
+                 'objection': {
+                     'links': {
+                         'related': reverse('api:reference_objection', kwargs={'reference_id': reference2.id})
+                     },
+                     'data': {'type': 'objections', 'id': str(urf2.id)}
+                 },
+                 'useful': {
+                     'links': {
+                         'related': reverse('api:reference_useful', kwargs={'reference_id': reference2.id})
+                     },
+                     'data': None
+                 },
+                 'reference_reports': {
+                     'links': {
+                         'related': reverse('api:reference_reports', kwargs={'reference_id': reference2.id})
+                     },
+                     'data': []
+                 },
+             },
+             'links': {
+                 'self': reverse('api:reference', kwargs={'reference_id': reference2.id})
+             },
+             })
 
     def test_post_new_reference(self):
         base_url = "/api/references/"

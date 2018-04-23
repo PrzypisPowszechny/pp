@@ -19,7 +19,7 @@ from drf_yasg.utils import swagger_auto_schema
 from apps.pp.models import Reference, UserReferenceFeedback, ReferenceReport
 from apps.pp.serializers import ReferencePatchDeserializer, ReferenceListSerializer, ReferenceDeserializer, \
     ReferenceSerializer
-from apps.pp.utils import get_relationship_id, set_relationship, set_self_link, set_relationship_many, get_resource_name
+from apps.pp.utils import get_relationship_id, set_relationship, get_resource_name, DataPreSetter
 
 
 class ReferenceDetail(APIView):
@@ -136,7 +136,6 @@ class ReferenceList(GenericAPIView):
         # Manually annotate useful & objection feedbacks for the current user
         feedbacks = UserReferenceFeedback.objects.filter(user=self.request.user, reference_id__in=reference_ids)
         reference_to_feedback = {feedback.reference_id: feedback for feedback in feedbacks}
-        print(reference_to_feedback)
         for reference in queryset:
             feedback = reference_to_feedback.get(reference.id)
             if feedback:
@@ -149,15 +148,16 @@ class ReferenceList(GenericAPIView):
     def preserialize_queryset(self, queryset):
         data_list = []
         for reference in queryset:
-            attributes_serializer = ReferenceListSerializer.Attributes(reference, context={'request': self.request})
-            data = {'id': reference.id, 'type': self.resource_name, 'attributes': attributes_serializer.data}
-            set_self_link(data, reference)
-            set_relationship(data, reference, reference, attr='reference_request_id')
-            set_relationship(data, reference, reference.user, attr='id')
-            set_relationship(data, reference, reference.user_feedback, attr='id', jsonapimeta=UserReferenceFeedback.JSONAPIMeta)
-            set_relationship_many(data, reference,  attr='reference_reports',
-                                  override_val=reference.user_reference_reports)
-            data_list.append(data)
+            pre_setter = DataPreSetter(reference, {'attributes': reference})
+            pre_setter.set_relation(get_resource_name(reference, related_field='reference_request_id'),
+                                    resource_id=reference.reference_request_id)
+            pre_setter.set_relation(get_resource_name(reference.user),
+                                    resource_id=reference.user.id)
+            pre_setter.set_relation(get_resource_name(reference.user_feedback, model=UserReferenceFeedback),
+                                    resource_id=reference.user_feedback)
+            pre_setter.set_relation(get_resource_name(reference, related_field='reference_reports'),
+                                    resource_id=reference.user_reference_reports)
+            data_list.append(pre_setter.data)
         return data_list
 
     @swagger_auto_schema(responses={200: ReferenceListSerializer(many=True)})

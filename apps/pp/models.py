@@ -111,10 +111,10 @@ class UserReferenceFeedback(UserInput):
         objection_resource_name = 'objections'
 
         @classmethod
-        def get_resource_names(cls, obj_attr):
+        def get_resource_names(cls, obj=None):
             return {
-                cls.useful_resource_name: obj_attr.get('useful'),
-                cls.objection_resource_name: obj_attr.get('objection'),
+                cls.useful_resource_name: getattr(obj, 'useful', False),
+                cls.objection_resource_name: getattr(obj, 'objection',  False),
             }
 
     reference = models.ForeignKey(Reference, related_name='feedbacks')
