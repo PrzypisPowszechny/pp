@@ -11,7 +11,7 @@ from apps.pp.serializers import FeedbackSerializer, FeedbackDeserializer
 from apps.pp.utils import DataPreSerializer, get_resource_name, get_relationship_id
 
 
-class ReferenceRelatedReferenceFeedback(APIView):
+class ReferenceRelatedReferenceFeedbackSingle(APIView):
     resource_attr = None
     resource_name = None
     serializer_class = FeedbackSerializer
@@ -54,7 +54,7 @@ class ReferenceRelatedReferenceFeedback(APIView):
         return Response(self.serializer_class(pre_serializer.data, context={'request': request}).data)
 
 
-class Feedback(APIView):
+class FeedbackSingle(APIView):
     resource_attr = None
     resource_name = None
     serializer_class = FeedbackSerializer

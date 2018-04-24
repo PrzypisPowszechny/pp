@@ -3,18 +3,18 @@ from django.conf.urls import url, include
 from .views import references, reference_reports, reference_usefuls, reference_objections
 
 reference_urls = [
-    url(r'^(?P<reference_id>[0-9]+)/$', references.ReferenceDetail.as_view(),
+    url(r'^(?P<reference_id>[0-9]+)/$', references.ReferenceSingle.as_view(),
         name='reference'),
     url(r'^$', references.ReferenceList.as_view(),
         name='reference'),
 
-    url(r'^(?P<reference_id>[0-9]+)/$', references.ReferenceDetail.as_view(),
+    url(r'^(?P<reference_id>[0-9]+)/$', references.ReferenceSingle.as_view(),
         name='reference'),
-    url(r'^(?P<reference_id>[0-9]+)/useful/$', reference_usefuls.ReferenceRelatedUseful.as_view(),
+    url(r'^(?P<reference_id>[0-9]+)/useful/$', reference_usefuls.ReferenceRelatedUsefulSingle.as_view(),
         name='reference_useful'),
-    url(r'^(?P<reference_id>[0-9]+)/objection/$', reference_objections.ReferenceRelatedObjection.as_view(),
+    url(r'^(?P<reference_id>[0-9]+)/objection/$', reference_objections.ReferenceRelatedObjectionSingle.as_view(),
         name='reference_objection'),
-    url(r'^(?P<reference_id>[0-9]+)/reports/$', reference_reports.ReferenceRelatedReferenceReport.as_view(),
+    url(r'^(?P<reference_id>[0-9]+)/reports/$', reference_reports.ReferenceRelatedReferenceReportList.as_view(),
         name='reference_reports'),
 ]
 
@@ -34,7 +34,7 @@ urlpatterns = [
     ])),
     # TODO: do we make referenceReports, reference-reports or reference_reports urls? check redux-json-api view on that
     url(r'^reference_reports/', include([
-        url(r'^(?P<reference_report_id>[0-9]+)/$', reference_reports.ReferenceReportSingle.as_view(),
+        url(r'^(?P<report_id>[0-9]+)/$', reference_reports.ReferenceReportSingle.as_view(),
             name='reference_report'),
         url(r'^$', reference_reports.ReferenceReportList.as_view(),
             name='reference_report'),

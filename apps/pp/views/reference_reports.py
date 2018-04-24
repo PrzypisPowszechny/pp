@@ -11,7 +11,8 @@ from apps.pp.serializers import ReferenceReportSerializer, ReferenceReportDeseri
 from apps.pp.utils import get_relationship_id, DataPreSerializer, get_resource_name
 
 
-class ReferenceRelatedReferenceReport(APIView):
+# TODO: add test
+class ReferenceRelatedReferenceReportList(APIView):
 
     @swagger_auto_schema(responses={200: ReferenceReportSerializer(many=True)})
     def get(self, request, reference_id):
@@ -32,8 +33,26 @@ class ReferenceRelatedReferenceReport(APIView):
         return Response(ReferenceReportSerializer(data_list, many=True, context={'request': request}).data)
 
 
+# TODO: add test
+class ReferenceReportSingle(APIView):
+
+    @swagger_auto_schema(responses={200: ReferenceReportSerializer})
+    @method_decorator(allow_lazy_user)
+    def get(self, request, report_id):
+        try:
+            report = ReferenceReport.objects.get(id=report_id, user=request.user)
+        except ReferenceReport.DoesNotExist:
+            return NotFoundResponse()
+
+        pre_serializer = DataPreSerializer(report, {'attributes': report})
+        pre_serializer.set_relation(resource_name=get_resource_name(report, related_field='reference_id'),
+                                    resource_id=report.reference_id)
+        pre_serializer.set_relation(resource_name=get_resource_name(report, related_field='user_id'),
+                                    resource_id=report.user_id)
+        return Response(ReferenceReportSerializer(pre_serializer.data, context={'request': request}).data)
+
+
 class ReferenceReportList(APIView):
-    resource_name = 'reference_reports'
 
     @swagger_auto_schema(request_body=ReferenceReportDeserializer,
                          responses={200: ReferenceReportSerializer})
@@ -64,6 +83,3 @@ class ReferenceReportList(APIView):
                                     resource_id=report.user_id)
         return Response(ReferenceReportSerializer(pre_serializer.data, context={'request': request}).data)
 
-
-class ReferenceReportSingle(APIView):
-    resource_name = 'reference_reports'
