@@ -1,5 +1,5 @@
 from apps.pp.models import UserReferenceFeedback
-from apps.pp.views.reference_feedbacks import ReferenceFeedbackChange, Feedback, FeedbackList
+from apps.pp.views.reference_feedbacks import ReferenceRelatedReferenceFeedback, Feedback, FeedbackList
 
 
 class ObjectionResource(object):
@@ -7,13 +7,15 @@ class ObjectionResource(object):
     resource_name = UserReferenceFeedback.JSONAPIMeta.objection_resource_name
 
 
-class ReferenceObjectionChange(ObjectionResource, ReferenceFeedbackChange):
+class ReferenceRelatedObjection(ObjectionResource, ReferenceRelatedReferenceFeedback):
     pass
 
 
-class Objection(ObjectionResource, Feedback):
+# TODO: add test
+class ObjectionSingle(ObjectionResource, Feedback):
     pass
 
 
+# TODO: add test
 class ObjectionList(ObjectionResource, FeedbackList):
     pass
