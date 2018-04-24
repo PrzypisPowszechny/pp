@@ -94,12 +94,12 @@ class ReferenceList(GenericAPIView):
                          responses={200: ReferenceSerializer})
     @method_decorator(allow_lazy_user)
     def post(self, request):
-        query_serializer = ReferenceDeserializer(data=request.data)
-        if not query_serializer.is_valid():
-            return ValidationErrorResponse(query_serializer.errors)
-        reference = Reference(**query_serializer.validated_data['attributes'])
+        deserializer = ReferenceDeserializer(data=request.data)
+        if not deserializer.is_valid():
+            return ValidationErrorResponse(deserializer.errors)
+        reference = Reference(**deserializer.validated_data['attributes'])
         reference.user_id = request.user.pk
-        reference.reference_request_id = get_relationship_id(query_serializer, 'reference_request')
+        reference.reference_request_id = get_relationship_id(deserializer, 'reference_request')
         reference.save()
 
         data = {'id': reference.id, 'type': self.resource_name, 'attributes': reference}
