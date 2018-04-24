@@ -234,9 +234,13 @@ class ReferenceReportDeserializer(ResourceTypeSerializer):
 class ReferenceReportSerializer(ResourceSerializer, ReferenceReportDeserializer):
     class Relationships(serializers.Serializer):
         class User(RelationSerializer):
+            # TODO: link available only after we create ReferenceRequest endpoint
+            related_link_url_name = None
             links = None
 
         class Reference(RelationSerializer):
+            # TODO: create related endpoint or link to absolute endpoint as this is single obj (not related list)
+            related_link_url_name = None
             links = None
 
         user = User()
@@ -250,6 +254,8 @@ class ReferenceReportSerializer(ResourceSerializer, ReferenceReportDeserializer)
 class FeedbackDeserializer(ResourceTypeSerializer):
     class Relationships(serializers.Serializer):
         class Reference(RelationSerializer):
+            # TODO: create related endpoint or link to absolute endpoint as this is single obj (not related list)
+            related_link_url_name = None
             links = None
 
         reference = Reference()
