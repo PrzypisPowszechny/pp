@@ -45,14 +45,17 @@ def get_jsonapimeta(obj, related_field=None):
     return model.JSONAPIMeta
 
 
-def get_resource_name(obj, related_field=None, model=None):
+def get_resource_name(obj, related_field=None, model=None, always_single=False):
     meta = get_jsonapimeta(model if model else obj, related_field)
     name = getattr(meta, 'resource_name', None)
     if name is not None:
         return name
     get_names = getattr(meta, 'get_resource_names', None)
     if get_names is not None:
-        return get_names(obj)
+        names = get_names(obj)
+        if always_single:
+            return [name for name, is_active_name in names.items() if is_active_name][0]
+        return names
     raise ValueError('obj need to have either resource_name or get_resource_names defined')
 
 
@@ -62,7 +65,7 @@ class DataPreSerializer(object):
         self.root_obj = root_obj
 
         self.root_data.setdefault('id', self.root_obj.id)
-        self.root_data.setdefault('type', get_resource_name(self.root_obj))
+        self.root_data.setdefault('type', get_resource_name(self.root_obj, always_single=True))
         self.root_data.setdefault('links', self.root_obj)
 
     @property

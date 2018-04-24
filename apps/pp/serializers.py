@@ -234,3 +234,17 @@ class ReferenceReportSerializer(ResourceSerializer, ReferenceReportDeserializer)
         reference = data_wrapped(required=True, wrapped_serializer=Reference())
 
     relationships = Relationships()
+
+
+# Useful
+
+class UsefulDeserializer(ResourceTypeSerializer):
+    class Relationships(serializers.Serializer):
+        class Reference(RelationSerializer):
+            links = None
+        reference = Reference()
+    relationships = Relationships()
+
+
+class UsefulSerializer(ResourceSerializer, UsefulDeserializer):
+    pass

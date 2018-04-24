@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from simple_history.models import HistoricalRecords
@@ -14,8 +15,7 @@ class User(AbstractUser):
 
 
 class UserInput(models.Model):
-    # TODO(TG): user django global setting, not direct model reference
-    user = models.ForeignKey('pp.User')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
     create_date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -82,7 +82,7 @@ class Reference(Annotation):
     def count_useful_and_objection(self):
         self.useful_count = UserReferenceFeedback.objects.filter(reference=self).filter(useful=True).count()
         self.objection_count = UserReferenceFeedback.objects.filter(reference=self).filter(objection=True).count()
-        return (self.useful_count, self.objection_count)
+        return self.useful_count, self.objection_count
 
 
 class ReferenceReport(UserInput):
