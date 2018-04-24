@@ -21,9 +21,15 @@ reference_urls = [
 urlpatterns = [
     url(r'^references/', include(reference_urls)),
     url(r'^usefuls/', include([
-        url(r'^(?P<useful_id>[0-9]+)/$', reference_usefuls.Useful.as_view(),
+        url(r'^(?P<feedback_id>[0-9]+)/$', reference_usefuls.Useful.as_view(),
             name='useful'),
         url(r'^$', reference_usefuls.UsefulList.as_view(),
             name='useful'),
+    ])),
+    url(r'^objections/', include([
+        url(r'^(?P<feedback_id>[0-9]+)/$', reference_objections.Objection.as_view(),
+            name='objection'),
+        url(r'^$', reference_objections.ObjectionList.as_view(),
+            name='objection'),
     ])),
 ]

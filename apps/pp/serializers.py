@@ -236,9 +236,9 @@ class ReferenceReportSerializer(ResourceSerializer, ReferenceReportDeserializer)
     relationships = Relationships()
 
 
-# Useful
+# Feedback
 
-class UsefulDeserializer(ResourceTypeSerializer):
+class FeedbackDeserializer(ResourceTypeSerializer):
     class Relationships(serializers.Serializer):
         class Reference(RelationSerializer):
             links = None
@@ -246,5 +246,5 @@ class UsefulDeserializer(ResourceTypeSerializer):
     relationships = Relationships()
 
 
-class UsefulSerializer(ResourceSerializer, UsefulDeserializer):
+class FeedbackSerializer(ResourceSerializer, FeedbackDeserializer):
     pass
