@@ -219,19 +219,28 @@ class ReferenceReportDeserializer(ResourceTypeSerializer):
             model = ReferenceReport
             fields = ('reason', 'comment')
 
+    class Relationships(serializers.Serializer):
+        class Reference(RelationSerializer):
+            # TODO: link available only after we create ReferenceRequest endpoint
+            related_link_url_name = None
+            links = None
+
+        reference = Reference()
+
     attributes = Attributes()
+    relationships = Relationships()
 
 
 class ReferenceReportSerializer(ResourceSerializer, ReferenceReportDeserializer):
     class Relationships(serializers.Serializer):
-        class User(ResourceSerializer):
-            pass
+        class User(RelationSerializer):
+            links = None
 
-        class Reference(ResourceSerializer):
-            pass
+        class Reference(RelationSerializer):
+            links = None
 
-        user = data_wrapped(required=True, wrapped_serializer=User())
-        reference = data_wrapped(required=True, wrapped_serializer=Reference())
+        user = User()
+        reference = Reference()
 
     relationships = Relationships()
 
@@ -242,7 +251,9 @@ class FeedbackDeserializer(ResourceTypeSerializer):
     class Relationships(serializers.Serializer):
         class Reference(RelationSerializer):
             links = None
+
         reference = Reference()
+
     relationships = Relationships()
 
 

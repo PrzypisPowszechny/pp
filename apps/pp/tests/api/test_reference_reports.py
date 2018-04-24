@@ -8,7 +8,7 @@ from apps.pp.tests.utils import create_test_user
 
 
 class ReferenceReportAPITest(TestCase):
-    post_url = "/api/references/{}/reports/"
+    post_url = "/api/reference_reports/"
     maxDiff = None
 
     # IMPORTANT: we log in for each test, so self.user has already an open session with server
@@ -16,13 +16,12 @@ class ReferenceReportAPITest(TestCase):
         self.user, self.password = create_test_user()
         self.client.login(username=self.user, password=self.password)
 
-    def test_post_new_reference(self):
+    def test_post_new_reference_report(self):
         reference = Reference.objects.create(user=self.user)
 
         report_data = {
             'reason': 'SPAM',
             'comment': "komentarz",
-            'reference': reference.id
         }
 
         body = json.dumps({
@@ -31,6 +30,14 @@ class ReferenceReportAPITest(TestCase):
                 'attributes': {
                     'reason': report_data['reason'],
                     'comment': report_data['comment'],
+                },
+                'relationships': {
+                    'reference': {
+                        'data': {
+                            'type': 'reference_reports',
+                            'id': str(reference.id)
+                        }
+                    }
                 }
             }
         })
