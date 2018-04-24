@@ -1,32 +1,19 @@
-from django.db import IntegrityError
-from django.utils.decorators import method_decorator
-from lazysignup.decorators import allow_lazy_user
-from rest_framework.response import Response
-from rest_framework.views import APIView
-
 from apps.pp.models import UserReferenceFeedback
-from apps.pp.responses import ErrorResponse, NotFoundResponse
-
-# TODO: change name of this file to singular
+from apps.pp.views.reference_feedbacks import ReferenceFeedbackChange, Feedback, FeedbackList
 
 
-class ReferenceObjectionChange(APIView):
-    resource_name = 'reference_objections'
+class ObjectionResource(object):
+    resource_attr = 'objection'
+    resource_name = UserReferenceFeedback.JSONAPIMeta.objection_resource_name
 
-    @method_decorator(allow_lazy_user)
-    def post(self, request, reference_id):
-        try:
-            UserReferenceFeedback.objects.create(reference_id=reference_id, user=request.user, objection=True)
-        except IntegrityError:
-            return ErrorResponse('Failed to create object')
-        return Response(data=None)
 
-    @method_decorator(allow_lazy_user)
-    def delete(self, request, reference_id):
-        try:
-            model = UserReferenceFeedback.objects.get(reference_id=reference_id, user=request.user, objection=True)
-        except UserReferenceFeedback.DoesNotExist:
-            return NotFoundResponse()
+class ReferenceObjectionChange(ObjectionResource, ReferenceFeedbackChange):
+    pass
 
-        model.delete()
-        return Response(data=None)
+
+class Objection(ObjectionResource, Feedback):
+    pass
+
+
+class ObjectionList(ObjectionResource, FeedbackList):
+    pass
