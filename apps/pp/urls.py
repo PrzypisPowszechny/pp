@@ -10,12 +10,12 @@ reference_urls = [
 
     url(r'^(?P<reference_id>[0-9]+)/$', references.ReferenceDetail.as_view(),
         name='reference'),
-    url(r'^(?P<reference_id>[0-9]+)/reports/$', reference_reports.ReferenceReportPOST.as_view(),
-        name='reference_reports'),
     url(r'^(?P<reference_id>[0-9]+)/useful/$', reference_usefuls.ReferenceUsefulChange.as_view(),
         name='reference_useful'),
     url(r'^(?P<reference_id>[0-9]+)/objection/$', reference_objections.ReferenceObjectionChange.as_view(),
         name='reference_objection'),
+    url(r'^(?P<reference_id>[0-9]+)/reports/$', reference_reports.ReferenceRelatedReferenceReport.as_view(),
+        name='reference_reports'),
 ]
 
 urlpatterns = [
@@ -31,5 +31,12 @@ urlpatterns = [
             name='objection'),
         url(r'^$', reference_objections.ObjectionList.as_view(),
             name='objection'),
+    ])),
+    # TODO: do we make referenceReports, reference-reports or reference_reports urls? check redux-json-api view on that
+    url(r'^reference_reports/', include([
+        url(r'^(?P<reference_report_id>[0-9]+)/$', reference_reports.ReferenceReportSingle.as_view(),
+            name='reference_report'),
+        url(r'^$', reference_reports.ReferenceReportList.as_view(),
+            name='reference_report'),
     ])),
 ]
