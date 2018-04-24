@@ -1,6 +1,7 @@
 import json
 
 from django.test import TestCase
+from django.urls import reverse
 
 from apps.pp.models import Reference
 from apps.pp.models import ReferenceReport
@@ -57,8 +58,14 @@ class ReferenceReportAPITest(TestCase):
                     'comment': report_data['comment'],
                 },
                 'relationships': {
-                    'reference': {'data': {'id': str(reference.id), 'type': 'references'}},
-                    'user': {'data': {'id': str(self.user.id), 'type': 'users'}},
+                    'reference': {
+                        'data': {'id': str(reference.id), 'type': 'references'},
+                        'links': {
+                            'related': reverse('api:report_reference', kwargs={'report_id': report.id})}
+                    },
+                    'user': {
+                        'data': {'id': str(self.user.id), 'type': 'users'}
+                    },
                 }
             }
         }

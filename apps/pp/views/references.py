@@ -1,27 +1,40 @@
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import OrderingFilter
-from rest_framework.generics import GenericAPIView
-
-from apps.pp.responses import PermissionDenied, ValidationErrorResponse, ErrorResponse, NotFoundResponse
 from django.db.models import Case, Prefetch
 from django.db.models import IntegerField
 from django.db.models import Sum
 from django.db.models import When
 from django.db.models.functions import Coalesce
 from django.utils.decorators import method_decorator
+from django_filters.rest_framework import DjangoFilterBackend
+from drf_yasg.utils import swagger_auto_schema
 from lazysignup.decorators import allow_lazy_user
+from rest_framework.filters import OrderingFilter
+from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_json_api.pagination import LimitOffsetPagination
-from drf_yasg.utils import swagger_auto_schema
 
 from apps.pp.models import Reference, UserReferenceFeedback, ReferenceReport
+from apps.pp.responses import PermissionDenied, ValidationErrorResponse, ErrorResponse, NotFoundResponse, Forbidden
 from apps.pp.serializers import ReferencePatchDeserializer, ReferenceListSerializer, ReferenceDeserializer, \
     ReferenceSerializer
-from apps.pp.utils import get_relationship_id, set_relationship, get_resource_name, DataPreSerializer
+from apps.pp.utils import get_relationship_id, get_resource_name, DataPreSerializer
 
 
-class ReferenceSingle(APIView):
+class ReferenceBase(object):
+    def get_pre_serialized_reference(self, reference, feedback=None, reports=()):
+        pre_serializer = DataPreSerializer(reference, {'attributes': reference})
+        pre_serializer.set_relation(get_resource_name(reference, related_field='reference_request_id'),
+                                    resource_id=reference.reference_request_id)
+        pre_serializer.set_relation(get_resource_name(reference.user),
+                                    resource_id=reference.user_id)
+        pre_serializer.set_relation(get_resource_name(feedback, model=UserReferenceFeedback),
+                                    resource_id=feedback)
+        pre_serializer.set_relation(get_resource_name(reference, related_field='reference_reports'),
+                                    resource_id=reports)
+        return pre_serializer.data
+
+
+class ReferenceSingle(ReferenceBase, APIView):
     resource_name = 'references'
 
     @swagger_auto_schema(responses={200: ReferenceSerializer})
@@ -29,13 +42,12 @@ class ReferenceSingle(APIView):
     def get(self, request, reference_id):
         try:
             reference = Reference.objects.select_related('reference_request').get(active=True, id=reference_id)
-        except Reference.DoesNotExist:
-            return ErrorResponse('Resource not found')
-
-        data = {'id': reference.id, 'type': self.resource_name, 'attributes': reference}
-        set_relationship(data, reference, attr='reference_request_id')
-        set_relationship(data, reference.user, attr='id')
-        return Response(ReferenceSerializer(data, context={'request': request}).data)
+            feedback = UserReferenceFeedback.objects.filter(reference=reference, user=request.user).first()
+            reports = ReferenceReport.objects.filter(reference_id=reference.id, user=request.user)
+        except (UserReferenceFeedback.DoesNotExist, Reference.DoesNotExist):
+            return NotFoundResponse()
+        return Response(ReferenceSerializer(instance=self.get_pre_serialized_reference(reference, feedback, reports),
+                                            context={'request': request}).data)
 
     @swagger_auto_schema(request_body=ReferencePatchDeserializer,
                          responses={200: ReferenceSerializer})
@@ -44,13 +56,15 @@ class ReferenceSingle(APIView):
         try:
             reference = Reference.objects.select_related('reference_request').get(active=True, id=reference_id)
         except Reference.DoesNotExist:
-            return NotFoundResponse
+            return NotFoundResponse()
         # Check permissions
         if reference.user_id != request.user.id:
             return PermissionDenied()
         deserializer = ReferencePatchDeserializer(data=request.data, context={'request': request}, partial=True)
         if not deserializer.is_valid():
             return ErrorResponse(deserializer.errors)
+        if 'relationships' in request.data:
+            return Forbidden(error_details='Updating relationships not supported')
 
         patched_data = deserializer.validated_data.get('attributes', {})
         if not patched_data:
@@ -59,10 +73,11 @@ class ReferenceSingle(APIView):
             setattr(reference, k, v)
         reference.save()
 
-        data = {'id': reference.id, 'type': self.resource_name, 'attributes': reference}
-        set_relationship(data, reference, attr='reference_request_id')
-        set_relationship(data, reference.user, attr='id')
-        return Response(ReferenceSerializer(data, context={'request': request}).data)
+        feedback = UserReferenceFeedback.objects.filter(reference=reference, user=request.user).first()
+        reports = ReferenceReport.objects.filter(reference_id=reference.id, user=request.user)
+
+        return Response(ReferenceSerializer(instance=self.get_pre_serialized_reference(reference, feedback, reports),
+                                            context={'request': request}).data)
 
     @method_decorator(allow_lazy_user)
     def delete(self, request, reference_id):
@@ -81,7 +96,7 @@ class ReferenceSingle(APIView):
         return Response()
 
 
-class ReferenceList(GenericAPIView):
+class ReferenceList(ReferenceBase, GenericAPIView):
     resource_name = 'references'
     pagination_class = LimitOffsetPagination
     filter_backends = (OrderingFilter, DjangoFilterBackend)
@@ -101,10 +116,9 @@ class ReferenceList(GenericAPIView):
         reference.reference_request_id = get_relationship_id(deserializer, 'reference_request')
         reference.save()
 
-        data = {'id': reference.id, 'type': self.resource_name, 'attributes': reference}
-        set_relationship(data, reference, attr='reference_request_id')
-        set_relationship(data, reference.user, attr='id')
-        return Response(ReferenceSerializer(data, context={'request': request}).data)
+        return Response(ReferenceSerializer(instance=self.get_pre_serialized_reference(reference),
+                                            context={'request': request}).data)
+
 
     def get_queryset(self):
         queryset = Reference.objects \
@@ -144,20 +158,8 @@ class ReferenceList(GenericAPIView):
         return queryset
 
     def pre_serialize_queryset(self, queryset):
-        data_list = []
-        for reference in queryset:
-            data = {'attributes': reference}
-            pre_serializer = DataPreSerializer(reference, data)
-            pre_serializer.set_relation(get_resource_name(reference, related_field='reference_request_id'),
-                                        resource_id=reference.reference_request_id)
-            pre_serializer.set_relation(get_resource_name(reference.user),
-                                        resource_id=reference.user.id)
-            pre_serializer.set_relation(get_resource_name(reference.user_feedback, model=UserReferenceFeedback),
-                                        resource_id=reference.user_feedback)
-            pre_serializer.set_relation(get_resource_name(reference, related_field='reference_reports'),
-                                        resource_id=reference.user_reference_reports)
-            data_list.append(pre_serializer.data)
-        return data_list
+        return [self.get_pre_serialized_reference(reference, reference.user_feedback, reference.user_reference_reports)
+                for reference in queryset]
 
     @swagger_auto_schema(responses={200: ReferenceListSerializer(many=True)})
     @method_decorator(allow_lazy_user)
@@ -171,3 +173,45 @@ class ReferenceList(GenericAPIView):
         data_list = self.pre_serialize_queryset(queryset)
 
         return self.get_paginated_response(ReferenceListSerializer(data_list, many=True).data)
+
+
+class ReferenceFeedbackRelatedReferenceSingle(ReferenceBase, APIView):
+    resource_attr = None
+
+    @swagger_auto_schema(responses={200: ReferenceSerializer})
+    @method_decorator(allow_lazy_user)
+    def get(self, request, feedback_id):
+        try:
+            feedback = UserReferenceFeedback.objects.get(id=feedback_id, user=request.user,
+                                                         **{self.resource_attr: True})
+            reference = Reference.objects.select_related('reference_request')\
+                .get(active=True, feedbacks=feedback_id, feedbacks__user=request.user)
+            reports = ReferenceReport.objects.filter(reference_id=reference.id, user=request.user)
+        except (UserReferenceFeedback.DoesNotExist, Reference.DoesNotExist):
+            return NotFoundResponse()
+        return Response(ReferenceSerializer(instance=self.get_pre_serialized_reference(reference, feedback, reports),
+                                            context={'request': request}).data)
+
+class ReferenceObjectionRelatedReferenceSingle(ReferenceFeedbackRelatedReferenceSingle):
+    resource_attr = 'objection'
+
+
+class ReferenceUsefulRelatedReferenceSingle(ReferenceFeedbackRelatedReferenceSingle):
+    resource_attr = 'useful'
+
+
+class ReferenceReportRelatedReferenceSingle(ReferenceBase, APIView):
+
+    @swagger_auto_schema(responses={200: ReferenceSerializer})
+    @method_decorator(allow_lazy_user)
+    def get(self, request, report_id):
+        try:
+            ReferenceReport.objects.get(id=report_id, user=request.user)
+            reference = Reference.objects.select_related('reference_request')\
+                .get(reference_reports=report_id, active=True, reference_reports__user=request.user)
+            feedback = UserReferenceFeedback.objects.get(reference_id=reference.id, user=request.user)
+            reports = ReferenceReport.objects.filter(reference_id=reference.id, user=request.user)
+        except (UserReferenceFeedback.DoesNotExist, Reference.DoesNotExist, ReferenceReport.DoesNotExist):
+            return NotFoundResponse()
+        return Response(ReferenceSerializer(instance=self.get_pre_serialized_reference(reference, feedback, reports),
+                                            context={'request': request}).data)

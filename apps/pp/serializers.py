@@ -58,16 +58,22 @@ class RelationLinksSerializer(serializers.Serializer):
         return reverse(related_link_url_name, args=(obj_id,))
 
 
-class RelationSerializer(serializers.Serializer):
-    related_link_url_name = None
-    links = RelationLinksSerializer(required=True)
+class RelationDeserializer(serializers.Serializer):
     data = ResourceSerializer(required=False)
 
 
-class RelationManySerializer(serializers.Serializer):
+class RelationSerializer(RelationDeserializer):
     related_link_url_name = None
     links = RelationLinksSerializer(required=True)
+
+
+class RelationManyDeserializer(serializers.Serializer):
     data = ResourceSerializer(required=False, many=True)
+
+
+class RelationManySerializer(RelationManyDeserializer):
+    related_link_url_name = None
+    links = RelationLinksSerializer(required=True)
 
 
 # Reference
@@ -135,16 +141,31 @@ class ReferenceSerializer(ResourceSerializer, ReferenceDeserializer):
             assert self.request_user is not None
             return self.request_user.id == instance.user_id
 
-    class Relationships(ReferenceDeserializer.Relationships):
-        class User(ResourceSerializer):
-            pass
+    class Relationships(serializers.Serializer):
+        class User(RelationSerializer):
+            # TODO: link available only after we create ReferenceRequest endpoint
+            related_link_url_name = None
+            links = None
 
-        class ReferenceRequest(ResourceSerializer):
-            pass
+        class ReferenceRequest(RelationSerializer):
+            # TODO: link available only after we create ReferenceRequest endpoint
+            related_link_url_name = None
+            links = None
 
-        user = data_wrapped(required=True, wrapped_serializer=User())
-        reference_request = data_wrapped(required=True,
-                                         wrapped_serializer=ReferenceRequest(required=False, allow_null=True))
+        class Objection(RelationSerializer):
+            related_link_url_name = 'api:reference_objection'
+
+        class Useful(RelationSerializer):
+            related_link_url_name = 'api:reference_useful'
+
+        class ReferenceReports(RelationManySerializer):
+            related_link_url_name = 'api:reference_reports'
+
+        user = User(required=True)
+        reference_request = ReferenceRequest(required=True)
+        useful = Useful()
+        objection = Objection()
+        reference_reports = ReferenceReports()
 
     attributes = Attributes()
     relationships = Relationships()
@@ -210,7 +231,6 @@ class ReferencePatchDeserializer(ResourceSerializer):
 
     attributes = Attributes()
 
-
 # Report
 
 class ReferenceReportDeserializer(ResourceTypeSerializer):
@@ -239,9 +259,7 @@ class ReferenceReportSerializer(ResourceSerializer, ReferenceReportDeserializer)
             links = None
 
         class Reference(RelationSerializer):
-            # TODO: create related endpoint or link to absolute endpoint as this is single obj (not related list)
-            related_link_url_name = None
-            links = None
+            related_link_url_name = 'api:report_reference'
 
         user = User()
         reference = Reference()
@@ -253,15 +271,44 @@ class ReferenceReportSerializer(ResourceSerializer, ReferenceReportDeserializer)
 
 class FeedbackDeserializer(ResourceTypeSerializer):
     class Relationships(serializers.Serializer):
-        class Reference(RelationSerializer):
-            # TODO: create related endpoint or link to absolute endpoint as this is single obj (not related list)
-            related_link_url_name = None
-            links = None
+        class Reference(RelationDeserializer):
+            pass
 
         reference = Reference()
 
     relationships = Relationships()
 
 
-class FeedbackSerializer(ResourceSerializer, FeedbackDeserializer):
-    pass
+class FeedbackSerializer(ResourceSerializer):
+    """
+    Used only for introspection purposes by schema generator.
+
+    Should be same as Useful and Objection serializers with only exception to link parameter.
+    """
+    class Relationships(serializers.Serializer):
+        class Reference(RelationSerializer):
+            pass
+
+        reference = Reference()
+
+    relationships = Relationships()
+
+
+class UsefulSerializer(ResourceSerializer):
+    class Relationships(serializers.Serializer):
+        class Reference(RelationSerializer):
+            related_link_url_name = 'api:useful_reference'
+
+        reference = Reference()
+
+    relationships = Relationships()
+
+
+class ObjectionSerializer(ResourceSerializer):
+    class Relationships(serializers.Serializer):
+        class Reference(RelationSerializer):
+            related_link_url_name = 'api:objection_reference'
+
+        reference = Reference()
+
+    relationships = Relationships()

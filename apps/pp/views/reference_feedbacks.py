@@ -13,7 +13,6 @@ from apps.pp.utils import DataPreSerializer, get_resource_name, get_relationship
 
 class ReferenceRelatedReferenceFeedbackSingle(APIView):
     resource_attr = None
-    resource_name = None
     serializer_class = FeedbackSerializer
     deprecated_description = 'DEPRECATED. Use absolute resource endpoint instead.'
 
@@ -56,7 +55,6 @@ class ReferenceRelatedReferenceFeedbackSingle(APIView):
 
 class FeedbackSingle(APIView):
     resource_attr = None
-    resource_name = None
     serializer_class = FeedbackSerializer
 
     @swagger_auto_schema(responses={200: FeedbackSerializer})
@@ -87,7 +85,6 @@ class FeedbackSingle(APIView):
 
 class FeedbackList(APIView):
     resource_attr = None
-    resource_name = None
     serializer_class = FeedbackSerializer
     deserializer_class = FeedbackDeserializer
 
