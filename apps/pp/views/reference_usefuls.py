@@ -1,10 +1,10 @@
-from apps.pp.models import UserReferenceFeedback
+from apps.pp.serializers import UsefulSerializer
 from apps.pp.views.reference_feedbacks import ReferenceRelatedReferenceFeedbackSingle, FeedbackSingle, FeedbackList
 
 
 class UsefulResource(object):
     resource_attr = 'useful'
-    resource_name = UserReferenceFeedback.JSONAPIMeta.useful_resource_name
+    serializer_class = UsefulSerializer
 
 
 class ReferenceRelatedUsefulSingle(UsefulResource, ReferenceRelatedReferenceFeedbackSingle):
