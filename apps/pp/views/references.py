@@ -21,7 +21,7 @@ from apps.pp.serializers import ReferencePatchDeserializer, ReferenceListSeriali
 from apps.pp.utils import get_relationship_id, set_relationship, get_resource_name, DataPreSerializer
 
 
-class ReferenceDetail(APIView):
+class ReferenceSingle(APIView):
     resource_name = 'references'
 
     @swagger_auto_schema(responses={200: ReferenceSerializer})
@@ -44,8 +44,7 @@ class ReferenceDetail(APIView):
         try:
             reference = Reference.objects.select_related('reference_request').get(active=True, id=reference_id)
         except Reference.DoesNotExist:
-            return ErrorResponse()
-
+            return NotFoundResponse
         # Check permissions
         if reference.user_id != request.user.id:
             return PermissionDenied()
