@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from apps.pp.models import Reference, ReferenceUpvote
+from apps.pp.models import Reference, AnnotationUpvote
 from apps.pp.tests.utils import create_test_user
 
 
@@ -18,7 +18,7 @@ class ReferenceFeedbackAPITest(TestCase):
 
         response = self.client.post(self.upvote_url.format(reference.id), content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 200)
-        upvotes = ReferenceUpvote.objects.filter(user=self.user, reference=reference).count()
+        upvotes = AnnotationUpvote.objects.filter(user=self.user, reference=reference).count()
         self.assertEqual(upvotes, 1)
 
         # Can't post second time
@@ -32,9 +32,9 @@ class ReferenceFeedbackAPITest(TestCase):
         response = self.client.delete(self.upvote_url.format(reference.id), content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 404)
 
-        ReferenceUpvote.objects.create(user=self.user, reference=reference)
+        AnnotationUpvote.objects.create(user=self.user, reference=reference)
 
         response = self.client.delete(self.upvote_url.format(reference.id), content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 200)
-        upvotes = ReferenceUpvote.objects.filter(user=self.user, reference=reference).count()
+        upvotes = AnnotationUpvote.objects.filter(user=self.user, reference=reference).count()
         self.assertEqual(upvotes, 0)

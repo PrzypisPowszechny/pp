@@ -1,7 +1,7 @@
 from django.conf.urls import url, include
 
 from apps.pp.views import users
-from .views import references, annotation_reports, reference_upvotes
+from .views import references, annotation_reports, annotation_upvotes
 
 
 urlpatterns = [
@@ -13,18 +13,18 @@ urlpatterns = [
         # Related
         url(r'^(?P<reference_id>[0-9]+)/user/$', users.ReferenceRelatedUserSingle.as_view(),
             name='reference_user'),
-        url(r'^(?P<reference_id>[0-9]+)/upvote/$', reference_upvotes.ReferenceRelatedUpvoteSingle.as_view(),
-            name='reference_upvote'),
+        url(r'^(?P<reference_id>[0-9]+)/upvote/$', annotation_upvotes.ReferenceRelatedUpvoteSingle.as_view(),
+            name='annotation_upvote'),
         url(r'^(?P<reference_id>[0-9]+)/reports/$', annotation_reports.ReferenceRelatedAnnotationReportList.as_view(),
             name='annotation_reports'),
     ])),
     url(r'^upvotes/', include([
-        url(r'^(?P<feedback_id>[0-9]+)/$', reference_upvotes.UpvoteSingle.as_view(),
+        url(r'^(?P<feedback_id>[0-9]+)/$', annotation_upvotes.UpvoteSingle.as_view(),
             name='upvote'),
-        url(r'^$', reference_upvotes.UpvoteList.as_view(),
+        url(r'^$', annotation_upvotes.UpvoteList.as_view(),
             name='upvote'),
         # Related
-        url(r'^(?P<feedback_id>[0-9]+)/reference/$', references.ReferenceUpvoteRelatedReferenceSingle.as_view(),
+        url(r'^(?P<feedback_id>[0-9]+)/reference/$', references.AnnotationUpvoteRelatedReferenceSingle.as_view(),
             name='upvote_reference'),
     ])),
     # TODO: do we make annotationReports, reference-reports or annotation_reports urls? check redux-json-api view on that

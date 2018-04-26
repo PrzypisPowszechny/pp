@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_json_api.pagination import LimitOffsetPagination
 
-from apps.pp.models import Reference, ReferenceUpvote, AnnotationReport
+from apps.pp.models import Reference, AnnotationUpvote, AnnotationReport
 from apps.pp.responses import PermissionDenied, ValidationErrorResponse, ErrorResponse, NotFoundResponse, Forbidden
 from apps.pp.serializers import ReferencePatchDeserializer, ReferenceListSerializer, ReferenceDeserializer, \
     ReferenceSerializer
@@ -25,7 +25,7 @@ class ReferenceBase(object):
         pre_serializer = DataPreSerializer(reference, {'attributes': reference})
         pre_serializer.set_relation(get_resource_name(reference.user),
                                     resource_id=reference.user_id)
-        pre_serializer.set_relation(get_resource_name(feedback, model=ReferenceUpvote),
+        pre_serializer.set_relation(get_resource_name(feedback, model=AnnotationUpvote),
                                     resource_id=feedback)
         pre_serializer.set_relation(get_resource_name(reference, related_field='annotation_reports'),
                                     resource_id=reports)
@@ -40,9 +40,9 @@ class ReferenceSingle(ReferenceBase, APIView):
     def get(self, request, reference_id):
         try:
             reference = Reference.objects.get(active=True, id=reference_id)
-            feedback = ReferenceUpvote.objects.filter(reference=reference, user=request.user).first()
+            feedback = AnnotationUpvote.objects.filter(reference=reference, user=request.user).first()
             reports = AnnotationReport.objects.filter(reference_id=reference.id, user=request.user)
-        except (ReferenceUpvote.DoesNotExist, Reference.DoesNotExist):
+        except (AnnotationUpvote.DoesNotExist, Reference.DoesNotExist):
             return NotFoundResponse()
         return Response(ReferenceSerializer(instance=self.get_pre_serialized_reference(reference, feedback, reports),
                                             context={'request': request}).data)
@@ -71,7 +71,7 @@ class ReferenceSingle(ReferenceBase, APIView):
             setattr(reference, k, v)
         reference.save()
 
-        feedback = ReferenceUpvote.objects.filter(reference=reference, user=request.user).first()
+        feedback = AnnotationUpvote.objects.filter(reference=reference, user=request.user).first()
         reports = AnnotationReport.objects.filter(reference_id=reference.id, user=request.user)
 
         return Response(ReferenceSerializer(instance=self.get_pre_serialized_reference(reference, feedback, reports),
@@ -138,7 +138,7 @@ class ReferenceList(ReferenceBase, GenericAPIView):
             .filter(user=self.request.user, id__in=reference_ids).values_list('id', flat=True)
 
         # Manually annotate upvote & objection feedbacks for the current user
-        feedbacks = ReferenceUpvote.objects.filter(user=self.request.user, reference_id__in=reference_ids)
+        feedbacks = AnnotationUpvote.objects.filter(user=self.request.user, reference_id__in=reference_ids)
         reference_to_feedback = {feedback.reference_id: feedback for feedback in feedbacks}
         for reference in queryset:
             feedback = reference_to_feedback.get(reference.id)
@@ -173,17 +173,17 @@ class ReferenceFeedbackRelatedReferenceSingle(ReferenceBase, APIView):
     @method_decorator(allow_lazy_user)
     def get(self, request, feedback_id):
         try:
-            feedback = ReferenceUpvote.objects.get(id=feedback_id, user=request.user,
+            feedback = AnnotationUpvote.objects.get(id=feedback_id, user=request.user,
                                                          **{self.resource_attr: True})
             reference = Reference.objects.get(active=True, feedbacks=feedback_id, feedbacks__user=request.user)
             reports = AnnotationReport.objects.filter(reference_id=reference.id, user=request.user)
-        except (ReferenceUpvote.DoesNotExist, Reference.DoesNotExist):
+        except (AnnotationUpvote.DoesNotExist, Reference.DoesNotExist):
             return NotFoundResponse()
         return Response(ReferenceSerializer(instance=self.get_pre_serialized_reference(reference, feedback, reports),
                                             context={'request': request}).data)
 
 
-class ReferenceUpvoteRelatedReferenceSingle(ReferenceFeedbackRelatedReferenceSingle):
+class AnnotationUpvoteRelatedReferenceSingle(ReferenceFeedbackRelatedReferenceSingle):
     resource_attr = 'upvote'
 
 
@@ -196,9 +196,9 @@ class AnnotationReportRelatedReferenceSingle(ReferenceBase, APIView):
             AnnotationReport.objects.get(id=report_id, user=request.user)
             reference = Reference.objects.get(annotation_reports=report_id, active=True,
                                               annotation_reports__user=request.user)
-            feedback = ReferenceUpvote.objects.get(reference_id=reference.id, user=request.user)
+            feedback = AnnotationUpvote.objects.get(reference_id=reference.id, user=request.user)
             reports = AnnotationReport.objects.filter(reference_id=reference.id, user=request.user)
-        except (ReferenceUpvote.DoesNotExist, Reference.DoesNotExist, AnnotationReport.DoesNotExist):
+        except (AnnotationUpvote.DoesNotExist, Reference.DoesNotExist, AnnotationReport.DoesNotExist):
             return NotFoundResponse()
         return Response(ReferenceSerializer(instance=self.get_pre_serialized_reference(reference, feedback, reports),
                                             context={'request': request}).data)

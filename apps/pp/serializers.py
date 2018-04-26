@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from apps.pp.models import AnnotationReport
 from apps.pp.utils import data_wrapped
-from .models import Reference, ReferenceUpvote
+from .models import Reference, AnnotationUpvote
 
 
 # Resource
@@ -109,12 +109,12 @@ class ReferenceSerializer(ResourceSerializer, ReferenceDeserializer):
 
         def get_upvote_count(self, instance):
             assert self.request_user is not None
-            return ReferenceUpvote.objects.filter(user=self.request_user, reference=instance) \
+            return AnnotationUpvote.objects.filter(user=self.request_user, reference=instance) \
                 .count()
 
         def is_upvote(self, instance):
             assert self.request_user is not None
-            return ReferenceUpvote.objects.filter(user=self.request_user, reference=instance) \
+            return AnnotationUpvote.objects.filter(user=self.request_user, reference=instance) \
                 .exists()
 
         def get_does_belong_to_user(self, instance):
@@ -126,7 +126,7 @@ class ReferenceSerializer(ResourceSerializer, ReferenceDeserializer):
             related_link_url_name = 'api:reference_user'
 
         class Upvote(RelationSerializer):
-            related_link_url_name = 'api:reference_upvote'
+            related_link_url_name = 'api:annotation_upvote'
 
         class AnnotationReports(RelationManySerializer):
             related_link_url_name = 'api:annotation_reports'
@@ -160,7 +160,7 @@ class ReferenceListSerializer(ResourceSerializer):
             related_link_url_name = 'api:reference_user'
 
         class Upvote(RelationSerializer):
-            related_link_url_name = 'api:reference_upvote'
+            related_link_url_name = 'api:annotation_upvote'
 
         class AnnotationReports(RelationManySerializer):
             related_link_url_name = 'api:annotation_reports'

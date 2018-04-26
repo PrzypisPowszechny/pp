@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from apps.pp.models import Reference, ReferenceUpvote, UserAnnotationRequestFeedback, AnnotationRequest
+from apps.pp.models import Reference, AnnotationUpvote, UserAnnotationRequestFeedback, AnnotationRequest
 
 
 class UserModelTest(TestCase):
@@ -15,7 +15,7 @@ class UserModelTest(TestCase):
         self.assertEqual(40, get_user_model().objects.count())
 
 
-class ReferenceUpvoteModelTest(TestCase):
+class AnnotationUpvoteModelTest(TestCase):
 
     @classmethod
     def setUpTestData(cls):
@@ -26,12 +26,12 @@ class ReferenceUpvoteModelTest(TestCase):
                                                  reference_link_title="very nice")
 
     def test_creating(self):
-        ReferenceUpvote.objects.create(user=self.user, reference=self.reference)
-        self.assertEqual(1, ReferenceUpvote.objects.count())
+        AnnotationUpvote.objects.create(user=self.user, reference=self.reference)
+        self.assertEqual(1, AnnotationUpvote.objects.count())
 
 
-    def test_updating_reference_upvote_count(self):
-        ReferenceUpvote.objects.create(user=self.user2, reference=self.reference)
+    def test_updating_annotation_upvote_count(self):
+        AnnotationUpvote.objects.create(user=self.user2, reference=self.reference)
         self.reference.count_upvote()
         self.assertEqual(1, self.reference.upvote_count)
 

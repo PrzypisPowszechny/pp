@@ -5,7 +5,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.pp.models import Reference, ReferenceUpvote
+from apps.pp.models import Reference, AnnotationUpvote
 from apps.pp.models import AnnotationRequest
 from apps.pp.tests.utils import create_test_user
 from apps.pp.utils import get_resource_name
@@ -24,7 +24,7 @@ class ReferenceAPITest(TestCase):
         reference = Reference.objects.create(user=self.user, priority='NORMAL', comment="good job",
                                              reference_link="www.przypispowszechny.com",
                                              reference_link_title="very nice")
-        urf = ReferenceUpvote.objects.create(user=self.user, reference=reference)
+        urf = AnnotationUpvote.objects.create(user=self.user, reference=reference)
         response = self.client.get(self.base_url.format(reference.id))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/vnd.api+json')
@@ -33,10 +33,10 @@ class ReferenceAPITest(TestCase):
         reference = Reference.objects.create(user=self.user, priority='NORMAL', comment="good job",
                                              reference_link="www.przypispowszechny.com",
                                              reference_link_title="very nice")
-        urf = ReferenceUpvote.objects.create(user=self.user, reference=reference)
+        urf = AnnotationUpvote.objects.create(user=self.user, reference=reference)
         response = self.client.get(self.base_url.format(reference.id))
 
-        upvote_count = ReferenceUpvote.objects.filter(reference=reference).count()
+        upvote_count = AnnotationUpvote.objects.filter(reference=reference).count()
 
         self.assertEqual(
             json.loads(response.content.decode('utf8')),
@@ -65,7 +65,7 @@ class ReferenceAPITest(TestCase):
                         },
                         'upvote': {
                             'links': {
-                                'related': reverse('api:reference_upvote', kwargs={'reference_id': reference.id})
+                                'related': reverse('api:annotation_upvote', kwargs={'reference_id': reference.id})
                             },
                             'data': {'id': str(urf.id), 'type': get_resource_name(urf, always_single=True)}
                         },
@@ -123,10 +123,10 @@ class ReferenceAPITest(TestCase):
                                               create_date=timezone.now())
         reference2.save()
 
-        urf = ReferenceUpvote.objects.create(user=self.user, reference=reference)
+        urf = AnnotationUpvote.objects.create(user=self.user, reference=reference)
 
-        upvote_count = ReferenceUpvote.objects.filter(reference=reference).count()
-        upvote_count2 = ReferenceUpvote.objects.filter(reference=reference2).count()
+        upvote_count = AnnotationUpvote.objects.filter(reference=reference).count()
+        upvote_count2 = AnnotationUpvote.objects.filter(reference=reference2).count()
 
         raw_response = self.client.get(search_base_url.format(reference.url))
         response = json.loads(raw_response.content.decode('utf8'))['data']
@@ -157,7 +157,7 @@ class ReferenceAPITest(TestCase):
                  },
                  'upvote': {
                      'links': {
-                         'related': reverse('api:reference_upvote', kwargs={'reference_id': reference.id})
+                         'related': reverse('api:annotation_upvote', kwargs={'reference_id': reference.id})
                      },
                      'data': {'type': 'upvotes', 'id': str(urf.id)}
                  },
@@ -198,7 +198,7 @@ class ReferenceAPITest(TestCase):
                  },
                  'upvote': {
                      'links': {
-                         'related': reverse('api:reference_upvote', kwargs={'reference_id': reference2.id})
+                         'related': reverse('api:annotation_upvote', kwargs={'reference_id': reference2.id})
                      },
                      'data': None
                  },
@@ -238,7 +238,7 @@ class ReferenceAPITest(TestCase):
         self.assertEqual(response.status_code, 200, msg=response.data)
         reference = Reference.objects.get(user=self.user)
 
-        upvote_count = ReferenceUpvote.objects.filter(reference=reference).count()
+        upvote_count = AnnotationUpvote.objects.filter(reference=reference).count()
         self.assertEqual(reference.ranges, "Od tad do tad")
         self.assertDictEqual(
             json.loads(response.content.decode('utf8')),
@@ -267,7 +267,7 @@ class ReferenceAPITest(TestCase):
                         },
                         'upvote': {
                             'links': {
-                                'related': reverse('api:reference_upvote', kwargs={'reference_id': reference.id})
+                                'related': reverse('api:annotation_upvote', kwargs={'reference_id': reference.id})
                             },
                             'data': None
                         },
@@ -312,7 +312,7 @@ class ReferenceAPITest(TestCase):
         self.assertEqual(response.status_code, 200, msg=response.data)
         reference = Reference.objects.get(user=self.user)
 
-        upvote_count = ReferenceUpvote.objects.filter(reference=reference).count()
+        upvote_count = AnnotationUpvote.objects.filter(reference=reference).count()
         self.assertEqual(reference.ranges, "Od tad do tad")
         self.assertDictEqual(
             json.loads(response.content.decode('utf8')),
@@ -341,7 +341,7 @@ class ReferenceAPITest(TestCase):
                         },
                         'upvote': {
                             'links': {
-                                'related': reverse('api:reference_upvote', kwargs={'reference_id': reference.id})
+                                'related': reverse('api:annotation_upvote', kwargs={'reference_id': reference.id})
                             },
                             'data': None
                         },
@@ -362,7 +362,7 @@ class ReferenceAPITest(TestCase):
                                              reference_link="www.przypispowszechny.com",
                                              reference_link_title="very nice",
                                              quote='not this time')
-        urf = ReferenceUpvote.objects.create(user=self.user, reference=reference)
+        urf = AnnotationUpvote.objects.create(user=self.user, reference=reference)
         put_string = 'not so well'
         put_data = json.dumps({
             'data': {
@@ -377,7 +377,7 @@ class ReferenceAPITest(TestCase):
                                      content_type='application/vnd.api+json')
         reference = Reference.objects.get(id=reference.id)
 
-        upvote_count = ReferenceUpvote.objects.filter(reference=reference).count()
+        upvote_count = AnnotationUpvote.objects.filter(reference=reference).count()
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(reference.reference_link_title, put_string)
@@ -407,7 +407,7 @@ class ReferenceAPITest(TestCase):
                     },
                     'upvote': {
                         'links': {
-                            'related': reverse('api:reference_upvote', kwargs={'reference_id': reference.id})
+                            'related': reverse('api:annotation_upvote', kwargs={'reference_id': reference.id})
                         },
                         'data': {'id': str(urf.id), 'type': get_resource_name(urf, always_single=True)}
                     },
@@ -428,7 +428,7 @@ class ReferenceAPITest(TestCase):
             reference_link="www.przypispowszechny.com", reference_link_title="very nice",
             quote='not this time'
         )
-        ReferenceUpvote.objects.create(user=self.user, reference=reference)
+        AnnotationUpvote.objects.create(user=self.user, reference=reference)
 
         put_string = 'not so well'
         put_data = json.dumps({
@@ -453,7 +453,7 @@ class ReferenceAPITest(TestCase):
             reference_link="www.przypispowszechny.com", reference_link_title="very nice",
             quote='not this time'
         )
-        ReferenceUpvote.objects.create(user=self.user, reference=reference)
+        AnnotationUpvote.objects.create(user=self.user, reference=reference)
 
         good_id = reference.id
         non_existing_id = good_id + 100000000

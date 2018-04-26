@@ -80,7 +80,7 @@ class Reference(AnnotationBase):
         self.changed_by = value
 
     def count_upvote(self):
-        self.upvote_count = ReferenceUpvote.objects.filter(reference=self).count()
+        self.upvote_count = AnnotationUpvote.objects.filter(reference=self).count()
         return self.upvote_count
 
 
@@ -96,7 +96,7 @@ class AnnotationReport(UserInput):
     comment = models.TextField(max_length=100)
 
 
-class ReferenceUpvote(UserInput):
+class AnnotationUpvote(UserInput):
     class Meta:
         app_label = 'pp'
         unique_together = [('user', 'reference')]

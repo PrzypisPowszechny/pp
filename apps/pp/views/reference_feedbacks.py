@@ -5,7 +5,7 @@ from lazysignup.decorators import allow_lazy_user
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.pp.models import ReferenceUpvote
+from apps.pp.models import AnnotationUpvote
 from apps.pp.responses import ErrorResponse, NotFoundResponse, ValidationErrorResponse
 from apps.pp.serializers import FeedbackSerializer, FeedbackDeserializer
 from apps.pp.utils import DataPreSerializer, get_resource_name, get_relationship_id
@@ -20,7 +20,7 @@ class ReferenceRelatedReferenceFeedbackSingle(APIView):
     @method_decorator(allow_lazy_user)
     def post(self, request, reference_id):
         try:
-            ReferenceUpvote.objects.create(reference_id=reference_id, user=request.user,
+            AnnotationUpvote.objects.create(reference_id=reference_id, user=request.user,
                                                  **({self.resource_attr: True} if self.resource_attr else {}))
         except IntegrityError:
             return ErrorResponse('Failed to create object')
@@ -30,9 +30,9 @@ class ReferenceRelatedReferenceFeedbackSingle(APIView):
     @method_decorator(allow_lazy_user)
     def delete(self, request, reference_id):
         try:
-            model = ReferenceUpvote.objects.get(reference_id=reference_id, user=request.user,
+            model = AnnotationUpvote.objects.get(reference_id=reference_id, user=request.user,
                                                       **({self.resource_attr: True} if self.resource_attr else {}))
-        except ReferenceUpvote.DoesNotExist:
+        except AnnotationUpvote.DoesNotExist:
             return NotFoundResponse()
 
         model.delete()
@@ -42,9 +42,9 @@ class ReferenceRelatedReferenceFeedbackSingle(APIView):
     @method_decorator(allow_lazy_user)
     def get(self, request, reference_id):
         try:
-            feedback = ReferenceUpvote.objects.get(reference_id=reference_id, user=request.user,
+            feedback = AnnotationUpvote.objects.get(reference_id=reference_id, user=request.user,
                                                          **({self.resource_attr: True} if self.resource_attr else {}))
-        except ReferenceUpvote.DoesNotExist:
+        except AnnotationUpvote.DoesNotExist:
             return NotFoundResponse('Resource not found')
 
         pre_serializer = DataPreSerializer(feedback, {'attributes': feedback})
@@ -61,9 +61,9 @@ class FeedbackSingle(APIView):
     @method_decorator(allow_lazy_user)
     def get(self, request, feedback_id):
         try:
-            feedback = ReferenceUpvote.objects.get(id=feedback_id, user=request.user,
+            feedback = AnnotationUpvote.objects.get(id=feedback_id, user=request.user,
                                                          **({self.resource_attr: True} if self.resource_attr else {}))
-        except ReferenceUpvote.DoesNotExist:
+        except AnnotationUpvote.DoesNotExist:
             return NotFoundResponse('Resource not found')
 
         pre_serializer = DataPreSerializer(feedback, {'attributes': feedback})
@@ -74,9 +74,9 @@ class FeedbackSingle(APIView):
     @method_decorator(allow_lazy_user)
     def delete(self, request, feedback_id):
         try:
-            feedback = ReferenceUpvote.objects.get(id=feedback_id, user=request.user,
+            feedback = AnnotationUpvote.objects.get(id=feedback_id, user=request.user,
                                                          **({self.resource_attr: True} if self.resource_attr else {}))
-        except ReferenceUpvote.DoesNotExist:
+        except AnnotationUpvote.DoesNotExist:
             return NotFoundResponse()
 
         feedback.delete()
@@ -96,7 +96,7 @@ class FeedbackList(APIView):
         if not deserializer.is_valid():
             return ValidationErrorResponse(deserializer.errors)
 
-        feedback = ReferenceUpvote(user=request.user,
+        feedback = AnnotationUpvote(user=request.user,
                                          **({self.resource_attr: True} if self.resource_attr else {}))
         feedback.reference_id = get_relationship_id(deserializer, 'reference')
 
