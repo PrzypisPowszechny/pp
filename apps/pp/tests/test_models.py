@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from apps.pp.models import Reference, ReferenceUpvote, UserReferenceRequestFeedback, ReferenceRequest
+from apps.pp.models import Reference, ReferenceUpvote, UserAnnotationRequestFeedback, AnnotationRequest
 
 
 class UserModelTest(TestCase):
@@ -36,11 +36,11 @@ class ReferenceUpvoteModelTest(TestCase):
         self.assertEqual(1, self.reference.upvote_count)
 
 
-class UserReferenceRequestFeedbackModelTest(TestCase):
+class UserAnnotationRequestFeedbackModelTest(TestCase):
     def setUp(self):
         self.user = get_user_model().objects.create_user(username="Alibaba")
 
     def test_creating(self):
-        rr = ReferenceRequest.objects.create(user=self.user)
-        UserReferenceRequestFeedback.objects.create(user=self.user, reference_request=rr, )
-        self.assertEqual(1, UserReferenceRequestFeedback.objects.count())
+        rr = AnnotationRequest.objects.create(user=self.user)
+        UserAnnotationRequestFeedback.objects.create(user=self.user, annotation_request=rr, )
+        self.assertEqual(1, UserAnnotationRequestFeedback.objects.count())

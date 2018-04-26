@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from apps.pp.models import Reference, ReferenceUpvote
-from apps.pp.models import ReferenceRequest
+from apps.pp.models import AnnotationRequest
 from apps.pp.tests.utils import create_test_user
 from apps.pp.utils import get_resource_name
 
@@ -285,7 +285,7 @@ class ReferenceAPITest(TestCase):
     def test_post_new_reference_with_null_request_reference(self):
         base_url = "/api/references/"
 
-        reference_request = ReferenceRequest.objects.create(
+        annotation_request = AnnotationRequest.objects.create(
             user=self.user,
             ranges="Od tad do tad",
             quote='very nice',

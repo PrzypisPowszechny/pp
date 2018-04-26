@@ -4,7 +4,7 @@ from django.contrib.auth.admin import UserAdmin
 from simple_history.admin import SimpleHistoryAdmin
 
 from apps.pp.models import Reference
-from apps.pp.models import ReferenceRequest
+from apps.pp.models import AnnotationRequest
 
 admin.site.register(get_user_model(), UserAdmin)
 
@@ -16,8 +16,8 @@ class ReferenceAdmin(SimpleHistoryAdmin):
 admin.site.register(Reference, ReferenceAdmin)
 
 
-class ReferenceRequestAdmin(SimpleHistoryAdmin):
+class AnnotationRequestAdmin(SimpleHistoryAdmin):
     pass
 
 
-admin.site.register(ReferenceRequest, ReferenceRequestAdmin)
+admin.site.register(AnnotationRequest, AnnotationRequestAdmin)

@@ -22,7 +22,7 @@ class UserInput(models.Model):
         abstract = True
 
 
-class Annotation(UserInput):
+class AnnotationBase(UserInput):
     url = models.CharField(max_length=200)
     # URL where the annotation has been made
 
@@ -40,15 +40,15 @@ class Annotation(UserInput):
         abstract = True
 
 
-class ReferenceRequest(Annotation):
+class AnnotationRequest(AnnotationBase):
     class Meta:
         app_label = 'pp'
 
     class JSONAPIMeta:
-        resource_name = 'reference_requests'
+        resource_name = 'annotation_requests'
 
 
-class Reference(Annotation):
+class Reference(AnnotationBase):
     class Meta:
         app_label = 'pp'
 
@@ -64,7 +64,7 @@ class Reference(Annotation):
     reference_link_title = models.CharField(max_length=100)
     # Short summary of the page referred to
 
-    reference_request = models.ForeignKey('ReferenceRequest', null=True)
+    annotation_request = models.ForeignKey('AnnotationRequest', null=True)
     # Null when the annotation has not been created on request
 
     history = HistoricalRecords()
@@ -112,13 +112,13 @@ class ReferenceUpvote(UserInput):
 
     reference = models.ForeignKey(Reference, related_name='feedbacks')
 
-class UserReferenceRequestFeedback(models.Model):
+class UserAnnotationRequestFeedback(models.Model):
     class Meta:
         app_label = 'pp'
-        unique_together = [('user', 'reference_request')]
+        # unique_together = [('user', 'annotation_request')]
 
     class JSONAPIMeta:
-        resource_name = 'user_reference_request_feedbacks'
+        resource_name = 'user_annotation_request_feedbacks'
 
     user = models.ForeignKey('pp.User')
-    reference_request = models.ForeignKey(ReferenceRequest)
+    annotation_request = models.ForeignKey(AnnotationRequest)

@@ -7,7 +7,7 @@ from mock import patch
 from model_mommy import mommy
 from parameterized import parameterized
 
-from apps.pp.models import Reference, ReferenceRequest
+from apps.pp.models import Reference, AnnotationRequest
 from apps.pp.utils import set_relationship
 
 JSONAPIMeta = namedtuple('JSONAPIMeta', ('resource_name',))
@@ -36,20 +36,20 @@ class SetRelationshipTest(SimpleTestCase):
                 }
             }
          }),
-        # ReferenceRequest, default resource name, with id
+        # AnnotationRequest, default resource name, with id
         (mommy.prepare(
             Reference,
-            reference_request=mommy.prepare(
-                ReferenceRequest,
+            annotation_request=mommy.prepare(
+                AnnotationRequest,
                 id=123
             )
-         ).reference_request,
+         ).annotation_request,
          None,
          {
             'relationships': {
-                'reference_request': {
+                'annotation_request': {
                     'data': {
-                        'type': 'reference_requests',
+                        'type': 'annotation_requests',
                         'id': 123
                     }
                 }
@@ -71,18 +71,18 @@ class SetRelationshipTest(SimpleTestCase):
                 }
             }
          }),
-        # ReferenceRequest, default resource name, no id
+        # AnnotationRequest, default resource name, no id
         (mommy.prepare(
             Reference,
-            reference_request=mommy.prepare(
-                ReferenceRequest,
+            annotation_request=mommy.prepare(
+                AnnotationRequest,
                 id=None
             )
-         ).reference_request,
+         ).annotation_request,
          None,
          {
             'relationships': {
-                'reference_request': {
+                'annotation_request': {
                     'data': None
                 }
             }
@@ -117,21 +117,21 @@ class SetRelationshipTest(SimpleTestCase):
                 }
             }
          }),
-        # ReferenceRequest, default resource name, with id
+        # AnnotationRequest, default resource name, with id
         (mommy.prepare(
             Reference,
-            reference_request=mommy.prepare(
-                ReferenceRequest,
+            annotation_request=mommy.prepare(
+                AnnotationRequest,
                 id=123
             )
          ),
-         'reference_request_id',
+         'annotation_request_id',
          None,
          {
             'relationships': {
-                'reference_request': {
+                'annotation_request': {
                     'data': {
-                        'type': 'reference_requests',
+                        'type': 'annotation_requests',
                         'id': 123
                     }
                 }
@@ -154,19 +154,19 @@ class SetRelationshipTest(SimpleTestCase):
                 }
             }
          }),
-        # ReferenceRequest, default resource name, no id
+        # AnnotationRequest, default resource name, no id
         (mommy.prepare(
             Reference,
-            reference_request=mommy.prepare(
-                ReferenceRequest,
+            annotation_request=mommy.prepare(
+                AnnotationRequest,
                 id=None
             )
          ),
-         'reference_request_id',
+         'annotation_request_id',
          None,
          {
             'relationships': {
-                'reference_request': {
+                'annotation_request': {
                     'data': None
                 }
             }
