@@ -84,15 +84,15 @@ class Reference(AnnotationBase):
         return self.upvote_count
 
 
-class ReferenceReport(UserInput):
+class AnnotationReport(UserInput):
     class Meta:
         app_label = 'pp'
 
     class JSONAPIMeta:
-        resource_name = 'reference_reports'
+        resource_name = 'annotation_reports'
 
-    reference = models.ForeignKey(Reference, on_delete=models.CASCADE, related_name='reference_reports')
-    reason = models.CharField(choices=consts.reference_report_reasons, max_length=100)
+    reference = models.ForeignKey(Reference, on_delete=models.CASCADE, related_name='annotation_reports')
+    reason = models.CharField(choices=consts.annotation_report_reasons, max_length=100)
     comment = models.TextField(max_length=100)
 
 

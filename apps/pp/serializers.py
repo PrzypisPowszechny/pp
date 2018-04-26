@@ -1,7 +1,7 @@
 from django.urls import reverse
 from rest_framework import serializers
 
-from apps.pp.models import ReferenceReport
+from apps.pp.models import AnnotationReport
 from apps.pp.utils import data_wrapped
 from .models import Reference, ReferenceUpvote
 
@@ -128,12 +128,12 @@ class ReferenceSerializer(ResourceSerializer, ReferenceDeserializer):
         class Upvote(RelationSerializer):
             related_link_url_name = 'api:reference_upvote'
 
-        class ReferenceReports(RelationManySerializer):
-            related_link_url_name = 'api:reference_reports'
+        class AnnotationReports(RelationManySerializer):
+            related_link_url_name = 'api:annotation_reports'
 
         user = User(required=True)
         upvote = Upvote()
-        reference_reports = ReferenceReports()
+        annotation_reports = AnnotationReports()
 
     attributes = Attributes()
     relationships = Relationships()
@@ -162,12 +162,12 @@ class ReferenceListSerializer(ResourceSerializer):
         class Upvote(RelationSerializer):
             related_link_url_name = 'api:reference_upvote'
 
-        class ReferenceReports(RelationManySerializer):
-            related_link_url_name = 'api:reference_reports'
+        class AnnotationReports(RelationManySerializer):
+            related_link_url_name = 'api:annotation_reports'
 
         user = User(required=True)
         upvote = Upvote()
-        reference_reports = ReferenceReports()
+        annotation_reports = AnnotationReports()
 
     class Links(ResourceLinksSerializer):
         self_link_url_name = 'api:reference'
@@ -187,10 +187,10 @@ class ReferencePatchDeserializer(ResourceSerializer):
 
 # Report
 
-class ReferenceReportDeserializer(ResourceTypeSerializer):
+class AnnotationReportDeserializer(ResourceTypeSerializer):
     class Attributes(serializers.ModelSerializer):
         class Meta:
-            model = ReferenceReport
+            model = AnnotationReport
             fields = ('reason', 'comment')
 
     class Relationships(serializers.Serializer):
@@ -203,7 +203,7 @@ class ReferenceReportDeserializer(ResourceTypeSerializer):
     relationships = Relationships()
 
 
-class ReferenceReportSerializer(ResourceSerializer, ReferenceReportDeserializer):
+class AnnotationReportSerializer(ResourceSerializer, AnnotationReportDeserializer):
     class Relationships(serializers.Serializer):
         class Reference(RelationSerializer):
             related_link_url_name = 'api:report_reference'

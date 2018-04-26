@@ -4,12 +4,12 @@ from django.test import TestCase
 from django.urls import reverse
 
 from apps.pp.models import Reference
-from apps.pp.models import ReferenceReport
+from apps.pp.models import AnnotationReport
 from apps.pp.tests.utils import create_test_user
 
 
-class ReferenceReportAPITest(TestCase):
-    post_url = "/api/reference_reports/"
+class AnnotationReportAPITest(TestCase):
+    post_url = "/api/annotation_reports/"
     maxDiff = None
 
     # IMPORTANT: we log in for each test, so self.user has already an open session with server
@@ -17,7 +17,7 @@ class ReferenceReportAPITest(TestCase):
         self.user, self.password = create_test_user()
         self.client.login(username=self.user, password=self.password)
 
-    def test_post_new_reference_report(self):
+    def test_post_new_annotation_report(self):
         reference = Reference.objects.create(user=self.user)
 
         report_data = {
@@ -27,7 +27,7 @@ class ReferenceReportAPITest(TestCase):
 
         body = json.dumps({
             'data': {
-                'type': 'reference_reports',
+                'type': 'annotation_reports',
                 'attributes': {
                     'reason': report_data['reason'],
                     'comment': report_data['comment'],
@@ -35,7 +35,7 @@ class ReferenceReportAPITest(TestCase):
                 'relationships': {
                     'reference': {
                         'data': {
-                            'type': 'reference_reports',
+                            'type': 'annotation_reports',
                             'id': str(reference.id)
                         }
                     }
@@ -48,11 +48,11 @@ class ReferenceReportAPITest(TestCase):
         response_data = json.loads(response.content.decode('utf8'))
 
         # Get first reference report there is
-        report = ReferenceReport.objects.first()
+        report = AnnotationReport.objects.first()
         correct_response = {
             'data': {
                 'id': str(report.id),
-                'type': 'reference_reports',
+                'type': 'annotation_reports',
                 'attributes': {
                     'reason': report_data['reason'],
                     'comment': report_data['comment'],

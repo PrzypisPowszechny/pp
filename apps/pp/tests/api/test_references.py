@@ -69,9 +69,9 @@ class ReferenceAPITest(TestCase):
                             },
                             'data': {'id': str(urf.id), 'type': get_resource_name(urf, always_single=True)}
                         },
-                        'reference_reports': {
+                        'annotation_reports': {
                             'links': {
-                                'related': reverse('api:reference_reports', kwargs={'reference_id': reference.id})
+                                'related': reverse('api:annotation_reports', kwargs={'reference_id': reference.id})
                             },
                             'data': []
                         },
@@ -161,9 +161,9 @@ class ReferenceAPITest(TestCase):
                      },
                      'data': {'type': 'upvotes', 'id': str(urf.id)}
                  },
-                 'reference_reports': {
+                 'annotation_reports': {
                      'links': {
-                         'related': reverse('api:reference_reports', kwargs={'reference_id': reference.id})
+                         'related': reverse('api:annotation_reports', kwargs={'reference_id': reference.id})
                      },
                      'data': []
                  },
@@ -202,9 +202,9 @@ class ReferenceAPITest(TestCase):
                      },
                      'data': None
                  },
-                 'reference_reports': {
+                 'annotation_reports': {
                      'links': {
-                         'related': reverse('api:reference_reports', kwargs={'reference_id': reference2.id})
+                         'related': reverse('api:annotation_reports', kwargs={'reference_id': reference2.id})
                      },
                      'data': []
                  },
@@ -271,9 +271,9 @@ class ReferenceAPITest(TestCase):
                             },
                             'data': None
                         },
-                        'reference_reports': {
+                        'annotation_reports': {
                             'links': {
-                                'related': reverse('api:reference_reports', kwargs={'reference_id': reference.id})
+                                'related': reverse('api:annotation_reports', kwargs={'reference_id': reference.id})
                             },
                             'data': []
                         },
@@ -345,9 +345,9 @@ class ReferenceAPITest(TestCase):
                             },
                             'data': None
                         },
-                        'reference_reports': {
+                        'annotation_reports': {
                             'links': {
-                                'related': reverse('api:reference_reports', kwargs={'reference_id': reference.id})
+                                'related': reverse('api:annotation_reports', kwargs={'reference_id': reference.id})
                             },
                             'data': []
                         },
@@ -411,9 +411,9 @@ class ReferenceAPITest(TestCase):
                         },
                         'data': {'id': str(urf.id), 'type': get_resource_name(urf, always_single=True)}
                     },
-                    'reference_reports': {
+                    'annotation_reports': {
                         'links': {
-                            'related': reverse('api:reference_reports', kwargs={'reference_id': reference.id})
+                            'related': reverse('api:annotation_reports', kwargs={'reference_id': reference.id})
                         },
                         'data': []
                     },

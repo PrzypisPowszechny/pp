@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_json_api.pagination import LimitOffsetPagination
 
-from apps.pp.models import Reference, ReferenceUpvote, ReferenceReport
+from apps.pp.models import Reference, ReferenceUpvote, AnnotationReport
 from apps.pp.responses import PermissionDenied, ValidationErrorResponse, ErrorResponse, NotFoundResponse, Forbidden
 from apps.pp.serializers import ReferencePatchDeserializer, ReferenceListSerializer, ReferenceDeserializer, \
     ReferenceSerializer
@@ -27,7 +27,7 @@ class ReferenceBase(object):
                                     resource_id=reference.user_id)
         pre_serializer.set_relation(get_resource_name(feedback, model=ReferenceUpvote),
                                     resource_id=feedback)
-        pre_serializer.set_relation(get_resource_name(reference, related_field='reference_reports'),
+        pre_serializer.set_relation(get_resource_name(reference, related_field='annotation_reports'),
                                     resource_id=reports)
         return pre_serializer.data
 
@@ -41,7 +41,7 @@ class ReferenceSingle(ReferenceBase, APIView):
         try:
             reference = Reference.objects.get(active=True, id=reference_id)
             feedback = ReferenceUpvote.objects.filter(reference=reference, user=request.user).first()
-            reports = ReferenceReport.objects.filter(reference_id=reference.id, user=request.user)
+            reports = AnnotationReport.objects.filter(reference_id=reference.id, user=request.user)
         except (ReferenceUpvote.DoesNotExist, Reference.DoesNotExist):
             return NotFoundResponse()
         return Response(ReferenceSerializer(instance=self.get_pre_serialized_reference(reference, feedback, reports),
@@ -72,7 +72,7 @@ class ReferenceSingle(ReferenceBase, APIView):
         reference.save()
 
         feedback = ReferenceUpvote.objects.filter(reference=reference, user=request.user).first()
-        reports = ReferenceReport.objects.filter(reference_id=reference.id, user=request.user)
+        reports = AnnotationReport.objects.filter(reference_id=reference.id, user=request.user)
 
         return Response(ReferenceSerializer(instance=self.get_pre_serialized_reference(reference, feedback, reports),
                                             context={'request': request}).data)
@@ -124,8 +124,8 @@ class ReferenceList(ReferenceBase, GenericAPIView):
                     Sum(Case(When(feedbacks__id=True, then=1)), default=0, output_field=IntegerField()),
                     0),
             ).prefetch_related(
-                Prefetch('reference_reports', queryset=ReferenceReport.objects.filter(user=self.request.user),
-                         to_attr='user_reference_reports')
+                Prefetch('annotation_reports', queryset=AnnotationReport.objects.filter(user=self.request.user),
+                         to_attr='user_annotation_reports')
             )
         return queryset
 
@@ -149,7 +149,7 @@ class ReferenceList(ReferenceBase, GenericAPIView):
         return queryset
 
     def pre_serialize_queryset(self, queryset):
-        return [self.get_pre_serialized_reference(reference, reference.user_feedback, reference.user_reference_reports)
+        return [self.get_pre_serialized_reference(reference, reference.user_feedback, reference.user_annotation_reports)
                 for reference in queryset]
 
     @swagger_auto_schema(responses={200: ReferenceListSerializer(many=True)})
@@ -176,7 +176,7 @@ class ReferenceFeedbackRelatedReferenceSingle(ReferenceBase, APIView):
             feedback = ReferenceUpvote.objects.get(id=feedback_id, user=request.user,
                                                          **{self.resource_attr: True})
             reference = Reference.objects.get(active=True, feedbacks=feedback_id, feedbacks__user=request.user)
-            reports = ReferenceReport.objects.filter(reference_id=reference.id, user=request.user)
+            reports = AnnotationReport.objects.filter(reference_id=reference.id, user=request.user)
         except (ReferenceUpvote.DoesNotExist, Reference.DoesNotExist):
             return NotFoundResponse()
         return Response(ReferenceSerializer(instance=self.get_pre_serialized_reference(reference, feedback, reports),
@@ -187,18 +187,18 @@ class ReferenceUpvoteRelatedReferenceSingle(ReferenceFeedbackRelatedReferenceSin
     resource_attr = 'upvote'
 
 
-class ReferenceReportRelatedReferenceSingle(ReferenceBase, APIView):
+class AnnotationReportRelatedReferenceSingle(ReferenceBase, APIView):
 
     @swagger_auto_schema(responses={200: ReferenceSerializer})
     @method_decorator(allow_lazy_user)
     def get(self, request, report_id):
         try:
-            ReferenceReport.objects.get(id=report_id, user=request.user)
-            reference = Reference.objects.get(reference_reports=report_id, active=True,
-                                              reference_reports__user=request.user)
+            AnnotationReport.objects.get(id=report_id, user=request.user)
+            reference = Reference.objects.get(annotation_reports=report_id, active=True,
+                                              annotation_reports__user=request.user)
             feedback = ReferenceUpvote.objects.get(reference_id=reference.id, user=request.user)
-            reports = ReferenceReport.objects.filter(reference_id=reference.id, user=request.user)
-        except (ReferenceUpvote.DoesNotExist, Reference.DoesNotExist, ReferenceReport.DoesNotExist):
+            reports = AnnotationReport.objects.filter(reference_id=reference.id, user=request.user)
+        except (ReferenceUpvote.DoesNotExist, Reference.DoesNotExist, AnnotationReport.DoesNotExist):
             return NotFoundResponse()
         return Response(ReferenceSerializer(instance=self.get_pre_serialized_reference(reference, feedback, reports),
                                             context={'request': request}).data)
