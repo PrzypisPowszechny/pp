@@ -23,8 +23,6 @@ from apps.pp.utils import get_relationship_id, get_resource_name, DataPreSeriali
 class ReferenceBase(object):
     def get_pre_serialized_reference(self, reference, feedback=None, reports=()):
         pre_serializer = DataPreSerializer(reference, {'attributes': reference})
-        pre_serializer.set_relation(get_resource_name(reference, related_field='reference_request_id'),
-                                    resource_id=reference.reference_request_id)
         pre_serializer.set_relation(get_resource_name(reference.user),
                                     resource_id=reference.user_id)
         pre_serializer.set_relation(get_resource_name(feedback, model=UserReferenceFeedback),
@@ -41,7 +39,7 @@ class ReferenceSingle(ReferenceBase, APIView):
     @method_decorator(allow_lazy_user)
     def get(self, request, reference_id):
         try:
-            reference = Reference.objects.select_related('reference_request').get(active=True, id=reference_id)
+            reference = Reference.objects.get(active=True, id=reference_id)
             feedback = UserReferenceFeedback.objects.filter(reference=reference, user=request.user).first()
             reports = ReferenceReport.objects.filter(reference_id=reference.id, user=request.user)
         except (UserReferenceFeedback.DoesNotExist, Reference.DoesNotExist):
@@ -54,7 +52,7 @@ class ReferenceSingle(ReferenceBase, APIView):
     @method_decorator(allow_lazy_user)
     def patch(self, request, reference_id):
         try:
-            reference = Reference.objects.select_related('reference_request').get(active=True, id=reference_id)
+            reference = Reference.objects.get(active=True, id=reference_id)
         except Reference.DoesNotExist:
             return NotFoundResponse()
         # Check permissions
@@ -82,7 +80,7 @@ class ReferenceSingle(ReferenceBase, APIView):
     @method_decorator(allow_lazy_user)
     def delete(self, request, reference_id):
         try:
-            reference = Reference.objects.select_related('reference_request').get(id=reference_id)
+            reference = Reference.objects.get(id=reference_id)
         except Reference.DoesNotExist:
             return NotFoundResponse()
 
@@ -113,7 +111,6 @@ class ReferenceList(ReferenceBase, GenericAPIView):
             return ValidationErrorResponse(deserializer.errors)
         reference = Reference(**deserializer.validated_data['attributes'])
         reference.user_id = request.user.pk
-        reference.reference_request_id = get_relationship_id(deserializer, 'reference_request')
         reference.save()
 
         return Response(ReferenceSerializer(instance=self.get_pre_serialized_reference(reference),
@@ -122,7 +119,6 @@ class ReferenceList(ReferenceBase, GenericAPIView):
 
     def get_queryset(self):
         queryset = Reference.objects \
-            .select_related('reference_request') \
             .filter(active=True).annotate(
                 useful_count=Coalesce(
                     Sum(Case(When(feedbacks__useful=True, then=1)), default=0, output_field=IntegerField()),
@@ -184,8 +180,7 @@ class ReferenceFeedbackRelatedReferenceSingle(ReferenceBase, APIView):
         try:
             feedback = UserReferenceFeedback.objects.get(id=feedback_id, user=request.user,
                                                          **{self.resource_attr: True})
-            reference = Reference.objects.select_related('reference_request')\
-                .get(active=True, feedbacks=feedback_id, feedbacks__user=request.user)
+            reference = Reference.objects.get(active=True, feedbacks=feedback_id, feedbacks__user=request.user)
             reports = ReferenceReport.objects.filter(reference_id=reference.id, user=request.user)
         except (UserReferenceFeedback.DoesNotExist, Reference.DoesNotExist):
             return NotFoundResponse()
@@ -207,8 +202,8 @@ class ReferenceReportRelatedReferenceSingle(ReferenceBase, APIView):
     def get(self, request, report_id):
         try:
             ReferenceReport.objects.get(id=report_id, user=request.user)
-            reference = Reference.objects.select_related('reference_request')\
-                .get(reference_reports=report_id, active=True, reference_reports__user=request.user)
+            reference = Reference.objects.get(reference_reports=report_id, active=True,
+                                              reference_reports__user=request.user)
             feedback = UserReferenceFeedback.objects.get(reference_id=reference.id, user=request.user)
             reports = ReferenceReport.objects.filter(reference_id=reference.id, user=request.user)
         except (UserReferenceFeedback.DoesNotExist, Reference.DoesNotExist, ReferenceReport.DoesNotExist):
