@@ -24,7 +24,7 @@ class ReferenceAPITest(TestCase):
         reference = Reference.objects.create(user=self.user, priority='NORMAL', comment="good job",
                                              reference_link="www.przypispowszechny.com",
                                              reference_link_title="very nice")
-        urf = UserReferenceFeedback.objects.create(user=self.user, reference=reference, useful=True, objection=False)
+        urf = UserReferenceFeedback.objects.create(user=self.user, reference=reference)
         response = self.client.get(self.base_url.format(reference.id))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/vnd.api+json')
@@ -33,11 +33,10 @@ class ReferenceAPITest(TestCase):
         reference = Reference.objects.create(user=self.user, priority='NORMAL', comment="good job",
                                              reference_link="www.przypispowszechny.com",
                                              reference_link_title="very nice")
-        urf = UserReferenceFeedback.objects.create(user=self.user, reference=reference, useful=True, objection=False)
+        urf = UserReferenceFeedback.objects.create(user=self.user, reference=reference)
         response = self.client.get(self.base_url.format(reference.id))
 
-        useful_count = UserReferenceFeedback.objects.filter(reference=reference).filter(useful=True).count()
-        objection_count = UserReferenceFeedback.objects.filter(reference=reference).filter(objection=True).count()
+        useful_count = UserReferenceFeedback.objects.filter(reference=reference).count()
 
         self.assertEqual(
             json.loads(response.content.decode('utf8')),
@@ -53,10 +52,8 @@ class ReferenceAPITest(TestCase):
                         'comment': reference.comment,
                         'reference_link': reference.reference_link,
                         'reference_link_title': reference.reference_link_title,
-                        'useful': urf.useful,
+                        'useful': bool(urf),
                         'useful_count': useful_count,
-                        'objection': urf.objection,
-                        'objection_count': objection_count,
                         'does_belong_to_user': True,
                     },
                     'relationships': {
@@ -65,12 +62,6 @@ class ReferenceAPITest(TestCase):
                                 'related': reverse('api:reference_user', kwargs={'reference_id': reference.id})
                             },
                             'data': {'type': 'users', 'id': str(self.user.id)}
-                        },
-                        'objection': {
-                            'links': {
-                                'related': reverse('api:reference_objection', kwargs={'reference_id': reference.id})
-                            },
-                            'data': None
                         },
                         'useful': {
                             'links': {
@@ -132,14 +123,10 @@ class ReferenceAPITest(TestCase):
                                               create_date=timezone.now())
         reference2.save()
 
-        urf = UserReferenceFeedback.objects.create(user=self.user, reference=reference, useful=True, objection=False)
-        urf2 = UserReferenceFeedback.objects.create(user=self.user, reference=reference2, useful=False, objection=True)
+        urf = UserReferenceFeedback.objects.create(user=self.user, reference=reference)
 
-        useful_count = UserReferenceFeedback.objects.filter(reference=reference).filter(useful=True).count()
-        objection_count = UserReferenceFeedback.objects.filter(reference=reference).filter(objection=True).count()
-
-        useful_count2 = UserReferenceFeedback.objects.filter(reference=reference2).filter(useful=True).count()
-        objection_count2 = UserReferenceFeedback.objects.filter(reference=reference2).filter(objection=True).count()
+        useful_count = UserReferenceFeedback.objects.filter(reference=reference).count()
+        useful_count2 = UserReferenceFeedback.objects.filter(reference=reference2).count()
 
         raw_response = self.client.get(search_base_url.format(reference.url))
         response = json.loads(raw_response.content.decode('utf8'))['data']
@@ -157,10 +144,8 @@ class ReferenceAPITest(TestCase):
                  'comment': reference.comment,
                  'reference_link': reference.reference_link,
                  'reference_link_title': reference.reference_link_title,
-                 'useful': urf.useful,
+                 'useful': bool(urf),
                  'useful_count': useful_count,
-                 'objection': urf.objection,
-                 'objection_count': objection_count,
                  'does_belong_to_user': True,
              },
              'relationships': {
@@ -169,12 +154,6 @@ class ReferenceAPITest(TestCase):
                          'related': reverse('api:reference_user', kwargs={'reference_id': reference.id})
                      },
                      'data': {'type': 'users', 'id': str(self.user.id)}
-                 },
-                 'objection': {
-                     'links': {
-                         'related': reverse('api:reference_objection', kwargs={'reference_id': reference.id})
-                     },
-                     'data': None
                  },
                  'useful': {
                      'links': {
@@ -206,10 +185,8 @@ class ReferenceAPITest(TestCase):
                  'comment': reference2.comment,
                  'reference_link': reference2.reference_link,
                  'reference_link_title': reference2.reference_link_title,
-                 'useful': urf2.useful,
+                 'useful': False,
                  'useful_count': useful_count2,
-                 'objection': urf2.objection,
-                 'objection_count': objection_count2,
                  'does_belong_to_user': True,
              },
              'relationships': {
@@ -218,12 +195,6 @@ class ReferenceAPITest(TestCase):
                             'related': reverse('api:reference_user', kwargs={'reference_id': reference2.id})
                         },
                      'data': {'type': 'users', 'id': str(self.user.id)}
-                 },
-                 'objection': {
-                     'links': {
-                         'related': reverse('api:reference_objection', kwargs={'reference_id': reference2.id})
-                     },
-                     'data': {'type': 'objections', 'id': str(urf2.id)}
                  },
                  'useful': {
                      'links': {
@@ -267,8 +238,7 @@ class ReferenceAPITest(TestCase):
         self.assertEqual(response.status_code, 200, msg=response.data)
         reference = Reference.objects.get(user=self.user)
 
-        useful_count = UserReferenceFeedback.objects.filter(reference=reference).filter(useful=True).count()
-        objection_count = UserReferenceFeedback.objects.filter(reference=reference).filter(objection=True).count()
+        useful_count = UserReferenceFeedback.objects.filter(reference=reference).count()
         self.assertEqual(reference.ranges, "Od tad do tad")
         self.assertDictEqual(
             json.loads(response.content.decode('utf8')),
@@ -286,8 +256,6 @@ class ReferenceAPITest(TestCase):
                         'reference_link_title': reference.reference_link_title,
                         'useful': False,
                         'useful_count': useful_count,
-                        'objection': False,
-                        'objection_count': objection_count,
                         'does_belong_to_user': True,
                     },
                     'relationships': {
@@ -296,12 +264,6 @@ class ReferenceAPITest(TestCase):
                             'related': reverse('api:reference_user', kwargs={'reference_id': reference.id})
                         },
                             'data': {'type': 'users', 'id': str(self.user.id)}
-                        },
-                        'objection': {
-                            'links': {
-                                'related': reverse('api:reference_objection', kwargs={'reference_id': reference.id})
-                            },
-                            'data': None
                         },
                         'useful': {
                             'links': {
@@ -350,8 +312,7 @@ class ReferenceAPITest(TestCase):
         self.assertEqual(response.status_code, 200, msg=response.data)
         reference = Reference.objects.get(user=self.user)
 
-        useful_count = UserReferenceFeedback.objects.filter(reference=reference).filter(useful=True).count()
-        objection_count = UserReferenceFeedback.objects.filter(reference=reference).filter(objection=True).count()
+        useful_count = UserReferenceFeedback.objects.filter(reference=reference).count()
         self.assertEqual(reference.ranges, "Od tad do tad")
         self.assertDictEqual(
             json.loads(response.content.decode('utf8')),
@@ -369,8 +330,6 @@ class ReferenceAPITest(TestCase):
                         'reference_link_title': reference.reference_link_title,
                         'useful': False,
                         'useful_count': useful_count,
-                        'objection': False,
-                        'objection_count': objection_count,
                         'does_belong_to_user': True,
                     },
                     'relationships': {
@@ -379,12 +338,6 @@ class ReferenceAPITest(TestCase):
                             'related': reverse('api:reference_user', kwargs={'reference_id': reference.id})
                         },
                             'data': {'type': 'users', 'id': str(self.user.id)}
-                        },
-                        'objection': {
-                            'links': {
-                                'related': reverse('api:reference_objection', kwargs={'reference_id': reference.id})
-                            },
-                            'data': None
                         },
                         'useful': {
                             'links': {
@@ -409,7 +362,7 @@ class ReferenceAPITest(TestCase):
                                              reference_link="www.przypispowszechny.com",
                                              reference_link_title="very nice",
                                              quote='not this time')
-        urf = UserReferenceFeedback.objects.create(user=self.user, reference=reference, useful=True, objection=False)
+        urf = UserReferenceFeedback.objects.create(user=self.user, reference=reference)
         put_string = 'not so well'
         put_data = json.dumps({
             'data': {
@@ -424,8 +377,7 @@ class ReferenceAPITest(TestCase):
                                      content_type='application/vnd.api+json')
         reference = Reference.objects.get(id=reference.id)
 
-        useful_count = UserReferenceFeedback.objects.filter(reference=reference).filter(useful=True).count()
-        objection_count = UserReferenceFeedback.objects.filter(reference=reference).filter(objection=True).count()
+        useful_count = UserReferenceFeedback.objects.filter(reference=reference).count()
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(reference.reference_link_title, put_string)
@@ -442,10 +394,8 @@ class ReferenceAPITest(TestCase):
                     'comment': reference.comment,
                     'reference_link': reference.reference_link,
                     'reference_link_title': reference.reference_link_title,
-                    'useful': urf.useful,
+                    'useful': bool(urf),
                     'useful_count': useful_count,
-                    'objection': urf.objection,
-                    'objection_count': objection_count,
                     'does_belong_to_user': True,
                 },
                 'relationships': {
@@ -454,12 +404,6 @@ class ReferenceAPITest(TestCase):
                             'related': reverse('api:reference_user', kwargs={'reference_id': reference.id})
                         },
                         'data': {'type': 'users', 'id': str(self.user.id)}
-                    },
-                    'objection': {
-                        'links': {
-                            'related': reverse('api:reference_objection', kwargs={'reference_id': reference.id})
-                        },
-                        'data': None
                     },
                     'useful': {
                         'links': {
@@ -484,7 +428,8 @@ class ReferenceAPITest(TestCase):
             reference_link="www.przypispowszechny.com", reference_link_title="very nice",
             quote='not this time'
         )
-        UserReferenceFeedback.objects.create(user=self.user, reference=reference, useful=True, objection=False)
+        UserReferenceFeedback.objects.create(user=self.user, reference=reference)
+
         put_string = 'not so well'
         put_data = json.dumps({
             'data': {
@@ -508,7 +453,7 @@ class ReferenceAPITest(TestCase):
             reference_link="www.przypispowszechny.com", reference_link_title="very nice",
             quote='not this time'
         )
-        UserReferenceFeedback.objects.create(user=self.user, reference=reference, useful=True, objection=False)
+        UserReferenceFeedback.objects.create(user=self.user, reference=reference)
 
         good_id = reference.id
         non_existing_id = good_id + 100000000

@@ -3,7 +3,7 @@ from apps.pp.views.reference_feedbacks import ReferenceRelatedReferenceFeedbackS
 
 
 class UsefulResource(object):
-    resource_attr = 'useful'
+    resource_attr = None
     serializer_class = UsefulSerializer
 
 

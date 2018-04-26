@@ -79,10 +79,9 @@ class Reference(Annotation):
     def _history_user(self, value):
         self.changed_by = value
 
-    def count_useful_and_objection(self):
-        self.useful_count = UserReferenceFeedback.objects.filter(reference=self).filter(useful=True).count()
-        self.objection_count = UserReferenceFeedback.objects.filter(reference=self).filter(objection=True).count()
-        return self.useful_count, self.objection_count
+    def count_useful(self):
+        self.useful_count = UserReferenceFeedback.objects.filter(reference=self).count()
+        return self.useful_count
 
 
 class ReferenceReport(UserInput):
@@ -104,22 +103,14 @@ class UserReferenceFeedback(UserInput):
 
     class JSONAPIMeta:
         useful_resource_name = 'usefuls'
-        objection_resource_name = 'objections'
 
         @classmethod
         def get_resource_names(cls, obj=None):
             return {
-                cls.useful_resource_name: getattr(obj, 'useful', False),
-                cls.objection_resource_name: getattr(obj, 'objection',  False),
+                cls.useful_resource_name: True,
             }
 
     reference = models.ForeignKey(Reference, related_name='feedbacks')
-
-    # Only one of these can be true
-    # todo not a very neat representation, should probably be changed to a single choice field
-    useful = models.BooleanField(blank=True, default=False)
-    objection = models.BooleanField(blank=True, default=False)
-
 
 class UserReferenceRequestFeedback(models.Model):
     class Meta:

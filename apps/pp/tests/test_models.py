@@ -26,20 +26,14 @@ class UserReferenceFeedbackModelTest(TestCase):
                                                  reference_link_title="very nice")
 
     def test_creating(self):
-        UserReferenceFeedback.objects.create(user=self.user, reference=self.reference, useful=True, objection=True)
+        UserReferenceFeedback.objects.create(user=self.user, reference=self.reference)
         self.assertEqual(1, UserReferenceFeedback.objects.count())
 
-    def test_useful(self):
-        UserReferenceFeedback.objects.create(user=self.user, reference=self.reference, useful=True, objection=True)
-        urf2 = UserReferenceFeedback.objects.get(user=self.user, reference=self.reference)
-        self.assertTrue(urf2.useful)
 
-    def test_updating_reference_useful_and_objection_count(self):
-        UserReferenceFeedback.objects.create(user=self.user, reference=self.reference, useful=False, objection=True)
-        UserReferenceFeedback.objects.create(user=self.user2, reference=self.reference, useful=True, objection=False)
-        self.reference.count_useful_and_objection()
+    def test_updating_reference_useful_count(self):
+        UserReferenceFeedback.objects.create(user=self.user2, reference=self.reference)
+        self.reference.count_useful()
         self.assertEqual(1, self.reference.useful_count)
-        self.assertEqual(1, self.reference.objection_count)
 
 
 class UserReferenceRequestFeedbackModelTest(TestCase):

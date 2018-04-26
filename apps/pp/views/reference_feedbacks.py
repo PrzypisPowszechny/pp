@@ -21,7 +21,7 @@ class ReferenceRelatedReferenceFeedbackSingle(APIView):
     def post(self, request, reference_id):
         try:
             UserReferenceFeedback.objects.create(reference_id=reference_id, user=request.user,
-                                                 **{self.resource_attr: True})
+                                                 **({self.resource_attr: True} if self.resource_attr else {}))
         except IntegrityError:
             return ErrorResponse('Failed to create object')
         return Response(data=None)
@@ -31,7 +31,7 @@ class ReferenceRelatedReferenceFeedbackSingle(APIView):
     def delete(self, request, reference_id):
         try:
             model = UserReferenceFeedback.objects.get(reference_id=reference_id, user=request.user,
-                                                      **{self.resource_attr: True})
+                                                      **({self.resource_attr: True} if self.resource_attr else {}))
         except UserReferenceFeedback.DoesNotExist:
             return NotFoundResponse()
 
@@ -43,7 +43,7 @@ class ReferenceRelatedReferenceFeedbackSingle(APIView):
     def get(self, request, reference_id):
         try:
             feedback = UserReferenceFeedback.objects.get(reference_id=reference_id, user=request.user,
-                                                         **{self.resource_attr: True})
+                                                         **({self.resource_attr: True} if self.resource_attr else {}))
         except UserReferenceFeedback.DoesNotExist:
             return NotFoundResponse('Resource not found')
 
@@ -62,7 +62,7 @@ class FeedbackSingle(APIView):
     def get(self, request, feedback_id):
         try:
             feedback = UserReferenceFeedback.objects.get(id=feedback_id, user=request.user,
-                                                         **{self.resource_attr: True})
+                                                         **({self.resource_attr: True} if self.resource_attr else {}))
         except UserReferenceFeedback.DoesNotExist:
             return NotFoundResponse('Resource not found')
 
@@ -75,7 +75,7 @@ class FeedbackSingle(APIView):
     def delete(self, request, feedback_id):
         try:
             feedback = UserReferenceFeedback.objects.get(id=feedback_id, user=request.user,
-                                                         **{self.resource_attr: True})
+                                                         **({self.resource_attr: True} if self.resource_attr else {}))
         except UserReferenceFeedback.DoesNotExist:
             return NotFoundResponse()
 
@@ -96,7 +96,8 @@ class FeedbackList(APIView):
         if not deserializer.is_valid():
             return ValidationErrorResponse(deserializer.errors)
 
-        feedback = UserReferenceFeedback(user=request.user, **{self.resource_attr: True})
+        feedback = UserReferenceFeedback(user=request.user,
+                                         **({self.resource_attr: True} if self.resource_attr else {}))
         feedback.reference_id = get_relationship_id(deserializer, 'reference')
 
         try:

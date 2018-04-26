@@ -1,7 +1,7 @@
 from django.conf.urls import url, include
 
 from apps.pp.views import users
-from .views import references, reference_reports, reference_usefuls, reference_objections
+from .views import references, reference_reports, reference_usefuls
 
 
 urlpatterns = [
@@ -15,8 +15,6 @@ urlpatterns = [
             name='reference_user'),
         url(r'^(?P<reference_id>[0-9]+)/useful/$', reference_usefuls.ReferenceRelatedUsefulSingle.as_view(),
             name='reference_useful'),
-        url(r'^(?P<reference_id>[0-9]+)/objection/$', reference_objections.ReferenceRelatedObjectionSingle.as_view(),
-            name='reference_objection'),
         url(r'^(?P<reference_id>[0-9]+)/reports/$', reference_reports.ReferenceRelatedReferenceReportList.as_view(),
             name='reference_reports'),
     ])),
@@ -28,16 +26,6 @@ urlpatterns = [
         # Related
         url(r'^(?P<feedback_id>[0-9]+)/reference/$', references.ReferenceUsefulRelatedReferenceSingle.as_view(),
             name='useful_reference'),
-    ])),
-    url(r'^objections/', include([
-        url(r'^(?P<feedback_id>[0-9]+)/$', reference_objections.ObjectionSingle.as_view(),
-            name='objection'),
-        url(r'^$', reference_objections.ObjectionList.as_view(),
-            name='objection'),
-        # Related
-        url(r'^(?P<feedback_id>[0-9]+)/reference/$', references.ReferenceObjectionRelatedReferenceSingle.as_view(),
-            name='objection_reference'),
-
     ])),
     # TODO: do we make referenceReports, reference-reports or reference_reports urls? check redux-json-api view on that
     url(r'^reference_reports/', include([

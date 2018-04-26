@@ -93,16 +93,14 @@ class ReferenceDeserializer(ResourceTypeSerializer):
 class ReferenceSerializer(ResourceSerializer, ReferenceDeserializer):
     class Attributes(ReferenceDeserializer.Attributes):
         useful_count = serializers.SerializerMethodField()
-        objection_count = serializers.SerializerMethodField()
         useful = serializers.SerializerMethodField('is_useful')
-        objection = serializers.SerializerMethodField('is_objection')
         does_belong_to_user = serializers.SerializerMethodField()
 
         class Meta:
             model = ReferenceDeserializer.Attributes.Meta.model
 
             fields = ReferenceDeserializer.Attributes.Meta.fields + (
-                'useful', 'useful_count', 'objection', 'objection_count', 'does_belong_to_user',
+                'useful', 'useful_count', 'does_belong_to_user',
             )
 
         @property
@@ -111,22 +109,12 @@ class ReferenceSerializer(ResourceSerializer, ReferenceDeserializer):
 
         def get_useful_count(self, instance):
             assert self.request_user is not None
-            return UserReferenceFeedback.objects.filter(user=self.request_user, reference=instance, useful=True) \
-                .count()
-
-        def get_objection_count(self, instance):
-            assert self.request_user is not None
-            return UserReferenceFeedback.objects.filter(user=self.request_user, reference=instance, objection=True) \
+            return UserReferenceFeedback.objects.filter(user=self.request_user, reference=instance) \
                 .count()
 
         def is_useful(self, instance):
             assert self.request_user is not None
-            return UserReferenceFeedback.objects.filter(user=self.request_user, reference=instance, useful=True) \
-                .exists()
-
-        def is_objection(self, instance):
-            assert self.request_user is not None
-            return UserReferenceFeedback.objects.filter(user=self.request_user, reference=instance, objection=True) \
+            return UserReferenceFeedback.objects.filter(user=self.request_user, reference=instance) \
                 .exists()
 
         def get_does_belong_to_user(self, instance):
@@ -137,9 +125,6 @@ class ReferenceSerializer(ResourceSerializer, ReferenceDeserializer):
         class User(RelationSerializer):
             related_link_url_name = 'api:reference_user'
 
-        class Objection(RelationSerializer):
-            related_link_url_name = 'api:reference_objection'
-
         class Useful(RelationSerializer):
             related_link_url_name = 'api:reference_useful'
 
@@ -148,7 +133,6 @@ class ReferenceSerializer(ResourceSerializer, ReferenceDeserializer):
 
         user = User(required=True)
         useful = Useful()
-        objection = Objection()
         reference_reports = ReferenceReports()
 
     attributes = Attributes()
@@ -158,27 +142,22 @@ class ReferenceSerializer(ResourceSerializer, ReferenceDeserializer):
 class ReferenceListSerializer(ResourceSerializer):
     class Attributes(serializers.ModelSerializer):
         useful_count = serializers.IntegerField(default=0)
-        objection_count = serializers.IntegerField(default=0)
         useful = serializers.BooleanField(default=False)
-        objection = serializers.BooleanField(default=False)
         does_belong_to_user = serializers.BooleanField(default=False)
 
         class Meta:
             model = Reference
             fields = ('url', 'ranges', 'quote',
                       'priority', 'comment', 'reference_link', 'reference_link_title',
-                      'useful', 'useful_count', 'objection', 'objection_count',
+                      'useful', 'useful_count',
                       'does_belong_to_user',
                       )
-            read_only_fields = ('useful', 'useful_count', 'objection', 'objection_count',
+            read_only_fields = ('useful', 'useful_count',
                                 'does_belong_to_user')
 
     class Relationships(serializers.Serializer):
         class User(RelationSerializer):
             related_link_url_name = 'api:reference_user'
-
-        class Objection(RelationSerializer):
-            related_link_url_name = 'api:reference_objection'
 
         class Useful(RelationSerializer):
             related_link_url_name = 'api:reference_useful'
@@ -188,7 +167,6 @@ class ReferenceListSerializer(ResourceSerializer):
 
         user = User(required=True)
         useful = Useful()
-        objection = Objection()
         reference_reports = ReferenceReports()
 
     class Links(ResourceLinksSerializer):
@@ -266,16 +244,6 @@ class UsefulSerializer(ResourceSerializer):
     class Relationships(serializers.Serializer):
         class Reference(RelationSerializer):
             related_link_url_name = 'api:useful_reference'
-
-        reference = Reference()
-
-    relationships = Relationships()
-
-
-class ObjectionSerializer(ResourceSerializer):
-    class Relationships(serializers.Serializer):
-        class Reference(RelationSerializer):
-            related_link_url_name = 'api:objection_reference'
 
         reference = Reference()
 

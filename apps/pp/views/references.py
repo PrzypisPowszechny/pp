@@ -121,11 +121,8 @@ class ReferenceList(ReferenceBase, GenericAPIView):
         queryset = Reference.objects \
             .filter(active=True).annotate(
                 useful_count=Coalesce(
-                    Sum(Case(When(feedbacks__useful=True, then=1)), default=0, output_field=IntegerField()),
+                    Sum(Case(When(feedbacks__id=True, then=1)), default=0, output_field=IntegerField()),
                     0),
-                objection_count=Coalesce(
-                    Sum(Case(When(feedbacks__objection=True, then=1)), default=0, output_field=IntegerField()),
-                    0)
             ).prefetch_related(
                 Prefetch('reference_reports', queryset=ReferenceReport.objects.filter(user=self.request.user),
                          to_attr='user_reference_reports')
@@ -145,11 +142,9 @@ class ReferenceList(ReferenceBase, GenericAPIView):
         reference_to_feedback = {feedback.reference_id: feedback for feedback in feedbacks}
         for reference in queryset:
             feedback = reference_to_feedback.get(reference.id)
-            if feedback:
-                # TODO: setting useful and objection attrs duplicates corresponding relationships, consider removing
-                reference.useful = feedback.useful
-                reference.objection = feedback.objection
-                reference.does_belong_to_user = reference.id in user_reference_ids
+            # TODO: setting useful and objection attrs duplicates corresponding relationships, consider removing
+            reference.useful = bool(feedback)
+            reference.does_belong_to_user = reference.id in user_reference_ids
             reference.user_feedback = feedback
         return queryset
 
@@ -186,9 +181,6 @@ class ReferenceFeedbackRelatedReferenceSingle(ReferenceBase, APIView):
             return NotFoundResponse()
         return Response(ReferenceSerializer(instance=self.get_pre_serialized_reference(reference, feedback, reports),
                                             context={'request': request}).data)
-
-class ReferenceObjectionRelatedReferenceSingle(ReferenceFeedbackRelatedReferenceSingle):
-    resource_attr = 'objection'
 
 
 class ReferenceUsefulRelatedReferenceSingle(ReferenceFeedbackRelatedReferenceSingle):
