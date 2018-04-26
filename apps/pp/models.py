@@ -112,13 +112,13 @@ class AnnotationUpvote(UserInput):
 
     reference = models.ForeignKey(Reference, related_name='feedbacks')
 
-class UserAnnotationRequestFeedback(models.Model):
+class AnnotationRequestFeedback(models.Model):
     class Meta:
         app_label = 'pp'
         # unique_together = [('user', 'annotation_request')]
 
     class JSONAPIMeta:
-        resource_name = 'user_annotation_request_feedbacks'
+        resource_name = 'annotation_request_feedbacks'
 
     user = models.ForeignKey('pp.User')
     annotation_request = models.ForeignKey(AnnotationRequest)
