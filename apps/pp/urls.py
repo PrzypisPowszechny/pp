@@ -12,20 +12,20 @@ urlpatterns = [
             name='annotation'),
         # Related
         url(r'^(?P<annotation_id>[0-9]+)/user/$', users.AnnotationRelatedUserSingle.as_view(),
-            name='annotation_user'),
+            name='annotation_related_user'),
         url(r'^(?P<annotation_id>[0-9]+)/upvote/$', annotation_upvotes.AnnotationRelatedUpvoteSingle.as_view(),
-            name='annotation_upvote'),
+            name='annotation_related_upvote'),
         url(r'^(?P<annotation_id>[0-9]+)/reports/$', annotation_reports.AnnotationRelatedAnnotationReportList.as_view(),
-            name='annotation_reports'),
+            name='annotation_related_reports'),
     ])),
     url(r'^upvotes/', include([
         url(r'^(?P<feedback_id>[0-9]+)/$', annotation_upvotes.UpvoteSingle.as_view(),
-            name='upvote'),
+            name='annotation_upvote'),
         url(r'^$', annotation_upvotes.UpvoteList.as_view(),
-            name='upvote'),
+            name='annotation_upvote'),
         # Related
         url(r'^(?P<feedback_id>[0-9]+)/annotation/$', annotations.AnnotationUpvoteRelatedAnnotationSingle.as_view(),
-            name='upvote_annotation'),
+            name='annotation_upvote_related_annotation'),
     ])),
     # TODO: do we make annotationReports, annotation-reports or annotation_reports urls? check redux-json-api view on that
     url(r'^annotation_reports/', include([
@@ -35,7 +35,7 @@ urlpatterns = [
             name='annotation_report'),
         # Related
         url(r'^(?P<report_id>[0-9]+)/annotation/$', annotations.AnnotationReportRelatedAnnotationSingle.as_view(),
-            name='report_annotation'),
+            name='annotation_report_related_annotation'),
     ])),
     url(r'^users/', include([
         url(r'^(?P<user_id>[0-9]+)/$', users.UserSingle.as_view(),

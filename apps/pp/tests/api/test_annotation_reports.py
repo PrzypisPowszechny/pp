@@ -61,7 +61,7 @@ class AnnotationReportAPITest(TestCase):
                     'annotation': {
                         'data': {'id': str(annotation.id), 'type': 'annotations'},
                         'links': {
-                            'related': reverse('api:report_annotation', kwargs={'report_id': report.id})
+                            'related': reverse('api:annotation_report_related_annotation', kwargs={'report_id': report.id})
                         }
                     }
                 }

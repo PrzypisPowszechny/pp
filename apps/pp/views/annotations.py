@@ -45,7 +45,7 @@ class AnnotationSingle(AnnotationBase, APIView):
         except (AnnotationUpvote.DoesNotExist, Annotation.DoesNotExist):
             return NotFoundResponse()
         return Response(AnnotationSerializer(instance=self.get_pre_serialized_annotation(annotation, feedback, reports),
-                                            context={'request': request}).data)
+                                             context={'request': request}).data)
 
     @swagger_auto_schema(request_body=AnnotationPatchDeserializer,
                          responses={200: AnnotationSerializer})
@@ -75,7 +75,7 @@ class AnnotationSingle(AnnotationBase, APIView):
         reports = AnnotationReport.objects.filter(annotation_id=annotation.id, user=request.user)
 
         return Response(AnnotationSerializer(instance=self.get_pre_serialized_annotation(annotation, feedback, reports),
-                                            context={'request': request}).data)
+                                             context={'request': request}).data)
 
     @method_decorator(allow_lazy_user)
     def delete(self, request, annotation_id):
@@ -114,19 +114,18 @@ class AnnotationList(AnnotationBase, GenericAPIView):
         annotation.save()
 
         return Response(AnnotationSerializer(instance=self.get_pre_serialized_annotation(annotation),
-                                            context={'request': request}).data)
-
+                                             context={'request': request}).data)
 
     def get_queryset(self):
         queryset = Annotation.objects \
             .filter(active=True).annotate(
-                upvote_count=Coalesce(
-                    Sum(Case(When(feedbacks__id=True, then=1)), default=0, output_field=IntegerField()),
-                    0),
-            ).prefetch_related(
-                Prefetch('annotation_reports', queryset=AnnotationReport.objects.filter(user=self.request.user),
-                         to_attr='user_annotation_reports')
-            )
+            upvote_count=Coalesce(
+                Sum(Case(When(feedbacks__id=True, then=1)), default=0, output_field=IntegerField()),
+                0),
+        ).prefetch_related(
+            Prefetch('annotation_reports', queryset=AnnotationReport.objects.filter(user=self.request.user),
+                     to_attr='user_annotation_reports')
+        )
         return queryset
 
     def annotate_fetched_queryset(self, queryset):
@@ -149,8 +148,9 @@ class AnnotationList(AnnotationBase, GenericAPIView):
         return queryset
 
     def pre_serialize_queryset(self, queryset):
-        return [self.get_pre_serialized_annotation(annotation, annotation.user_feedback, annotation.user_annotation_reports)
-                for annotation in queryset]
+        return [
+            self.get_pre_serialized_annotation(annotation, annotation.user_feedback, annotation.user_annotation_reports)
+            for annotation in queryset]
 
     @swagger_auto_schema(responses={200: AnnotationListSerializer(many=True)})
     @method_decorator(allow_lazy_user)
@@ -174,17 +174,17 @@ class AnnotationFeedbackRelatedAnnotationSingle(AnnotationBase, APIView):
     def get(self, request, feedback_id):
         try:
             feedback = AnnotationUpvote.objects.get(id=feedback_id, user=request.user,
-                                                         **{self.resource_attr: True})
+                                                    **({self.resource_attr: True} if self.resource_attr else {}))
             annotation = Annotation.objects.get(active=True, feedbacks=feedback_id, feedbacks__user=request.user)
             reports = AnnotationReport.objects.filter(annotation_id=annotation.id, user=request.user)
         except (AnnotationUpvote.DoesNotExist, Annotation.DoesNotExist):
             return NotFoundResponse()
         return Response(AnnotationSerializer(instance=self.get_pre_serialized_annotation(annotation, feedback, reports),
-                                            context={'request': request}).data)
+                                             context={'request': request}).data)
 
 
 class AnnotationUpvoteRelatedAnnotationSingle(AnnotationFeedbackRelatedAnnotationSingle):
-    resource_attr = 'upvote'
+    resource_attr = None
 
 
 class AnnotationReportRelatedAnnotationSingle(AnnotationBase, APIView):
@@ -195,10 +195,10 @@ class AnnotationReportRelatedAnnotationSingle(AnnotationBase, APIView):
         try:
             AnnotationReport.objects.get(id=report_id, user=request.user)
             annotation = Annotation.objects.get(annotation_reports=report_id, active=True,
-                                               annotation_reports__user=request.user)
+                                                annotation_reports__user=request.user)
             feedback = AnnotationUpvote.objects.get(annotation_id=annotation.id, user=request.user)
             reports = AnnotationReport.objects.filter(annotation_id=annotation.id, user=request.user)
         except (AnnotationUpvote.DoesNotExist, Annotation.DoesNotExist, AnnotationReport.DoesNotExist):
             return NotFoundResponse()
         return Response(AnnotationSerializer(instance=self.get_pre_serialized_annotation(annotation, feedback, reports),
-                                            context={'request': request}).data)
+                                             context={'request': request}).data)

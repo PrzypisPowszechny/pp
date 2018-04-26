@@ -123,16 +123,16 @@ class AnnotationSerializer(ResourceSerializer, AnnotationDeserializer):
 
     class Relationships(serializers.Serializer):
         class User(RelationSerializer):
-            related_link_url_name = 'api:annotation_user'
+            related_link_url_name = 'api:annotation_related_user'
 
         class Upvote(RelationSerializer):
-            related_link_url_name = 'api:annotation_upvote'
+            related_link_url_name = 'api:annotation_related_upvote'
 
         class AnnotationReports(RelationManySerializer):
-            related_link_url_name = 'api:annotation_reports'
+            related_link_url_name = 'api:annotation_related_reports'
 
         user = User(required=True)
-        upvote = Upvote()
+        annotation_upvote = Upvote()
         annotation_reports = AnnotationReports()
 
     attributes = Attributes()
@@ -157,16 +157,16 @@ class AnnotationListSerializer(ResourceSerializer):
 
     class Relationships(serializers.Serializer):
         class User(RelationSerializer):
-            related_link_url_name = 'api:annotation_user'
+            related_link_url_name = 'api:annotation_related_user'
 
         class Upvote(RelationSerializer):
-            related_link_url_name = 'api:annotation_upvote'
+            related_link_url_name = 'api:annotation_related_upvote'
 
         class AnnotationReports(RelationManySerializer):
-            related_link_url_name = 'api:annotation_reports'
+            related_link_url_name = 'api:annotation_related_reports'
 
         user = User(required=True)
-        upvote = Upvote()
+        annotation_upvote = Upvote()
         annotation_reports = AnnotationReports()
 
     class Links(ResourceLinksSerializer):
@@ -206,7 +206,7 @@ class AnnotationReportDeserializer(ResourceTypeSerializer):
 class AnnotationReportSerializer(ResourceSerializer, AnnotationReportDeserializer):
     class Relationships(serializers.Serializer):
         class Annotation(RelationSerializer):
-            related_link_url_name = 'api:report_annotation'
+            related_link_url_name = 'api:annotation_report_related_annotation'
 
         annotation = Annotation()
 
@@ -243,7 +243,7 @@ class FeedbackSerializer(ResourceSerializer):
 class UpvoteSerializer(ResourceSerializer):
     class Relationships(serializers.Serializer):
         class Annotation(RelationSerializer):
-            related_link_url_name = 'api:upvote_annotation'
+            related_link_url_name = 'api:annotation_upvote_related_annotation'
 
         annotation = Annotation()
 

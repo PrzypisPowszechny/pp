@@ -102,7 +102,7 @@ class AnnotationUpvote(UserInput):
         unique_together = [('user', 'annotation')]
 
     class JSONAPIMeta:
-        upvote_resource_name = 'upvotes'
+        upvote_resource_name = 'annotation_upvotes'
 
         @classmethod
         def get_resource_names(cls, obj=None):
