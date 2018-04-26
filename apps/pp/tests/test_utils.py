@@ -7,7 +7,7 @@ from mock import patch
 from model_mommy import mommy
 from parameterized import parameterized
 
-from apps.pp.models import Reference, AnnotationRequest
+from apps.pp.models import Annotation, AnnotationRequest
 from apps.pp.utils import set_relationship
 
 JSONAPIMeta = namedtuple('JSONAPIMeta', ('resource_name',))
@@ -19,7 +19,7 @@ class SetRelationshipTest(SimpleTestCase):
     @parameterized.expand([
         # User, overwrite resource name, with id
         (mommy.prepare(
-            Reference,
+            Annotation,
             user=mommy.prepare(
                 get_user_model(),
                 id=123
@@ -38,7 +38,7 @@ class SetRelationshipTest(SimpleTestCase):
          }),
         # AnnotationRequest, default resource name, with id
         (mommy.prepare(
-            Reference,
+            Annotation,
             annotation_request=mommy.prepare(
                 AnnotationRequest,
                 id=123
@@ -57,7 +57,7 @@ class SetRelationshipTest(SimpleTestCase):
          }),
         # User, overwrite resource name, no id
         (mommy.prepare(
-            Reference,
+            Annotation,
             user=mommy.prepare(
                 get_user_model(),
                 id=None
@@ -73,7 +73,7 @@ class SetRelationshipTest(SimpleTestCase):
          }),
         # AnnotationRequest, default resource name, no id
         (mommy.prepare(
-            Reference,
+            Annotation,
             annotation_request=mommy.prepare(
                 AnnotationRequest,
                 id=None
@@ -99,7 +99,7 @@ class SetRelationshipTest(SimpleTestCase):
     @parameterized.expand([
         # User, overwrite resource name, with id
         (mommy.prepare(
-            Reference,
+            Annotation,
             user=mommy.prepare(
                 get_user_model(),
                 id=123
@@ -119,7 +119,7 @@ class SetRelationshipTest(SimpleTestCase):
          }),
         # AnnotationRequest, default resource name, with id
         (mommy.prepare(
-            Reference,
+            Annotation,
             annotation_request=mommy.prepare(
                 AnnotationRequest,
                 id=123
@@ -139,7 +139,7 @@ class SetRelationshipTest(SimpleTestCase):
          }),
         # User, overwrite resource name, no id
         (mommy.prepare(
-            Reference,
+            Annotation,
             user=mommy.prepare(
                 get_user_model(),
                 id=None
@@ -156,7 +156,7 @@ class SetRelationshipTest(SimpleTestCase):
          }),
         # AnnotationRequest, default resource name, no id
         (mommy.prepare(
-            Reference,
+            Annotation,
             annotation_request=mommy.prepare(
                 AnnotationRequest,
                 id=None

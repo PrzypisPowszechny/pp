@@ -3,7 +3,7 @@ import json
 from django.test import TestCase
 from django.urls import reverse
 
-from apps.pp.models import Reference
+from apps.pp.models import Annotation
 from apps.pp.models import AnnotationReport
 from apps.pp.tests.utils import create_test_user
 
@@ -18,7 +18,7 @@ class AnnotationReportAPITest(TestCase):
         self.client.login(username=self.user, password=self.password)
 
     def test_post_new_annotation_report(self):
-        reference = Reference.objects.create(user=self.user)
+        annotation = Annotation.objects.create(user=self.user)
 
         report_data = {
             'reason': 'SPAM',
@@ -33,21 +33,21 @@ class AnnotationReportAPITest(TestCase):
                     'comment': report_data['comment'],
                 },
                 'relationships': {
-                    'reference': {
+                    'annotation': {
                         'data': {
                             'type': 'annotation_reports',
-                            'id': str(reference.id)
+                            'id': str(annotation.id)
                         }
                     }
                 }
             }
         })
 
-        response = self.client.post(self.post_url.format(reference.id), body, content_type='application/vnd.api+json')
+        response = self.client.post(self.post_url.format(annotation.id), body, content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 200)
         response_data = json.loads(response.content.decode('utf8'))
 
-        # Get first reference report there is
+        # Get first annotation report there is
         report = AnnotationReport.objects.first()
         correct_response = {
             'data': {
@@ -58,10 +58,10 @@ class AnnotationReportAPITest(TestCase):
                     'comment': report_data['comment'],
                 },
                 'relationships': {
-                    'reference': {
-                        'data': {'id': str(reference.id), 'type': 'references'},
+                    'annotation': {
+                        'data': {'id': str(annotation.id), 'type': 'annotations'},
                         'links': {
-                            'related': reverse('api:report_reference', kwargs={'report_id': report.id})
+                            'related': reverse('api:report_annotation', kwargs={'report_id': report.id})
                         }
                     }
                 }

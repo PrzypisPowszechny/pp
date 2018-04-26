@@ -5,28 +5,28 @@ from lazysignup.decorators import allow_lazy_user
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.pp.models import Reference, AnnotationReport
+from apps.pp.models import Annotation, AnnotationReport
 from apps.pp.responses import ValidationErrorResponse, NotFoundResponse, ErrorResponse
 from apps.pp.serializers import AnnotationReportSerializer, AnnotationReportDeserializer
 from apps.pp.utils import get_relationship_id, DataPreSerializer, get_resource_name
 
 
 # TODO: add test
-class ReferenceRelatedAnnotationReportList(APIView):
+class AnnotationRelatedAnnotationReportList(APIView):
 
     @swagger_auto_schema(responses={200: AnnotationReportSerializer(many=True)})
-    def get(self, request, reference_id):
+    def get(self, request, annotation_id):
         try:
-            Reference.objects.get(active=True, id=reference_id)
-        except Reference.DoesNotExist:
+            Annotation.objects.get(active=True, id=annotation_id)
+        except Annotation.DoesNotExist:
             return NotFoundResponse()
-        reports = AnnotationReport.objects.filter(reference_id=reference_id, user=request.user)
+        reports = AnnotationReport.objects.filter(annotation_id=annotation_id, user=request.user)
 
         data_list = []
         for report in reports:
             pre_serializer = DataPreSerializer(report, {'attributes': report})
-            pre_serializer.set_relation(get_resource_name(report, related_field='reference_id'),
-                                        resource_id=report.reference_id)
+            pre_serializer.set_relation(get_resource_name(report, related_field='annotation_id'),
+                                        resource_id=report.annotation_id)
             pre_serializer.set_relation(resource_name=get_resource_name(report, related_field='user_id'),
                                         resource_id=report.user_id)
             data_list.append(pre_serializer.data)
@@ -45,8 +45,8 @@ class AnnotationReportSingle(APIView):
             return NotFoundResponse()
 
         pre_serializer = DataPreSerializer(report, {'attributes': report})
-        pre_serializer.set_relation(resource_name=get_resource_name(report, related_field='reference_id'),
-                                    resource_id=report.reference_id)
+        pre_serializer.set_relation(resource_name=get_resource_name(report, related_field='annotation_id'),
+                                    resource_id=report.annotation_id)
         pre_serializer.set_relation(resource_name=get_resource_name(report, related_field='user_id'),
                                     resource_id=report.user_id)
         return Response(AnnotationReportSerializer(pre_serializer.data, context={'request': request}).data)
@@ -63,12 +63,12 @@ class AnnotationReportList(APIView):
             return ValidationErrorResponse(deserializer.errors)
         report = AnnotationReport(**deserializer.validated_data['attributes'])
         report.user_id = request.user.pk
-        report.reference_id = get_relationship_id(deserializer, 'reference')
+        report.annotation_id = get_relationship_id(deserializer, 'annotation')
 
         # TODO: make this validation in serializer, because: 1. if you can validate there 2. for friendly error message
         try:
-            Reference.objects.get(active=True, id=report.reference_id)
-        except Reference.DoesNotExist:
+            Annotation.objects.get(active=True, id=report.annotation_id)
+        except Annotation.DoesNotExist:
             return NotFoundResponse()
 
         try:
@@ -77,8 +77,8 @@ class AnnotationReportList(APIView):
             return ErrorResponse('Failed to create object.')
 
         pre_serializer = DataPreSerializer(report, {'attributes': report})
-        pre_serializer.set_relation(resource_name=get_resource_name(report, related_field='reference_id'),
-                                    resource_id=report.reference_id)
+        pre_serializer.set_relation(resource_name=get_resource_name(report, related_field='annotation_id'),
+                                    resource_id=report.annotation_id)
         pre_serializer.set_relation(resource_name=get_resource_name(report, related_field='user_id'),
                                     resource_id=report.user_id)
         return Response(AnnotationReportSerializer(pre_serializer.data, context={'request': request}).data)

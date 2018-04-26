@@ -14,27 +14,22 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.CreateModel(
-            name='UserAnnotationRequestFeedback',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-            ],
+        migrations.RenameModel(
+            old_name='UserReferenceRequestFeedback',
+            new_name='UserAnnotationRequestFeedback',
         ),
         migrations.RenameModel(
             old_name='ReferenceRequest',
             new_name='AnnotationRequest',
         ),
         migrations.AlterUniqueTogether(
-            name='userreferencerequestfeedback',
+            name='userannotationrequestfeedback',
             unique_together=set([]),
         ),
-        migrations.RemoveField(
-            model_name='userreferencerequestfeedback',
-            name='reference_request',
-        ),
-        migrations.RemoveField(
-            model_name='userreferencerequestfeedback',
-            name='user',
+        migrations.RenameField(
+            model_name='userannotationrequestfeedback',
+            old_name='reference_request',
+            new_name='annotation_request',
         ),
         migrations.RenameField(
             model_name='historicalreference',
@@ -46,17 +41,8 @@ class Migration(migrations.Migration):
             old_name='reference_request',
             new_name='annotation_request',
         ),
-        migrations.DeleteModel(
-            name='UserReferenceRequestFeedback',
-        ),
-        migrations.AddField(
-            model_name='userannotationrequestfeedback',
-            name='annotation_request',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='pp.AnnotationRequest'),
-        ),
-        migrations.AddField(
-            model_name='userannotationrequestfeedback',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+        migrations.AlterUniqueTogether(
+            name='userannotationrequestfeedback',
+            unique_together=set([('user', 'annotation_request')]),
         ),
     ]

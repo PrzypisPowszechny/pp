@@ -1,5 +1,5 @@
 from apps.pp.serializers import UpvoteSerializer
-from apps.pp.views.reference_feedbacks import ReferenceRelatedReferenceFeedbackSingle, FeedbackSingle, FeedbackList
+from apps.pp.views.annotation_feedbacks import AnnotationRelatedAnnotationFeedbackSingle, FeedbackSingle, FeedbackList
 
 
 class UpvoteResource(object):
@@ -7,7 +7,7 @@ class UpvoteResource(object):
     serializer_class = UpvoteSerializer
 
 
-class ReferenceRelatedUpvoteSingle(UpvoteResource, ReferenceRelatedReferenceFeedbackSingle):
+class AnnotationRelatedUpvoteSingle(UpvoteResource, AnnotationRelatedAnnotationFeedbackSingle):
     pass
 
 

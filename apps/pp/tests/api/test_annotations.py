@@ -1,0 +1,474 @@
+import json
+from datetime import timedelta
+
+from django.test import TestCase
+from django.urls import reverse
+from django.utils import timezone
+
+from apps.pp.models import Annotation, AnnotationUpvote
+from apps.pp.models import AnnotationRequest
+from apps.pp.tests.utils import create_test_user
+from apps.pp.utils import get_resource_name
+
+
+class AnnotationAPITest(TestCase):
+    base_url = "/api/annotations/{}/"
+    maxDiff = None
+
+    # IMPORTANT: we log in for each test, so self.user has already an open session with server
+    def setUp(self):
+        self.user, self.password = create_test_user()
+        self.client.login(username=self.user, password=self.password)
+
+    def test_get_returns_json_200(self):
+        annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
+                                              annotation_link="www.przypispowszechny.com",
+                                              annotation_link_title="very nice")
+        urf = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
+        response = self.client.get(self.base_url.format(annotation.id))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['content-type'], 'application/vnd.api+json')
+
+    def test_get_returns_annotation(self):
+        annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
+                                              annotation_link="www.przypispowszechny.com",
+                                              annotation_link_title="very nice")
+        urf = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
+        response = self.client.get(self.base_url.format(annotation.id))
+
+        upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).count()
+
+        self.assertEqual(
+            json.loads(response.content.decode('utf8')),
+            {
+                'data': {
+                    'id': str(annotation.id),
+                    'type': 'annotations',
+                    'attributes': {
+                        'url': annotation.url,
+                        'ranges': annotation.ranges,
+                        'quote': annotation.quote,
+                        'priority': annotation.priority,
+                        'comment': annotation.comment,
+                        'annotation_link': annotation.annotation_link,
+                        'annotation_link_title': annotation.annotation_link_title,
+                        'upvote': bool(urf),
+                        'upvote_count': upvote_count,
+                        'does_belong_to_user': True,
+                    },
+                    'relationships': {
+                        'user': {
+                            'links': {
+                                'related': reverse('api:annotation_user', kwargs={'annotation_id': annotation.id})
+                            },
+                            'data': {'type': 'users', 'id': str(self.user.id)}
+                        },
+                        'upvote': {
+                            'links': {
+                                'related': reverse('api:annotation_upvote', kwargs={'annotation_id': annotation.id})
+                            },
+                            'data': {'id': str(urf.id), 'type': get_resource_name(urf, always_single=True)}
+                        },
+                        'annotation_reports': {
+                            'links': {
+                                'related': reverse('api:annotation_reports', kwargs={'annotation_id': annotation.id})
+                            },
+                            'data': []
+                        },
+                    }
+                }
+            }
+        )
+
+    def test_empty_search_return_json_200(self):
+        search_base_url = "/api/annotations/?url={}"
+        response = self.client.get(search_base_url.format('przypis powszechny'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['content-type'], 'application/vnd.api+json')
+
+        test_answer = []
+        self.assertEqual(
+            json.loads(response.content.decode('utf8'))['data'],
+            test_answer
+        )
+
+    def test_nonempty_search_return_json_200(self):
+        search_base_url = "/api/annotations/?&url={}"
+        annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
+                                              annotation_link="www.przypispowszechny.com",
+                                              annotation_link_title="very nice")
+        annotation2 = Annotation.objects.create(user=self.user, priority='NORMAL', comment="more good job",
+                                               annotation_link="www.przypispowszechny.com",
+                                               annotation_link_title="very nice again")
+        response = self.client.get(search_base_url.format('przypis powszechny'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['content-type'], 'application/vnd.api+json')
+
+    def test_search_return_list(self):
+        search_base_url = "/api/annotations/?url={}"
+        # First annotation
+        annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="more good job",
+                                              url='www.przypis.pl', annotation_link="www.przypispowszechny.com",
+                                              annotation_link_title="very nice again",
+                                              create_date=timezone.now() + timedelta(seconds=-1000))
+        annotation.create_date = timezone.now() + timedelta(seconds=1000)
+        annotation.save()
+        annotation = Annotation.objects.get(id=annotation.id)
+
+        # Second annotation
+        annotation2 = Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
+                                               url='www.przypis.pl',
+                                               annotation_link="www.przypispowszechny2.com",
+                                               annotation_link_title="very nice",
+                                               create_date=timezone.now())
+        annotation2.save()
+
+        urf = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
+
+        upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).count()
+        upvote_count2 = AnnotationUpvote.objects.filter(annotation=annotation2).count()
+
+        raw_response = self.client.get(search_base_url.format(annotation.url))
+        response = json.loads(raw_response.content.decode('utf8'))['data']
+        response_annotation = next(row for row in response if str(row['id']) == str(annotation.id))
+        response_annotation2 = next(row for row in response if str(row['id']) == str(annotation2.id))
+        self.assertEqual(
+            response_annotation,
+            {'id': str(annotation.id),
+             'type': 'annotations',
+             'attributes': {
+                 'url': annotation.url,
+                 'ranges': annotation.ranges,
+                 'quote': annotation.quote,
+                 'priority': annotation.priority,
+                 'comment': annotation.comment,
+                 'annotation_link': annotation.annotation_link,
+                 'annotation_link_title': annotation.annotation_link_title,
+                 'upvote': bool(urf),
+                 'upvote_count': upvote_count,
+                 'does_belong_to_user': True,
+             },
+             'relationships': {
+                 'user': {
+                     'links': {
+                         'related': reverse('api:annotation_user', kwargs={'annotation_id': annotation.id})
+                     },
+                     'data': {'type': 'users', 'id': str(self.user.id)}
+                 },
+                 'upvote': {
+                     'links': {
+                         'related': reverse('api:annotation_upvote', kwargs={'annotation_id': annotation.id})
+                     },
+                     'data': {'type': 'upvotes', 'id': str(urf.id)}
+                 },
+                 'annotation_reports': {
+                     'links': {
+                         'related': reverse('api:annotation_reports', kwargs={'annotation_id': annotation.id})
+                     },
+                     'data': []
+                 },
+             },
+             'links': {
+                 'self': reverse('api:annotation', kwargs={'annotation_id': annotation.id})
+             }
+             })
+
+        self.assertEqual(
+            response_annotation2,
+            {'id': str(annotation2.id),
+             'type': 'annotations',
+             'attributes': {
+                 'url': annotation2.url,
+                 'ranges': annotation2.ranges,
+                 'quote': annotation2.quote,
+                 'priority': annotation2.priority,
+                 'comment': annotation2.comment,
+                 'annotation_link': annotation2.annotation_link,
+                 'annotation_link_title': annotation2.annotation_link_title,
+                 'upvote': False,
+                 'upvote_count': upvote_count2,
+                 'does_belong_to_user': True,
+             },
+             'relationships': {
+                 'user': {
+                        'links': {
+                            'related': reverse('api:annotation_user', kwargs={'annotation_id': annotation2.id})
+                        },
+                     'data': {'type': 'users', 'id': str(self.user.id)}
+                 },
+                 'upvote': {
+                     'links': {
+                         'related': reverse('api:annotation_upvote', kwargs={'annotation_id': annotation2.id})
+                     },
+                     'data': None
+                 },
+                 'annotation_reports': {
+                     'links': {
+                         'related': reverse('api:annotation_reports', kwargs={'annotation_id': annotation2.id})
+                     },
+                     'data': []
+                 },
+             },
+             'links': {
+                 'self': reverse('api:annotation', kwargs={'annotation_id': annotation2.id})
+             },
+             })
+
+    def test_post_new_annotation(self):
+        base_url = "/api/annotations/"
+
+        response = self.client.post(
+            base_url,
+            json.dumps({
+                'data': {
+                    'type': 'annotations',
+                    'attributes': {
+                        'url': "www.przypis.pl",
+                        'ranges': "Od tad do tad",
+                        'quote': 'very nice',
+                        'priority': 'NORMAL',
+                        'comment': "komentarz",
+                        'annotation_link': 'www.przypispowszechny.com',
+                        'annotation_link_title': 'very nice too',
+                    },
+                }
+            }),
+            content_type='application/vnd.api+json')
+
+        self.assertEqual(response.status_code, 200, msg=response.data)
+        annotation = Annotation.objects.get(user=self.user)
+
+        upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).count()
+        self.assertEqual(annotation.ranges, "Od tad do tad")
+        self.assertDictEqual(
+            json.loads(response.content.decode('utf8')),
+            {
+                'data': {
+                    'id': str(annotation.id),
+                    'type': 'annotations',
+                    'attributes': {
+                        'url': annotation.url,
+                        'ranges': annotation.ranges,
+                        'quote': annotation.quote,
+                        'priority': annotation.priority,
+                        'comment': annotation.comment,
+                        'annotation_link': annotation.annotation_link,
+                        'annotation_link_title': annotation.annotation_link_title,
+                        'upvote': False,
+                        'upvote_count': upvote_count,
+                        'does_belong_to_user': True,
+                    },
+                    'relationships': {
+                        'user': {
+                        'links': {
+                            'related': reverse('api:annotation_user', kwargs={'annotation_id': annotation.id})
+                        },
+                            'data': {'type': 'users', 'id': str(self.user.id)}
+                        },
+                        'upvote': {
+                            'links': {
+                                'related': reverse('api:annotation_upvote', kwargs={'annotation_id': annotation.id})
+                            },
+                            'data': None
+                        },
+                        'annotation_reports': {
+                            'links': {
+                                'related': reverse('api:annotation_reports', kwargs={'annotation_id': annotation.id})
+                            },
+                            'data': []
+                        },
+                    }
+                }
+            }
+        )
+
+    def test_post_new_annotation_with_null_request_annotation(self):
+        base_url = "/api/annotations/"
+
+        annotation_request = AnnotationRequest.objects.create(
+            user=self.user,
+            ranges="Od tad do tad",
+            quote='very nice',
+        )
+
+        response = self.client.post(
+            base_url,
+            json.dumps({
+                'data': {
+                    'type': 'annotations',
+                    'attributes': {
+                        'url': "www.przypis.pl",
+                        'ranges': "Od tad do tad",
+                        'quote': 'very nice',
+                        'priority': 'NORMAL',
+                        'comment': "komentarz",
+                        'annotation_link': 'www.przypispowszechny.com',
+                        'annotation_link_title': 'very nice too',
+                    }
+                }
+            }),
+            content_type='application/vnd.api+json')
+
+        self.assertEqual(response.status_code, 200, msg=response.data)
+        annotation = Annotation.objects.get(user=self.user)
+
+        upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).count()
+        self.assertEqual(annotation.ranges, "Od tad do tad")
+        self.assertDictEqual(
+            json.loads(response.content.decode('utf8')),
+            {
+                'data': {
+                    'id': str(annotation.id),
+                    'type': 'annotations',
+                    'attributes': {
+                        'url': annotation.url,
+                        'ranges': annotation.ranges,
+                        'quote': annotation.quote,
+                        'priority': annotation.priority,
+                        'comment': annotation.comment,
+                        'annotation_link': annotation.annotation_link,
+                        'annotation_link_title': annotation.annotation_link_title,
+                        'upvote': False,
+                        'upvote_count': upvote_count,
+                        'does_belong_to_user': True,
+                    },
+                    'relationships': {
+                        'user': {
+                        'links': {
+                            'related': reverse('api:annotation_user', kwargs={'annotation_id': annotation.id})
+                        },
+                            'data': {'type': 'users', 'id': str(self.user.id)}
+                        },
+                        'upvote': {
+                            'links': {
+                                'related': reverse('api:annotation_upvote', kwargs={'annotation_id': annotation.id})
+                            },
+                            'data': None
+                        },
+                        'annotation_reports': {
+                            'links': {
+                                'related': reverse('api:annotation_reports', kwargs={'annotation_id': annotation.id})
+                            },
+                            'data': []
+                        },
+                    }
+                }
+            }
+        )
+
+    def test_patch_annotation(self):
+        annotation = Annotation.objects.create(user=self.user, priority='NORMAL', url='www.przypis.pl',
+                                              comment="good job",
+                                              annotation_link="www.przypispowszechny.com",
+                                              annotation_link_title="very nice",
+                                              quote='not this time')
+        urf = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
+        put_string = 'not so well'
+        put_data = json.dumps({
+            'data': {
+                'id': annotation.id,
+                'type': 'annotations',
+                'attributes': {
+                    'annotation_link_title': put_string
+                }
+            }
+        })
+        response = self.client.patch(self.base_url.format(annotation.id), put_data,
+                                     content_type='application/vnd.api+json')
+        annotation = Annotation.objects.get(id=annotation.id)
+
+        upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).count()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(annotation.annotation_link_title, put_string)
+        self.assertEqual(
+            json.loads(response.content.decode('utf8'))['data'],
+            {
+                'id': str(annotation.id),
+                'type': 'annotations',
+                'attributes': {
+                    'url': annotation.url,
+                    'ranges': annotation.ranges,
+                    'quote': annotation.quote,
+                    'priority': annotation.priority,
+                    'comment': annotation.comment,
+                    'annotation_link': annotation.annotation_link,
+                    'annotation_link_title': annotation.annotation_link_title,
+                    'upvote': bool(urf),
+                    'upvote_count': upvote_count,
+                    'does_belong_to_user': True,
+                },
+                'relationships': {
+                    'user': {
+                        'links': {
+                            'related': reverse('api:annotation_user', kwargs={'annotation_id': annotation.id})
+                        },
+                        'data': {'type': 'users', 'id': str(self.user.id)}
+                    },
+                    'upvote': {
+                        'links': {
+                            'related': reverse('api:annotation_upvote', kwargs={'annotation_id': annotation.id})
+                        },
+                        'data': {'id': str(urf.id), 'type': get_resource_name(urf, always_single=True)}
+                    },
+                    'annotation_reports': {
+                        'links': {
+                            'related': reverse('api:annotation_reports', kwargs={'annotation_id': annotation.id})
+                        },
+                        'data': []
+                    },
+                }
+            }
+
+        )
+
+    def test_patch_inaccessible_field_annotation(self):
+        annotation = Annotation.objects.create(
+            user=self.user, priority='NORMAL', url='www.przypis.pl', comment="good job",
+            annotation_link="www.przypispowszechny.com", annotation_link_title="very nice",
+            quote='not this time'
+        )
+        AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
+
+        put_string = 'not so well'
+        put_data = json.dumps({
+            'data': {
+                'type': 'annotations',
+                'id': annotation.id,
+                'attributes': {
+                    'quote': put_string
+                }
+            }
+        }
+        )
+        response = self.client.patch(self.base_url.format(annotation.id), put_data,
+                                     content_type='application/vnd.api+json')
+        annotation = Annotation.objects.get(id=annotation.id)
+        self.assertEqual(response.status_code, 400)
+        self.assertNotEqual(annotation.comment, put_string)
+
+    def test_delete_annotation(self):
+        annotation = Annotation.objects.create(
+            user=self.user, priority='NORMAL', url='www.przypis.pl', comment="good job",
+            annotation_link="www.przypispowszechny.com", annotation_link_title="very nice",
+            quote='not this time'
+        )
+        AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
+
+        good_id = annotation.id
+        non_existing_id = good_id + 100000000
+
+        response = self.client.delete(self.base_url.format(good_id), content_type='application/vnd.api+json')
+        self.assertEqual(response.status_code, 200)
+
+        # After removing is not accessible
+        response = self.client.get(self.base_url.format(good_id), content_type='application/vnd.api+json')
+        self.assertEqual(response.status_code, 404)
+
+        # Removing again is still good
+        response = self.client.delete(self.base_url.format(good_id), content_type='application/vnd.api+json')
+        self.assertEqual(response.status_code, 200)
+
+        # Removing never existing is bad
+        response = self.client.delete(self.base_url.format(non_existing_id), content_type='application/vnd.api+json')
+        self.assertEqual(response.status_code, 404)

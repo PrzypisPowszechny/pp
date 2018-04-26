@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from apps.pp.models import Reference, AnnotationUpvote, AnnotationRequestFeedback, AnnotationRequest
+from apps.pp.models import Annotation, AnnotationUpvote, AnnotationRequestFeedback, AnnotationRequest
 
 
 class UserModelTest(TestCase):
@@ -21,19 +21,19 @@ class AnnotationUpvoteModelTest(TestCase):
     def setUpTestData(cls):
         cls.user = get_user_model().objects.create_user(username="Alibaba")
         cls.user2 = get_user_model().objects.create_user(username="Rozbójnik")
-        cls.reference = Reference.objects.create(user=cls.user, priority='NORMAL', comment="good job",
-                                                 reference_link="www.przypispowszechny.com",
-                                                 reference_link_title="very nice")
+        cls.annotation = Annotation.objects.create(user=cls.user, priority='NORMAL', comment="good job",
+                                                  annotation_link="www.przypispowszechny.com",
+                                                  annotation_link_title="very nice")
 
     def test_creating(self):
-        AnnotationUpvote.objects.create(user=self.user, reference=self.reference)
+        AnnotationUpvote.objects.create(user=self.user, annotation=self.annotation)
         self.assertEqual(1, AnnotationUpvote.objects.count())
 
 
     def test_updating_annotation_upvote_count(self):
-        AnnotationUpvote.objects.create(user=self.user2, reference=self.reference)
-        self.reference.count_upvote()
-        self.assertEqual(1, self.reference.upvote_count)
+        AnnotationUpvote.objects.create(user=self.user2, annotation=self.annotation)
+        self.annotation.count_upvote()
+        self.assertEqual(1, self.annotation.upvote_count)
 
 
 class AnnotationRequestFeedbackModelTest(TestCase):
