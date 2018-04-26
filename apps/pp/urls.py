@@ -1,7 +1,7 @@
 from django.conf.urls import url, include
 
 from apps.pp.views import users
-from .views import references, reference_reports, reference_usefuls
+from .views import references, reference_reports, reference_upvotes
 
 
 urlpatterns = [
@@ -13,19 +13,19 @@ urlpatterns = [
         # Related
         url(r'^(?P<reference_id>[0-9]+)/user/$', users.ReferenceRelatedUserSingle.as_view(),
             name='reference_user'),
-        url(r'^(?P<reference_id>[0-9]+)/useful/$', reference_usefuls.ReferenceRelatedUsefulSingle.as_view(),
-            name='reference_useful'),
+        url(r'^(?P<reference_id>[0-9]+)/upvote/$', reference_upvotes.ReferenceRelatedUpvoteSingle.as_view(),
+            name='reference_upvote'),
         url(r'^(?P<reference_id>[0-9]+)/reports/$', reference_reports.ReferenceRelatedReferenceReportList.as_view(),
             name='reference_reports'),
     ])),
-    url(r'^usefuls/', include([
-        url(r'^(?P<feedback_id>[0-9]+)/$', reference_usefuls.UsefulSingle.as_view(),
-            name='useful'),
-        url(r'^$', reference_usefuls.UsefulList.as_view(),
-            name='useful'),
+    url(r'^upvotes/', include([
+        url(r'^(?P<feedback_id>[0-9]+)/$', reference_upvotes.UpvoteSingle.as_view(),
+            name='upvote'),
+        url(r'^$', reference_upvotes.UpvoteList.as_view(),
+            name='upvote'),
         # Related
-        url(r'^(?P<feedback_id>[0-9]+)/reference/$', references.ReferenceUsefulRelatedReferenceSingle.as_view(),
-            name='useful_reference'),
+        url(r'^(?P<feedback_id>[0-9]+)/reference/$', references.ReferenceUpvoteRelatedReferenceSingle.as_view(),
+            name='upvote_reference'),
     ])),
     # TODO: do we make referenceReports, reference-reports or reference_reports urls? check redux-json-api view on that
     url(r'^reference_reports/', include([

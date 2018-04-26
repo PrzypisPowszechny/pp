@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_json_api.pagination import LimitOffsetPagination
 
-from apps.pp.models import Reference, UserReferenceFeedback, ReferenceReport
+from apps.pp.models import Reference, ReferenceUpvote, ReferenceReport
 from apps.pp.responses import PermissionDenied, ValidationErrorResponse, ErrorResponse, NotFoundResponse, Forbidden
 from apps.pp.serializers import ReferencePatchDeserializer, ReferenceListSerializer, ReferenceDeserializer, \
     ReferenceSerializer
@@ -25,7 +25,7 @@ class ReferenceBase(object):
         pre_serializer = DataPreSerializer(reference, {'attributes': reference})
         pre_serializer.set_relation(get_resource_name(reference.user),
                                     resource_id=reference.user_id)
-        pre_serializer.set_relation(get_resource_name(feedback, model=UserReferenceFeedback),
+        pre_serializer.set_relation(get_resource_name(feedback, model=ReferenceUpvote),
                                     resource_id=feedback)
         pre_serializer.set_relation(get_resource_name(reference, related_field='reference_reports'),
                                     resource_id=reports)
@@ -40,9 +40,9 @@ class ReferenceSingle(ReferenceBase, APIView):
     def get(self, request, reference_id):
         try:
             reference = Reference.objects.get(active=True, id=reference_id)
-            feedback = UserReferenceFeedback.objects.filter(reference=reference, user=request.user).first()
+            feedback = ReferenceUpvote.objects.filter(reference=reference, user=request.user).first()
             reports = ReferenceReport.objects.filter(reference_id=reference.id, user=request.user)
-        except (UserReferenceFeedback.DoesNotExist, Reference.DoesNotExist):
+        except (ReferenceUpvote.DoesNotExist, Reference.DoesNotExist):
             return NotFoundResponse()
         return Response(ReferenceSerializer(instance=self.get_pre_serialized_reference(reference, feedback, reports),
                                             context={'request': request}).data)
@@ -71,7 +71,7 @@ class ReferenceSingle(ReferenceBase, APIView):
             setattr(reference, k, v)
         reference.save()
 
-        feedback = UserReferenceFeedback.objects.filter(reference=reference, user=request.user).first()
+        feedback = ReferenceUpvote.objects.filter(reference=reference, user=request.user).first()
         reports = ReferenceReport.objects.filter(reference_id=reference.id, user=request.user)
 
         return Response(ReferenceSerializer(instance=self.get_pre_serialized_reference(reference, feedback, reports),
@@ -120,7 +120,7 @@ class ReferenceList(ReferenceBase, GenericAPIView):
     def get_queryset(self):
         queryset = Reference.objects \
             .filter(active=True).annotate(
-                useful_count=Coalesce(
+                upvote_count=Coalesce(
                     Sum(Case(When(feedbacks__id=True, then=1)), default=0, output_field=IntegerField()),
                     0),
             ).prefetch_related(
@@ -137,13 +137,13 @@ class ReferenceList(ReferenceBase, GenericAPIView):
         user_reference_ids = Reference.objects \
             .filter(user=self.request.user, id__in=reference_ids).values_list('id', flat=True)
 
-        # Manually annotate useful & objection feedbacks for the current user
-        feedbacks = UserReferenceFeedback.objects.filter(user=self.request.user, reference_id__in=reference_ids)
+        # Manually annotate upvote & objection feedbacks for the current user
+        feedbacks = ReferenceUpvote.objects.filter(user=self.request.user, reference_id__in=reference_ids)
         reference_to_feedback = {feedback.reference_id: feedback for feedback in feedbacks}
         for reference in queryset:
             feedback = reference_to_feedback.get(reference.id)
-            # TODO: setting useful and objection attrs duplicates corresponding relationships, consider removing
-            reference.useful = bool(feedback)
+            # TODO: setting upvote and objection attrs duplicates corresponding relationships, consider removing
+            reference.upvote = bool(feedback)
             reference.does_belong_to_user = reference.id in user_reference_ids
             reference.user_feedback = feedback
         return queryset
@@ -173,18 +173,18 @@ class ReferenceFeedbackRelatedReferenceSingle(ReferenceBase, APIView):
     @method_decorator(allow_lazy_user)
     def get(self, request, feedback_id):
         try:
-            feedback = UserReferenceFeedback.objects.get(id=feedback_id, user=request.user,
+            feedback = ReferenceUpvote.objects.get(id=feedback_id, user=request.user,
                                                          **{self.resource_attr: True})
             reference = Reference.objects.get(active=True, feedbacks=feedback_id, feedbacks__user=request.user)
             reports = ReferenceReport.objects.filter(reference_id=reference.id, user=request.user)
-        except (UserReferenceFeedback.DoesNotExist, Reference.DoesNotExist):
+        except (ReferenceUpvote.DoesNotExist, Reference.DoesNotExist):
             return NotFoundResponse()
         return Response(ReferenceSerializer(instance=self.get_pre_serialized_reference(reference, feedback, reports),
                                             context={'request': request}).data)
 
 
-class ReferenceUsefulRelatedReferenceSingle(ReferenceFeedbackRelatedReferenceSingle):
-    resource_attr = 'useful'
+class ReferenceUpvoteRelatedReferenceSingle(ReferenceFeedbackRelatedReferenceSingle):
+    resource_attr = 'upvote'
 
 
 class ReferenceReportRelatedReferenceSingle(ReferenceBase, APIView):
@@ -196,9 +196,9 @@ class ReferenceReportRelatedReferenceSingle(ReferenceBase, APIView):
             ReferenceReport.objects.get(id=report_id, user=request.user)
             reference = Reference.objects.get(reference_reports=report_id, active=True,
                                               reference_reports__user=request.user)
-            feedback = UserReferenceFeedback.objects.get(reference_id=reference.id, user=request.user)
+            feedback = ReferenceUpvote.objects.get(reference_id=reference.id, user=request.user)
             reports = ReferenceReport.objects.filter(reference_id=reference.id, user=request.user)
-        except (UserReferenceFeedback.DoesNotExist, Reference.DoesNotExist, ReferenceReport.DoesNotExist):
+        except (ReferenceUpvote.DoesNotExist, Reference.DoesNotExist, ReferenceReport.DoesNotExist):
             return NotFoundResponse()
         return Response(ReferenceSerializer(instance=self.get_pre_serialized_reference(reference, feedback, reports),
                                             context={'request': request}).data)

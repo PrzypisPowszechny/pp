@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from apps.pp.models import ReferenceReport
 from apps.pp.utils import data_wrapped
-from .models import Reference, UserReferenceFeedback
+from .models import Reference, ReferenceUpvote
 
 
 # Resource
@@ -92,29 +92,29 @@ class ReferenceDeserializer(ResourceTypeSerializer):
 
 class ReferenceSerializer(ResourceSerializer, ReferenceDeserializer):
     class Attributes(ReferenceDeserializer.Attributes):
-        useful_count = serializers.SerializerMethodField()
-        useful = serializers.SerializerMethodField('is_useful')
+        upvote_count = serializers.SerializerMethodField()
+        upvote = serializers.SerializerMethodField('is_upvote')
         does_belong_to_user = serializers.SerializerMethodField()
 
         class Meta:
             model = ReferenceDeserializer.Attributes.Meta.model
 
             fields = ReferenceDeserializer.Attributes.Meta.fields + (
-                'useful', 'useful_count', 'does_belong_to_user',
+                'upvote', 'upvote_count', 'does_belong_to_user',
             )
 
         @property
         def request_user(self):
             return self.context['request'].user if self.context.get('request') else None
 
-        def get_useful_count(self, instance):
+        def get_upvote_count(self, instance):
             assert self.request_user is not None
-            return UserReferenceFeedback.objects.filter(user=self.request_user, reference=instance) \
+            return ReferenceUpvote.objects.filter(user=self.request_user, reference=instance) \
                 .count()
 
-        def is_useful(self, instance):
+        def is_upvote(self, instance):
             assert self.request_user is not None
-            return UserReferenceFeedback.objects.filter(user=self.request_user, reference=instance) \
+            return ReferenceUpvote.objects.filter(user=self.request_user, reference=instance) \
                 .exists()
 
         def get_does_belong_to_user(self, instance):
@@ -125,14 +125,14 @@ class ReferenceSerializer(ResourceSerializer, ReferenceDeserializer):
         class User(RelationSerializer):
             related_link_url_name = 'api:reference_user'
 
-        class Useful(RelationSerializer):
-            related_link_url_name = 'api:reference_useful'
+        class Upvote(RelationSerializer):
+            related_link_url_name = 'api:reference_upvote'
 
         class ReferenceReports(RelationManySerializer):
             related_link_url_name = 'api:reference_reports'
 
         user = User(required=True)
-        useful = Useful()
+        upvote = Upvote()
         reference_reports = ReferenceReports()
 
     attributes = Attributes()
@@ -141,32 +141,32 @@ class ReferenceSerializer(ResourceSerializer, ReferenceDeserializer):
 
 class ReferenceListSerializer(ResourceSerializer):
     class Attributes(serializers.ModelSerializer):
-        useful_count = serializers.IntegerField(default=0)
-        useful = serializers.BooleanField(default=False)
+        upvote_count = serializers.IntegerField(default=0)
+        upvote = serializers.BooleanField(default=False)
         does_belong_to_user = serializers.BooleanField(default=False)
 
         class Meta:
             model = Reference
             fields = ('url', 'ranges', 'quote',
                       'priority', 'comment', 'reference_link', 'reference_link_title',
-                      'useful', 'useful_count',
+                      'upvote', 'upvote_count',
                       'does_belong_to_user',
                       )
-            read_only_fields = ('useful', 'useful_count',
+            read_only_fields = ('upvote', 'upvote_count',
                                 'does_belong_to_user')
 
     class Relationships(serializers.Serializer):
         class User(RelationSerializer):
             related_link_url_name = 'api:reference_user'
 
-        class Useful(RelationSerializer):
-            related_link_url_name = 'api:reference_useful'
+        class Upvote(RelationSerializer):
+            related_link_url_name = 'api:reference_upvote'
 
         class ReferenceReports(RelationManySerializer):
             related_link_url_name = 'api:reference_reports'
 
         user = User(required=True)
-        useful = Useful()
+        upvote = Upvote()
         reference_reports = ReferenceReports()
 
     class Links(ResourceLinksSerializer):
@@ -229,7 +229,7 @@ class FeedbackSerializer(ResourceSerializer):
     """
     Used only for introspection purposes by schema generator.
 
-    Should be same as Useful and Objection serializers with only exception to link parameter.
+    Should be same as Upvote and Objection serializers with only exception to link parameter.
     """
     class Relationships(serializers.Serializer):
         class Reference(RelationSerializer):
@@ -240,10 +240,10 @@ class FeedbackSerializer(ResourceSerializer):
     relationships = Relationships()
 
 
-class UsefulSerializer(ResourceSerializer):
+class UpvoteSerializer(ResourceSerializer):
     class Relationships(serializers.Serializer):
         class Reference(RelationSerializer):
-            related_link_url_name = 'api:useful_reference'
+            related_link_url_name = 'api:upvote_reference'
 
         reference = Reference()
 

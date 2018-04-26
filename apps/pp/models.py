@@ -79,9 +79,9 @@ class Reference(Annotation):
     def _history_user(self, value):
         self.changed_by = value
 
-    def count_useful(self):
-        self.useful_count = UserReferenceFeedback.objects.filter(reference=self).count()
-        return self.useful_count
+    def count_upvote(self):
+        self.upvote_count = ReferenceUpvote.objects.filter(reference=self).count()
+        return self.upvote_count
 
 
 class ReferenceReport(UserInput):
@@ -96,18 +96,18 @@ class ReferenceReport(UserInput):
     comment = models.TextField(max_length=100)
 
 
-class UserReferenceFeedback(UserInput):
+class ReferenceUpvote(UserInput):
     class Meta:
         app_label = 'pp'
         unique_together = [('user', 'reference')]
 
     class JSONAPIMeta:
-        useful_resource_name = 'usefuls'
+        upvote_resource_name = 'upvotes'
 
         @classmethod
         def get_resource_names(cls, obj=None):
             return {
-                cls.useful_resource_name: True,
+                cls.upvote_resource_name: True,
             }
 
     reference = models.ForeignKey(Reference, related_name='feedbacks')
