@@ -60,9 +60,6 @@ class ReferenceAPITest(TestCase):
                         'does_belong_to_user': True,
                     },
                     'relationships': {
-                        'reference_request': {
-                            'data': None
-                        },
                         'user': {
                             'data': {'type': 'users', 'id': str(self.user.id)}
                         },
@@ -164,9 +161,6 @@ class ReferenceAPITest(TestCase):
                  'does_belong_to_user': True,
              },
              'relationships': {
-                 'reference_request': {
-                     'data': None
-                 },
                  'user': {
                      'data': {'type': 'users', 'id': str(self.user.id)}
                  },
@@ -213,9 +207,6 @@ class ReferenceAPITest(TestCase):
                  'does_belong_to_user': True,
              },
              'relationships': {
-                 'reference_request': {
-                     'data': None
-                 },
                  'user': {
                      'data': {'type': 'users', 'id': str(self.user.id)}
                  },
@@ -246,12 +237,6 @@ class ReferenceAPITest(TestCase):
     def test_post_new_reference(self):
         base_url = "/api/references/"
 
-        reference_request = ReferenceRequest.objects.create(
-            user=self.user,
-            ranges="Od tad do tad",
-            quote='very nice',
-        )
-
         response = self.client.post(
             base_url,
             json.dumps({
@@ -266,11 +251,6 @@ class ReferenceAPITest(TestCase):
                         'reference_link': 'www.przypispowszechny.com',
                         'reference_link_title': 'very nice too',
                     },
-                    'relationships': {
-                        'reference_request': {
-                            'data': {'type': 'reference_requests', 'id': str(reference_request.id)}
-                        },
-                    }
                 }
             }),
             content_type='application/vnd.api+json')
@@ -302,9 +282,6 @@ class ReferenceAPITest(TestCase):
                         'does_belong_to_user': True,
                     },
                     'relationships': {
-                        'reference_request': {
-                            'data': {'type': 'reference_requests', 'id': str(reference_request.id)}
-                        },
                         'user': {
                             'data': {'type': 'users', 'id': str(self.user.id)}
                         },
@@ -353,9 +330,6 @@ class ReferenceAPITest(TestCase):
                         'comment': "komentarz",
                         'reference_link': 'www.przypispowszechny.com',
                         'reference_link_title': 'very nice too',
-                    },
-                    'relationships': {
-                        'reference_request': {'data': None},
                     }
                 }
             }),
@@ -388,9 +362,6 @@ class ReferenceAPITest(TestCase):
                         'does_belong_to_user': True,
                     },
                     'relationships': {
-                        'reference_request': {
-                            'data': None
-                        },
                         'user': {
                             'data': {'type': 'users', 'id': str(self.user.id)}
                         },
@@ -463,9 +434,6 @@ class ReferenceAPITest(TestCase):
                     'does_belong_to_user': True,
                 },
                 'relationships': {
-                    'reference_request': {
-                        'data': None
-                    },
                     'user': {
                         'data': {'type': 'users', 'id': str(self.user.id)}
                     },

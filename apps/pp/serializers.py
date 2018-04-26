@@ -87,15 +87,7 @@ class ReferenceDeserializer(ResourceTypeSerializer):
             fields = ('url', 'ranges', 'quote',
                       'priority', 'comment', 'reference_link', 'reference_link_title')
 
-    class Relationships(serializers.Serializer):
-        class ReferenceRequest(ResourceSerializer):
-            pass
-
-        reference_request = data_wrapped(required=False, allow_null=True,
-                                         wrapped_serializer=ReferenceRequest(required=False, allow_null=True))
-
     attributes = Attributes()
-    relationships = Relationships(required=False)
 
 
 class ReferenceSerializer(ResourceSerializer, ReferenceDeserializer):
@@ -147,11 +139,6 @@ class ReferenceSerializer(ResourceSerializer, ReferenceDeserializer):
             related_link_url_name = None
             links = None
 
-        class ReferenceRequest(RelationSerializer):
-            # TODO: link available only after we create ReferenceRequest endpoint
-            related_link_url_name = None
-            links = None
-
         class Objection(RelationSerializer):
             related_link_url_name = 'api:reference_objection'
 
@@ -162,7 +149,6 @@ class ReferenceSerializer(ResourceSerializer, ReferenceDeserializer):
             related_link_url_name = 'api:reference_reports'
 
         user = User(required=True)
-        reference_request = ReferenceRequest(required=True)
         useful = Useful()
         objection = Objection()
         reference_reports = ReferenceReports()
@@ -195,11 +181,6 @@ class ReferenceListSerializer(ResourceSerializer):
             related_link_url_name = None
             links = None
 
-        class ReferenceRequest(RelationSerializer):
-            # TODO: link available only after we create ReferenceRequest endpoint
-            related_link_url_name = None
-            links = None
-
         class Objection(RelationSerializer):
             related_link_url_name = 'api:reference_objection'
 
@@ -210,7 +191,6 @@ class ReferenceListSerializer(ResourceSerializer):
             related_link_url_name = 'api:reference_reports'
 
         user = User(required=True)
-        reference_request = ReferenceRequest(required=True)
         useful = Useful()
         objection = Objection()
         reference_reports = ReferenceReports()
@@ -240,10 +220,8 @@ class ReferenceReportDeserializer(ResourceTypeSerializer):
             fields = ('reason', 'comment')
 
     class Relationships(serializers.Serializer):
-        class Reference(RelationSerializer):
-            # TODO: link available only after we create ReferenceRequest endpoint
-            related_link_url_name = None
-            links = None
+        class Reference(RelationDeserializer):
+            pass
 
         reference = Reference()
 
