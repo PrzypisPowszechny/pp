@@ -135,9 +135,7 @@ class ReferenceSerializer(ResourceSerializer, ReferenceDeserializer):
 
     class Relationships(serializers.Serializer):
         class User(RelationSerializer):
-            # TODO: link available only after we create ReferenceRequest endpoint
-            related_link_url_name = None
-            links = None
+            related_link_url_name = 'api:reference_user'
 
         class Objection(RelationSerializer):
             related_link_url_name = 'api:reference_objection'
@@ -177,9 +175,7 @@ class ReferenceListSerializer(ResourceSerializer):
 
     class Relationships(serializers.Serializer):
         class User(RelationSerializer):
-            # TODO: link available only after we create ReferenceRequest endpoint
-            related_link_url_name = None
-            links = None
+            related_link_url_name = 'api:reference_user'
 
         class Objection(RelationSerializer):
             related_link_url_name = 'api:reference_objection'
@@ -231,15 +227,9 @@ class ReferenceReportDeserializer(ResourceTypeSerializer):
 
 class ReferenceReportSerializer(ResourceSerializer, ReferenceReportDeserializer):
     class Relationships(serializers.Serializer):
-        class User(RelationSerializer):
-            # TODO: link available only after we create ReferenceRequest endpoint
-            related_link_url_name = None
-            links = None
-
         class Reference(RelationSerializer):
             related_link_url_name = 'api:report_reference'
 
-        user = User()
         reference = Reference()
 
     relationships = Relationships()
@@ -290,3 +280,12 @@ class ObjectionSerializer(ResourceSerializer):
         reference = Reference()
 
     relationships = Relationships()
+
+
+# User
+
+class UserSerializer(ResourceSerializer):
+    class Attributes(serializers.Serializer):
+        pass
+
+    attributes = Attributes()
