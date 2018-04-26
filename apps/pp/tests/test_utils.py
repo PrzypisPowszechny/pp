@@ -1,4 +1,5 @@
 from collections import namedtuple
+from unittest import skip
 
 from django.contrib.auth import get_user_model
 from django.test import SimpleTestCase
@@ -12,7 +13,9 @@ from apps.pp.utils import set_relationship
 JSONAPIMeta = namedtuple('JSONAPIMeta', ('resource_name',))
 
 
+@skip
 class SetRelationshipTest(SimpleTestCase):
+
     @parameterized.expand([
         # User, overwrite resource name, with id
         (mommy.prepare(

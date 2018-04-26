@@ -1,30 +1,21 @@
-from django.db import IntegrityError
-from django.utils.decorators import method_decorator
-from lazysignup.decorators import allow_lazy_user
-from rest_framework.response import Response
-from rest_framework.views import APIView
-
-from apps.pp.models import UserReferenceFeedback
-from apps.pp.responses import ErrorResponse, NotFoundResponse
+from apps.pp.serializers import ObjectionSerializer
+from apps.pp.views.reference_feedbacks import ReferenceRelatedReferenceFeedbackSingle, FeedbackSingle, FeedbackList
 
 
-class ReferenceObjectionChange(APIView):
-    resource_name = 'reference_objections'
+class ObjectionResource(object):
+    resource_attr = 'objection'
+    serializer_class = ObjectionSerializer
 
-    @method_decorator(allow_lazy_user)
-    def post(self, request, reference_id):
-        try:
-            UserReferenceFeedback.objects.create(reference_id=reference_id, user=request.user, objection=True)
-        except IntegrityError:
-            return ErrorResponse('Failed to create object')
-        return Response(data=None)
 
-    @method_decorator(allow_lazy_user)
-    def delete(self, request, reference_id):
-        try:
-            model = UserReferenceFeedback.objects.get(reference_id=reference_id, user=request.user, objection=True)
-        except UserReferenceFeedback.DoesNotExist:
-            return NotFoundResponse()
+class ReferenceRelatedObjectionSingle(ObjectionResource, ReferenceRelatedReferenceFeedbackSingle):
+    pass
 
-        model.delete()
-        return Response(data=None)
+
+# TODO: add test
+class ObjectionSingle(ObjectionResource, FeedbackSingle):
+    pass
+
+
+# TODO: add test
+class ObjectionList(ObjectionResource, FeedbackList):
+    pass

@@ -5,8 +5,8 @@ from apps.pp.tests.utils import create_test_user
 
 
 class ReferenceFeedbackAPITest(TestCase):
-    useful_url = "/api/references/{}/usefuls/"
-    objection_url = "/api/references/{}/objections/"
+    useful_url = "/api/references/{}/useful/"
+    objection_url = "/api/references/{}/objection/"
     maxDiff = None
 
     # IMPORTANT: we log in for each test, so self.user has already an open session with server

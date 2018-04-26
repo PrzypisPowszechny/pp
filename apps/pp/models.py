@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from simple_history.models import HistoricalRecords
@@ -14,8 +15,7 @@ class User(AbstractUser):
 
 
 class UserInput(models.Model):
-    # TODO(TG): user django global setting, not direct model reference
-    user = models.ForeignKey('pp.User')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
     create_date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -64,7 +64,7 @@ class Reference(Annotation):
     reference_link_title = models.CharField(max_length=100)
     # Short summary of the page referred to
 
-    reference_request = models.ForeignKey(ReferenceRequest, null=True)
+    reference_request = models.ForeignKey('ReferenceRequest', null=True)
     # Null when the annotation has not been created on request
 
     history = HistoricalRecords()
@@ -82,7 +82,7 @@ class Reference(Annotation):
     def count_useful_and_objection(self):
         self.useful_count = UserReferenceFeedback.objects.filter(reference=self).filter(useful=True).count()
         self.objection_count = UserReferenceFeedback.objects.filter(reference=self).filter(objection=True).count()
-        return (self.useful_count, self.objection_count)
+        return self.useful_count, self.objection_count
 
 
 class ReferenceReport(UserInput):
@@ -92,7 +92,7 @@ class ReferenceReport(UserInput):
     class JSONAPIMeta:
         resource_name = 'reference_reports'
 
-    reference = models.ForeignKey(Reference, on_delete=models.CASCADE)
+    reference = models.ForeignKey(Reference, on_delete=models.CASCADE, related_name='reference_reports')
     reason = models.CharField(choices=consts.reference_report_reasons, max_length=100)
     comment = models.TextField(max_length=100)
 
@@ -102,7 +102,16 @@ class UserReferenceFeedback(UserInput):
         app_label = 'pp'
         unique_together = [('user', 'reference')]
 
-    # No JSONAPIMeta information; the model corresponds to two resources, not just one
+    class JSONAPIMeta:
+        useful_resource_name = 'usefuls'
+        objection_resource_name = 'objections'
+
+        @classmethod
+        def get_resource_names(cls, obj=None):
+            return {
+                cls.useful_resource_name: getattr(obj, 'useful', False),
+                cls.objection_resource_name: getattr(obj, 'objection',  False),
+            }
 
     reference = models.ForeignKey(Reference, related_name='feedbacks')
 
