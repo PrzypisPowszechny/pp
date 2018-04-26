@@ -61,6 +61,9 @@ class ReferenceAPITest(TestCase):
                     },
                     'relationships': {
                         'user': {
+                            'links': {
+                                'related': reverse('api:reference_user', kwargs={'reference_id': reference.id})
+                            },
                             'data': {'type': 'users', 'id': str(self.user.id)}
                         },
                         'objection': {
@@ -162,6 +165,9 @@ class ReferenceAPITest(TestCase):
              },
              'relationships': {
                  'user': {
+                     'links': {
+                         'related': reverse('api:reference_user', kwargs={'reference_id': reference.id})
+                     },
                      'data': {'type': 'users', 'id': str(self.user.id)}
                  },
                  'objection': {
@@ -208,6 +214,9 @@ class ReferenceAPITest(TestCase):
              },
              'relationships': {
                  'user': {
+                        'links': {
+                            'related': reverse('api:reference_user', kwargs={'reference_id': reference2.id})
+                        },
                      'data': {'type': 'users', 'id': str(self.user.id)}
                  },
                  'objection': {
@@ -283,6 +292,9 @@ class ReferenceAPITest(TestCase):
                     },
                     'relationships': {
                         'user': {
+                        'links': {
+                            'related': reverse('api:reference_user', kwargs={'reference_id': reference.id})
+                        },
                             'data': {'type': 'users', 'id': str(self.user.id)}
                         },
                         'objection': {
@@ -363,6 +375,9 @@ class ReferenceAPITest(TestCase):
                     },
                     'relationships': {
                         'user': {
+                        'links': {
+                            'related': reverse('api:reference_user', kwargs={'reference_id': reference.id})
+                        },
                             'data': {'type': 'users', 'id': str(self.user.id)}
                         },
                         'objection': {
@@ -435,6 +450,9 @@ class ReferenceAPITest(TestCase):
                 },
                 'relationships': {
                     'user': {
+                        'links': {
+                            'related': reverse('api:reference_user', kwargs={'reference_id': reference.id})
+                        },
                         'data': {'type': 'users', 'id': str(self.user.id)}
                     },
                     'objection': {

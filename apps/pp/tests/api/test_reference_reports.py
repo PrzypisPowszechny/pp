@@ -61,11 +61,9 @@ class ReferenceReportAPITest(TestCase):
                     'reference': {
                         'data': {'id': str(reference.id), 'type': 'references'},
                         'links': {
-                            'related': reverse('api:report_reference', kwargs={'report_id': report.id})}
-                    },
-                    'user': {
-                        'data': {'id': str(self.user.id), 'type': 'users'}
-                    },
+                            'related': reverse('api:report_reference', kwargs={'report_id': report.id})
+                        }
+                    }
                 }
             }
         }
