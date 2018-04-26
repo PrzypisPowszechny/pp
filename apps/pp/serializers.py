@@ -2,7 +2,6 @@ from django.urls import reverse
 from rest_framework import serializers
 
 from apps.pp.models import AnnotationReport
-from apps.pp.utils import data_wrapped
 from .models import Annotation, AnnotationUpvote
 
 
@@ -132,8 +131,8 @@ class AnnotationSerializer(ResourceSerializer, AnnotationDeserializer):
             related_link_url_name = 'api:annotation_related_reports'
 
         user = User(required=True)
-        annotation_upvote = Upvote()
-        annotation_reports = AnnotationReports()
+        upvote = Upvote()
+        reports = AnnotationReports()
 
     attributes = Attributes()
     relationships = Relationships()
@@ -166,8 +165,8 @@ class AnnotationListSerializer(ResourceSerializer):
             related_link_url_name = 'api:annotation_related_reports'
 
         user = User(required=True)
-        annotation_upvote = Upvote()
-        annotation_reports = AnnotationReports()
+        upvote = Upvote()
+        reports = AnnotationReports()
 
     class Links(ResourceLinksSerializer):
         self_link_url_name = 'api:annotation'

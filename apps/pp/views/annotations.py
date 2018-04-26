@@ -17,7 +17,7 @@ from apps.pp.models import Annotation, AnnotationUpvote, AnnotationReport
 from apps.pp.responses import PermissionDenied, ValidationErrorResponse, ErrorResponse, NotFoundResponse, Forbidden
 from apps.pp.serializers import AnnotationPatchDeserializer, AnnotationListSerializer, AnnotationDeserializer, \
     AnnotationSerializer
-from apps.pp.utils import get_relationship_id, get_resource_name, DataPreSerializer
+from apps.pp.utils import get_resource_name, DataPreSerializer
 
 
 class AnnotationBase(object):

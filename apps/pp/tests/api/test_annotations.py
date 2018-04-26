@@ -63,13 +63,13 @@ class AnnotationAPITest(TestCase):
                             },
                             'data': {'type': 'users', 'id': str(self.user.id)}
                         },
-                        'annotation_upvote': {
+                        'upvote': {
                             'links': {
                                 'related': reverse('api:annotation_related_upvote', kwargs={'annotation_id': annotation.id})
                             },
                             'data': {'id': str(urf.id), 'type': get_resource_name(urf, always_single=True)}
                         },
-                        'annotation_reports': {
+                        'reports': {
                             'links': {
                                 'related': reverse('api:annotation_related_reports', kwargs={'annotation_id': annotation.id})
                             },
@@ -155,13 +155,13 @@ class AnnotationAPITest(TestCase):
                      },
                      'data': {'type': 'users', 'id': str(self.user.id)}
                  },
-                 'annotation_upvote': {
+                 'upvote': {
                      'links': {
                          'related': reverse('api:annotation_related_upvote', kwargs={'annotation_id': annotation.id})
                      },
                      'data': {'type': 'annotation_upvotes', 'id': str(urf.id)}
                  },
-                 'annotation_reports': {
+                 'reports': {
                      'links': {
                          'related': reverse('api:annotation_related_reports', kwargs={'annotation_id': annotation.id})
                      },
@@ -196,13 +196,13 @@ class AnnotationAPITest(TestCase):
                         },
                      'data': {'type': 'users', 'id': str(self.user.id)}
                  },
-                 'annotation_upvote': {
+                 'upvote': {
                      'links': {
                          'related': reverse('api:annotation_related_upvote', kwargs={'annotation_id': annotation2.id})
                      },
                      'data': None
                  },
-                 'annotation_reports': {
+                 'reports': {
                      'links': {
                          'related': reverse('api:annotation_related_reports', kwargs={'annotation_id': annotation2.id})
                      },
@@ -265,13 +265,13 @@ class AnnotationAPITest(TestCase):
                         },
                             'data': {'type': 'users', 'id': str(self.user.id)}
                         },
-                        'annotation_upvote': {
+                        'upvote': {
                             'links': {
                                 'related': reverse('api:annotation_related_upvote', kwargs={'annotation_id': annotation.id})
                             },
                             'data': None
                         },
-                        'annotation_reports': {
+                        'reports': {
                             'links': {
                                 'related': reverse('api:annotation_related_reports', kwargs={'annotation_id': annotation.id})
                             },
@@ -339,13 +339,13 @@ class AnnotationAPITest(TestCase):
                         },
                             'data': {'type': 'users', 'id': str(self.user.id)}
                         },
-                        'annotation_upvote': {
+                        'upvote': {
                             'links': {
                                 'related': reverse('api:annotation_related_upvote', kwargs={'annotation_id': annotation.id})
                             },
                             'data': None
                         },
-                        'annotation_reports': {
+                        'reports': {
                             'links': {
                                 'related': reverse('api:annotation_related_reports', kwargs={'annotation_id': annotation.id})
                             },
@@ -405,13 +405,13 @@ class AnnotationAPITest(TestCase):
                         },
                         'data': {'type': 'users', 'id': str(self.user.id)}
                     },
-                    'annotation_upvote': {
+                    'upvote': {
                         'links': {
                             'related': reverse('api:annotation_related_upvote', kwargs={'annotation_id': annotation.id})
                         },
                         'data': {'id': str(urf.id), 'type': get_resource_name(urf, always_single=True)}
                     },
-                    'annotation_reports': {
+                    'reports': {
                         'links': {
                             'related': reverse('api:annotation_related_reports', kwargs={'annotation_id': annotation.id})
                         },
