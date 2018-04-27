@@ -3,7 +3,7 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.generics import GenericAPIView
 
 from apps.pp.responses import PermissionDenied, ValidationErrorResponse, ErrorResponse, NotFoundResponse
-from django.db.models import Case
+from django.db.models import Case, Prefetch
 from django.db.models import IntegerField
 from django.db.models import Sum
 from django.db.models import When
@@ -15,11 +15,10 @@ from rest_framework.views import APIView
 from rest_framework_json_api.pagination import LimitOffsetPagination
 from drf_yasg.utils import swagger_auto_schema
 
-
-from apps.pp.models import Reference, UserReferenceFeedback
+from apps.pp.models import Reference, UserReferenceFeedback, ReferenceReport
 from apps.pp.serializers import ReferencePatchDeserializer, ReferenceListSerializer, ReferenceDeserializer, \
     ReferenceSerializer
-from apps.pp.utils import get_relationship_id, set_relationship
+from apps.pp.utils import get_relationship_id, set_relationship, get_resource_name, DataPreSerializer
 
 
 class ReferenceDetail(APIView):
@@ -83,8 +82,13 @@ class ReferenceDetail(APIView):
         return Response()
 
 
-class ReferencePOST(APIView):
+class ReferenceList(GenericAPIView):
     resource_name = 'references'
+    pagination_class = LimitOffsetPagination
+    filter_backends = (OrderingFilter, DjangoFilterBackend)
+    ordering_fields = ('create_date', 'id')
+    ordering = "-create_date"
+    filter_fields = ('url',)
 
     @swagger_auto_schema(request_body=ReferenceDeserializer,
                          responses={200: ReferenceSerializer})
@@ -103,24 +107,20 @@ class ReferencePOST(APIView):
         set_relationship(data, reference.user, attr='id')
         return Response(ReferenceSerializer(data, context={'request': request}).data)
 
-
-class ReferenceList(GenericAPIView):
-    resource_name = 'references'
-    pagination_class = LimitOffsetPagination
-    filter_backends = (OrderingFilter, DjangoFilterBackend)
-    ordering_fields = ('create_date', 'id')
-    ordering = "-create_date"
-    filter_fields = ('url',)
-
     def get_queryset(self):
-        queryset = Reference.objects.select_related('reference_request').filter(active=True).annotate(
-            useful_count=Coalesce(
-                Sum(Case(When(feedbacks__useful=True, then=1)), default=0, output_field=IntegerField()),
-                0),
-            objection_count=Coalesce(
-                Sum(Case(When(feedbacks__objection=True, then=1)), default=0, output_field=IntegerField()),
-                0)
-        )
+        queryset = Reference.objects \
+            .select_related('reference_request') \
+            .filter(active=True).annotate(
+                useful_count=Coalesce(
+                    Sum(Case(When(feedbacks__useful=True, then=1)), default=0, output_field=IntegerField()),
+                    0),
+                objection_count=Coalesce(
+                    Sum(Case(When(feedbacks__objection=True, then=1)), default=0, output_field=IntegerField()),
+                    0)
+            ).prefetch_related(
+                Prefetch('reference_reports', queryset=ReferenceReport.objects.filter(user=self.request.user),
+                         to_attr='user_reference_reports')
+            )
         return queryset
 
     def annotate_fetched_queryset(self, queryset):
@@ -137,19 +137,27 @@ class ReferenceList(GenericAPIView):
         for reference in queryset:
             feedback = reference_to_feedback.get(reference.id)
             if feedback:
+                # TODO: setting useful and objection attrs duplicates corresponding relationships, consider removing
                 reference.useful = feedback.useful
                 reference.objection = feedback.objection
                 reference.does_belong_to_user = reference.id in user_reference_ids
+            reference.user_feedback = feedback
         return queryset
 
-    def preserialize_queryset(self, queryset):
+    def pre_serialize_queryset(self, queryset):
         data_list = []
         for reference in queryset:
-            attributes_serializer = ReferenceListSerializer.Attributes(reference, context={'request': self.request})
-            data = {'id': reference.id, 'type': 'references', 'attributes': attributes_serializer.data}
-            set_relationship(data, reference, attr='reference_request_id')
-            set_relationship(data, reference.user, attr='id')
-            data_list.append(data)
+            data = {'attributes': reference}
+            pre_serializer = DataPreSerializer(reference, data)
+            pre_serializer.set_relation(get_resource_name(reference, related_field='reference_request_id'),
+                                        resource_id=reference.reference_request_id)
+            pre_serializer.set_relation(get_resource_name(reference.user),
+                                        resource_id=reference.user.id)
+            pre_serializer.set_relation(get_resource_name(reference.user_feedback, model=UserReferenceFeedback),
+                                        resource_id=reference.user_feedback)
+            pre_serializer.set_relation(get_resource_name(reference, related_field='reference_reports'),
+                                        resource_id=reference.user_reference_reports)
+            data_list.append(pre_serializer.data)
         return data_list
 
     @swagger_auto_schema(responses={200: ReferenceListSerializer(many=True)})
@@ -161,6 +169,6 @@ class ReferenceList(GenericAPIView):
 
         queryset = self.annotate_fetched_queryset(queryset)
 
-        data_list = self.preserialize_queryset(queryset)
+        data_list = self.pre_serialize_queryset(queryset)
 
         return self.get_paginated_response(ReferenceListSerializer(data_list, many=True).data)

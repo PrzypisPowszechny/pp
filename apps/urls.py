@@ -36,7 +36,7 @@ yasg_schema_view = get_schema_view(
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^api/', include('apps.pp.urls')),
+    url(r'^api/', include('apps.pp.urls', namespace='api')),
     url(r'^api/docs/swagger(?P<format>\.json|\.yaml)$',
         yasg_schema_view.without_ui(cache_timeout=None), name='schema-json'),
     url(r'^api/docs/$',
