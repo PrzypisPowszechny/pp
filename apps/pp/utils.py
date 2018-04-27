@@ -1,26 +1,7 @@
 import collections
 
 from django.db import models
-from django.urls import reverse
 from rest_framework import serializers
-
-
-def data_wrapped(wrapped_serializer, *args, **kwargs):
-    """
-    Deprecated.
-
-    As we move towards relations with links, shorcut for wrapping with data is useless.
-    """
-    if isinstance(wrapped_serializer, serializers.BaseSerializer):
-        wrapped_serializer_class = wrapped_serializer.__class__
-    else:
-        # Initialize if class was passed instead of instance
-        wrapped_serializer_class = wrapped_serializer
-        wrapped_serializer = wrapped_serializer_class()
-    wrapper_field_class = type('%sData' % wrapped_serializer_class.__name__,
-                               (serializers.Serializer,),
-                               {'data': wrapped_serializer})
-    return wrapper_field_class(*args, **kwargs)
 
 
 def get_relationship_id(root_serializer, name):
@@ -47,16 +28,7 @@ def get_jsonapimeta(obj, related_field=None):
 
 def get_resource_name(obj, related_field=None, model=None, always_single=False):
     meta = get_jsonapimeta(model if model else obj, related_field)
-    name = getattr(meta, 'resource_name', None)
-    if name is not None:
-        return name
-    get_names = getattr(meta, 'get_resource_names', None)
-    if get_names is not None:
-        names = get_names(obj)
-        if always_single:
-            return [name for name, is_active_name in names.items() if is_active_name][0]
-        return names
-    raise ValueError('obj need to have either resource_name or get_resource_names defined')
+    return getattr(meta, 'resource_name', None)
 
 
 class DataPreSerializer(object):
@@ -64,17 +36,37 @@ class DataPreSerializer(object):
         self.root_data = root_data if root_data is not None else {}
         self.root_obj = root_obj
 
+        self._root_resource_name = get_resource_name(self.root_obj, always_single=True)
         self.root_data.setdefault('id', self.root_obj.id)
-        self.root_data.setdefault('type', get_resource_name(self.root_obj, always_single=True))
+        self.root_data.setdefault('type', self._root_resource_name)
         self.root_data.setdefault('links', self.root_obj)
 
     @property
     def data(self):
         return self.root_data
 
-    def set_relation(self, resource_name, resource_id):
+    def get_relation_name(self, resource_name, is_single_relation):
+        """
+        If resource name of the main object is prefix of resource name of relation then
+        remove that prefix to make relation name shorter"
+        For example:
+         - main resource "annotation", related resource "annotation_reports" -> relation name "reports"
+         - main resource "annotation_x", related resource "annotation_y" -> relation name "y"
+
+        """
+        rrn, rn = self._root_resource_name, resource_name
+        prefix = rrn[:rrn.find('_')] if rrn.find('_') > 0 else rrn[:-1]
+        if rn.find('_') > 0 and rn.startswith(prefix):
+            name = rn[len(prefix) + 1:]
+        else:
+            name = rn
+        return name[:-1] if is_single_relation else name
+
+    def set_relation(self, resource_name, resource_id, relation_name=None):
         # resource_names_map is dict of resource_names with falses and only one true
         # for the only one relation we want to use resource_id with.
+        if isinstance(resource_name, collections.Mapping):
+            assert relation_name is None, "relation_name param can be used when resource_name is string not mapping"
         resource_names_map = {resource_name: True} if not isinstance(resource_name, collections.Mapping) \
             else resource_name
         is_single_relation = not isinstance(resource_id, collections.Iterable)
@@ -82,7 +74,7 @@ class DataPreSerializer(object):
             resource_id = [resource_id] if resource_id is not None else []
 
         for res_name, use_res_id in resource_names_map.items():
-            res_key_name = res_name[:-1] if is_single_relation else res_name
+            res_key_name = relation_name or self.get_relation_name(resource_name, is_single_relation)
             if not use_res_id or not resource_id:
                 data = None if is_single_relation else []
             else:
@@ -97,26 +89,3 @@ class DataPreSerializer(object):
                 'data': data,
                 'links': self.root_obj.id
             }
-
-
-def set_relationship(root_data, obj, attr=None, root_obj=None):
-    """
-    Deprecated. Use DataPreSerializer.set_relation instead.
-    """
-    resource = get_resource_name(obj, attr)
-    if not isinstance(resource, dict):
-        resources = {resource: True}
-    else:
-        resources = resource
-    val = getattr(obj, attr) if obj and attr else None
-    for resource, resource_is_not_none in resources.items():
-        if val is None or not resource_is_not_none:
-            data = None
-        else:
-            data = {
-                'type': resource, 'id': val,
-            }
-        root_data.setdefault('relationships', {})[resource[:-1]] = {
-            'data': data,
-            'links': root_obj.id if root_obj else None
-        }

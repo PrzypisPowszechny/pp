@@ -10,7 +10,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('pp', '0011_auto_20180426_2132'),
+        ('pp', '0011_rename_feedback_to_upvote'),
     ]
 
     operations = [

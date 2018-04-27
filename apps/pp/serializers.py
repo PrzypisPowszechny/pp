@@ -2,7 +2,6 @@ from django.urls import reverse
 from rest_framework import serializers
 
 from apps.pp.models import AnnotationReport
-from apps.pp.utils import data_wrapped
 from .models import Annotation, AnnotationUpvote
 
 
@@ -123,17 +122,17 @@ class AnnotationSerializer(ResourceSerializer, AnnotationDeserializer):
 
     class Relationships(serializers.Serializer):
         class User(RelationSerializer):
-            related_link_url_name = 'api:annotation_user'
+            related_link_url_name = 'api:annotation_related_user'
 
         class Upvote(RelationSerializer):
-            related_link_url_name = 'api:annotation_upvote'
+            related_link_url_name = 'api:annotation_related_upvote'
 
         class AnnotationReports(RelationManySerializer):
-            related_link_url_name = 'api:annotation_reports'
+            related_link_url_name = 'api:annotation_related_reports'
 
         user = User(required=True)
         upvote = Upvote()
-        annotation_reports = AnnotationReports()
+        reports = AnnotationReports()
 
     attributes = Attributes()
     relationships = Relationships()
@@ -157,17 +156,17 @@ class AnnotationListSerializer(ResourceSerializer):
 
     class Relationships(serializers.Serializer):
         class User(RelationSerializer):
-            related_link_url_name = 'api:annotation_user'
+            related_link_url_name = 'api:annotation_related_user'
 
         class Upvote(RelationSerializer):
-            related_link_url_name = 'api:annotation_upvote'
+            related_link_url_name = 'api:annotation_related_upvote'
 
         class AnnotationReports(RelationManySerializer):
-            related_link_url_name = 'api:annotation_reports'
+            related_link_url_name = 'api:annotation_related_reports'
 
         user = User(required=True)
         upvote = Upvote()
-        annotation_reports = AnnotationReports()
+        reports = AnnotationReports()
 
     class Links(ResourceLinksSerializer):
         self_link_url_name = 'api:annotation'
@@ -184,6 +183,7 @@ class AnnotationPatchDeserializer(ResourceSerializer):
             fields = ('priority', 'comment', 'annotation_link', 'annotation_link_title')
 
     attributes = Attributes()
+
 
 # Report
 
@@ -206,16 +206,16 @@ class AnnotationReportDeserializer(ResourceTypeSerializer):
 class AnnotationReportSerializer(ResourceSerializer, AnnotationReportDeserializer):
     class Relationships(serializers.Serializer):
         class Annotation(RelationSerializer):
-            related_link_url_name = 'api:report_annotation'
+            related_link_url_name = 'api:annotation_report_related_annotation'
 
         annotation = Annotation()
 
     relationships = Relationships()
 
 
-# Feedback
+# Upvote
 
-class FeedbackDeserializer(ResourceTypeSerializer):
+class AnnotationUpvoteDeserializer(ResourceTypeSerializer):
     class Relationships(serializers.Serializer):
         class Annotation(RelationDeserializer):
             pass
@@ -225,25 +225,10 @@ class FeedbackDeserializer(ResourceTypeSerializer):
     relationships = Relationships()
 
 
-class FeedbackSerializer(ResourceSerializer):
-    """
-    Used only for introspection purposes by schema generator.
-
-    Should be same as Upvote and Objection serializers with only exception to link parameter.
-    """
+class AnnotationUpvoteSerializer(ResourceSerializer):
     class Relationships(serializers.Serializer):
         class Annotation(RelationSerializer):
-            pass
-
-        annotation = Annotation()
-
-    relationships = Relationships()
-
-
-class UpvoteSerializer(ResourceSerializer):
-    class Relationships(serializers.Serializer):
-        class Annotation(RelationSerializer):
-            related_link_url_name = 'api:upvote_annotation'
+            related_link_url_name = 'api:annotation_upvote_related_annotation'
 
         annotation = Annotation()
 

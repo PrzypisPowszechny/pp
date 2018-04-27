@@ -11,29 +11,6 @@ from apps.pp.serializers import AnnotationReportSerializer, AnnotationReportDese
 from apps.pp.utils import get_relationship_id, DataPreSerializer, get_resource_name
 
 
-# TODO: add test
-class AnnotationRelatedAnnotationReportList(APIView):
-
-    @swagger_auto_schema(responses={200: AnnotationReportSerializer(many=True)})
-    def get(self, request, annotation_id):
-        try:
-            Annotation.objects.get(active=True, id=annotation_id)
-        except Annotation.DoesNotExist:
-            return NotFoundResponse()
-        reports = AnnotationReport.objects.filter(annotation_id=annotation_id, user=request.user)
-
-        data_list = []
-        for report in reports:
-            pre_serializer = DataPreSerializer(report, {'attributes': report})
-            pre_serializer.set_relation(get_resource_name(report, related_field='annotation_id'),
-                                        resource_id=report.annotation_id)
-            pre_serializer.set_relation(resource_name=get_resource_name(report, related_field='user_id'),
-                                        resource_id=report.user_id)
-            data_list.append(pre_serializer.data)
-        return Response(AnnotationReportSerializer(data_list, many=True, context={'request': request}).data)
-
-
-# TODO: add test
 class AnnotationReportSingle(APIView):
 
     @swagger_auto_schema(responses={200: AnnotationReportSerializer})
@@ -83,3 +60,24 @@ class AnnotationReportList(APIView):
                                     resource_id=report.user_id)
         return Response(AnnotationReportSerializer(pre_serializer.data, context={'request': request}).data)
 
+
+# TODO: add test
+class AnnotationRelatedAnnotationReportList(APIView):
+
+    @swagger_auto_schema(responses={200: AnnotationReportSerializer(many=True)})
+    def get(self, request, annotation_id):
+        try:
+            Annotation.objects.get(active=True, id=annotation_id)
+        except Annotation.DoesNotExist:
+            return NotFoundResponse()
+        reports = AnnotationReport.objects.filter(annotation_id=annotation_id, user=request.user)
+
+        data_list = []
+        for report in reports:
+            pre_serializer = DataPreSerializer(report, {'attributes': report})
+            pre_serializer.set_relation(get_resource_name(report, related_field='annotation_id'),
+                                        resource_id=report.annotation_id)
+            pre_serializer.set_relation(resource_name=get_resource_name(report, related_field='user_id'),
+                                        resource_id=report.user_id)
+            data_list.append(pre_serializer.data)
+        return Response(AnnotationReportSerializer(data_list, many=True, context={'request': request}).data)

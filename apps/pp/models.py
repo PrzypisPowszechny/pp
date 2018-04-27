@@ -102,15 +102,10 @@ class AnnotationUpvote(UserInput):
         unique_together = [('user', 'annotation')]
 
     class JSONAPIMeta:
-        upvote_resource_name = 'upvotes'
-
-        @classmethod
-        def get_resource_names(cls, obj=None):
-            return {
-                cls.upvote_resource_name: True,
-            }
+        resource_name = 'annotation_upvotes'
 
     annotation = models.ForeignKey(Annotation, related_name='feedbacks')
+
 
 class AnnotationRequestFeedback(models.Model):
     class Meta:

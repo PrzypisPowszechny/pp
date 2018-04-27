@@ -8,7 +8,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('pp', '0015_auto_20180426_2200'),
+        ('pp', '0015_rename_userannotationrequestfeedback_to_annotationrequestfeedback'),
     ]
 
     operations = [
