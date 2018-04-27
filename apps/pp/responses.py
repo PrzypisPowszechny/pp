@@ -105,4 +105,3 @@ class PermissionDenied(ErrorResponse):
 class Forbidden(ErrorResponse):
     def __init__(self, *args, status=HTTP_403_FORBIDDEN, **kwargs):
         super().__init__(*args, error_title='Forbidden', status=status, **kwargs)
-

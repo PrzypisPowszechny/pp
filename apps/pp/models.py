@@ -106,6 +106,7 @@ class AnnotationUpvote(UserInput):
 
     annotation = models.ForeignKey(Annotation, related_name='feedbacks')
 
+
 class AnnotationRequestFeedback(models.Model):
     class Meta:
         app_label = 'pp'

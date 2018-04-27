@@ -76,7 +76,6 @@ class AnnotationUpvoteAPITest(TestCase):
                                    content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 404)
 
-
     def test_post_upvote(self):
         annotation = Annotation.objects.create(user=self.user)
         post_payload = {
@@ -91,7 +90,6 @@ class AnnotationUpvoteAPITest(TestCase):
                 }
             }
         }
-
 
         self.assertIsNone(AnnotationUpvote.objects.last())
         response = self.client.post(
@@ -123,7 +121,6 @@ class AnnotationUpvoteAPITest(TestCase):
             self.upvote_url, content_type='application/vnd.api+json',
             data=json.dumps(post_payload))
         self.assertEqual(response.status_code, 400)
-
 
     def test_post_upvote_fail__no_relation(self):
         post_payload = {
@@ -198,4 +195,3 @@ class AnnotationUpvoteAPITest(TestCase):
         response = self.client.delete(self.upvote_single_url.format(upvote.id),
                                       content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 404)
-

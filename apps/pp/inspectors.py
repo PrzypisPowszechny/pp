@@ -34,4 +34,3 @@ class RootSerializerInspector(FieldInspector):
                 ('data', result),
             ))
         )
-

@@ -1,7 +1,6 @@
 import collections
 
 from django.db import models
-from django.urls import reverse
 from rest_framework import serializers
 
 
@@ -85,11 +84,10 @@ class DataPreSerializer(object):
         rrn, rn = self._root_resource_name, resource_name
         prefix = rrn[:rrn.find('_')] if rrn.find('_') > 0 else rrn[:-1]
         if rn.find('_') > 0 and rn.startswith(prefix):
-            name = rn[len(prefix)+1:]
+            name = rn[len(prefix) + 1:]
         else:
             name = rn
         return name[:-1] if is_single_relation else name
-
 
     def set_relation(self, resource_name, resource_id, relation_name=None):
         # resource_names_map is dict of resource_names with falses and only one true

@@ -14,8 +14,8 @@ class LazySignupAnnotationAPITest(TestCase):
         self.user, self.password = create_test_user()
 
         annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
-                                              annotation_link="www.przypispowszechny.com",
-                                              annotation_link_title="very nice")
+                                               annotation_link="www.przypispowszechny.com",
+                                               annotation_link_title="very nice")
         response = self.client.get(self.GET_base_url.format(annotation.id))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/vnd.api+json')

@@ -18,9 +18,9 @@ class SchemaViewsTest(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_get_docs__swagger_ui(self):
-        response = self.client.get(reverse('schema_swagger_ui'))
+        response = self.client.get(reverse('schema_swagger'))
         self.assertEqual(response.status_code, 200)
 
     def test_get_docs__redoc_ui(self):
-        response = self.client.get(reverse('schema_redoc_ui'))
+        response = self.client.get(reverse('schema_redoc'))
         self.assertEqual(response.status_code, 200)

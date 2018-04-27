@@ -3,7 +3,6 @@ from django.conf.urls import url, include
 from apps.pp.views import users
 from .views import annotations, annotation_reports, annotation_upvotes
 
-
 # TODO: do we make annotationReports, annotation-reports or annotation_reports urls? check redux-json-api view on that
 urlpatterns = [
     url(r'^annotations/', include([
@@ -14,7 +13,8 @@ urlpatterns = [
         # Related
         url(r'^(?P<annotation_id>[0-9]+)/user/$', users.AnnotationRelatedUserSingle.as_view(),
             name='annotation_related_user'),
-        url(r'^(?P<annotation_id>[0-9]+)/upvote/$', annotation_upvotes.AnnotationRelatedAnnotationUpvoteSingle.as_view(),
+        url(r'^(?P<annotation_id>[0-9]+)/upvote/$',
+            annotation_upvotes.AnnotationRelatedAnnotationUpvoteSingle.as_view(),
             name='annotation_related_upvote'),
         url(r'^(?P<annotation_id>[0-9]+)/reports/$', annotation_reports.AnnotationRelatedAnnotationReportList.as_view(),
             name='annotation_related_reports'),

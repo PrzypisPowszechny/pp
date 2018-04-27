@@ -24,17 +24,17 @@ class SetRelationshipTest(SimpleTestCase):
                 get_user_model(),
                 id=123
             )
-         ).user,
+        ).user,
          'non_standard_users',
          {
-            'relationships': {
-                'non_standard_user': {
-                    'data': {
-                        'type': 'non_standard_users',
-                        'id': 123
-                    }
-                }
-            }
+             'relationships': {
+                 'non_standard_user': {
+                     'data': {
+                         'type': 'non_standard_users',
+                         'id': 123
+                     }
+                 }
+             }
          }),
         # AnnotationRequest, default resource name, with id
         (mommy.prepare(
@@ -43,17 +43,17 @@ class SetRelationshipTest(SimpleTestCase):
                 AnnotationRequest,
                 id=123
             )
-         ).annotation_request,
+        ).annotation_request,
          None,
          {
-            'relationships': {
-                'annotation_request': {
-                    'data': {
-                        'type': 'annotation_requests',
-                        'id': 123
-                    }
-                }
-            }
+             'relationships': {
+                 'annotation_request': {
+                     'data': {
+                         'type': 'annotation_requests',
+                         'id': 123
+                     }
+                 }
+             }
          }),
         # User, overwrite resource name, no id
         (mommy.prepare(
@@ -62,14 +62,14 @@ class SetRelationshipTest(SimpleTestCase):
                 get_user_model(),
                 id=None
             )
-         ).user,
+        ).user,
          'non_standard_users',
          {
-            'relationships': {
-                'non_standard_user': {
-                    'data': None
-                }
-            }
+             'relationships': {
+                 'non_standard_user': {
+                     'data': None
+                 }
+             }
          }),
         # AnnotationRequest, default resource name, no id
         (mommy.prepare(
@@ -78,14 +78,14 @@ class SetRelationshipTest(SimpleTestCase):
                 AnnotationRequest,
                 id=None
             )
-         ).annotation_request,
+        ).annotation_request,
          None,
          {
-            'relationships': {
-                'annotation_request': {
-                    'data': None
-                }
-            }
+             'relationships': {
+                 'annotation_request': {
+                     'data': None
+                 }
+             }
          }),
 
     ])
@@ -104,18 +104,18 @@ class SetRelationshipTest(SimpleTestCase):
                 get_user_model(),
                 id=123
             )
-         ),
+        ),
          'user_id',
          'non_standard_users',
          {
-            'relationships': {
-                'non_standard_user': {
-                    'data': {
-                        'type': 'non_standard_users',
-                        'id': 123
-                    }
-                }
-            }
+             'relationships': {
+                 'non_standard_user': {
+                     'data': {
+                         'type': 'non_standard_users',
+                         'id': 123
+                     }
+                 }
+             }
          }),
         # AnnotationRequest, default resource name, with id
         (mommy.prepare(
@@ -124,18 +124,18 @@ class SetRelationshipTest(SimpleTestCase):
                 AnnotationRequest,
                 id=123
             )
-         ),
+        ),
          'annotation_request_id',
          None,
          {
-            'relationships': {
-                'annotation_request': {
-                    'data': {
-                        'type': 'annotation_requests',
-                        'id': 123
-                    }
-                }
-            }
+             'relationships': {
+                 'annotation_request': {
+                     'data': {
+                         'type': 'annotation_requests',
+                         'id': 123
+                     }
+                 }
+             }
          }),
         # User, overwrite resource name, no id
         (mommy.prepare(
@@ -144,15 +144,15 @@ class SetRelationshipTest(SimpleTestCase):
                 get_user_model(),
                 id=None
             )
-         ),
+        ),
          'user_id',
          'non_standard_users',
          {
-            'relationships': {
-                'non_standard_user': {
-                    'data': None
-                }
-            }
+             'relationships': {
+                 'non_standard_user': {
+                     'data': None
+                 }
+             }
          }),
         # AnnotationRequest, default resource name, no id
         (mommy.prepare(
@@ -161,15 +161,15 @@ class SetRelationshipTest(SimpleTestCase):
                 AnnotationRequest,
                 id=None
             )
-         ),
+        ),
          'annotation_request_id',
          None,
          {
-            'relationships': {
-                'annotation_request': {
-                    'data': None
-                }
-            }
+             'relationships': {
+                 'annotation_request': {
+                     'data': None
+                 }
+             }
          }),
 
     ])

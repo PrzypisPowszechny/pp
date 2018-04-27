@@ -22,13 +22,12 @@ class AnnotationUpvoteModelTest(TestCase):
         cls.user = get_user_model().objects.create_user(username="Alibaba")
         cls.user2 = get_user_model().objects.create_user(username="Rozbójnik")
         cls.annotation = Annotation.objects.create(user=cls.user, priority='NORMAL', comment="good job",
-                                                  annotation_link="www.przypispowszechny.com",
-                                                  annotation_link_title="very nice")
+                                                   annotation_link="www.przypispowszechny.com",
+                                                   annotation_link_title="very nice")
 
     def test_creating(self):
         AnnotationUpvote.objects.create(user=self.user, annotation=self.annotation)
         self.assertEqual(1, AnnotationUpvote.objects.count())
-
 
     def test_updating_annotation_upvote_count(self):
         AnnotationUpvote.objects.create(user=self.user2, annotation=self.annotation)

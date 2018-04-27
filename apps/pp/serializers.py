@@ -184,6 +184,7 @@ class AnnotationPatchDeserializer(ResourceSerializer):
 
     attributes = Attributes()
 
+
 # Report
 
 class AnnotationReportDeserializer(ResourceTypeSerializer):
