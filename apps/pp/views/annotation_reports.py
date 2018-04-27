@@ -11,7 +11,6 @@ from apps.pp.serializers import AnnotationReportSerializer, AnnotationReportDese
 from apps.pp.utils import get_relationship_id, DataPreSerializer, get_resource_name
 
 
-# TODO: add test
 class AnnotationReportSingle(APIView):
 
     @swagger_auto_schema(responses={200: AnnotationReportSerializer})
