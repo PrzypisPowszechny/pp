@@ -1,9 +1,8 @@
 import json
 
 from django.test import TestCase
-from django.urls import reverse
 
-from apps.pp.models import Annotation, AnnotationUpvote
+from apps.pp.models import Annotation
 from apps.pp.tests.utils import create_test_user
 
 

@@ -38,10 +38,10 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^api/', include('apps.pp.urls', namespace='api')),
     url(r'^api/docs/swagger(?P<format>\.json|\.yaml)$',
-        yasg_schema_view.without_ui(cache_timeout=None), name='schema-json'),
+        yasg_schema_view.without_ui(cache_timeout=None), name='schema_json'),
     url(r'^api/docs/$',
-        yasg_schema_view.with_ui('swagger', cache_timeout=None), name='schema-swagger-ui'),
+        yasg_schema_view.with_ui('swagger', cache_timeout=None), name='schema_swagger'),
     url(r'^api/docs-redoc/$',
-        yasg_schema_view.with_ui('redoc', cache_timeout=None), name='schema-redoc'),
+        yasg_schema_view.with_ui('redoc', cache_timeout=None), name='schema_redoc'),
     url(r'^api/docs-rest/', include_docs_urls(public=False)),
 ]
