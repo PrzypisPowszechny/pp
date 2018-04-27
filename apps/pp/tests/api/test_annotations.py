@@ -13,9 +13,9 @@ from apps.pp.utils import get_resource_name
 
 
 class AnnotationAPITest(TestCase):
-    base_url = "/api/annotations/{}/"
-    report_related_url = "/api/annotation_reports/{}/annotation/"
-    upvote_related_url = "/api/annotation_upvotes/{}/annotation/"
+    base_url = "/api/annotations/{}"
+    report_related_url = "/api/annotation_reports/{}/annotation"
+    upvote_related_url = "/api/annotation_upvotes/{}/annotation"
     maxDiff = None
 
     # IMPORTANT: we log in for each test, so self.user has already an open session with server
@@ -201,7 +201,7 @@ class AnnotationAPITest(TestCase):
         )
 
     def test_empty_search_return_json_200(self):
-        search_base_url = "/api/annotations/?url={}"
+        search_base_url = "/api/annotations?url={}"
         response = self.client.get(search_base_url.format('przypis powszechny'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/vnd.api+json')
@@ -213,7 +213,7 @@ class AnnotationAPITest(TestCase):
         )
 
     def test_nonempty_search_return_json_200(self):
-        search_base_url = "/api/annotations/?&url={}"
+        search_base_url = "/api/annotations?&url={}"
         annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
                                                annotation_link="www.przypispowszechny.com",
                                                annotation_link_title="very nice")
@@ -225,7 +225,7 @@ class AnnotationAPITest(TestCase):
         self.assertEqual(response['content-type'], 'application/vnd.api+json')
 
     def test_search_return_list(self):
-        search_base_url = "/api/annotations/?url={}"
+        search_base_url = "/api/annotations?url={}"
         # First annotation
         annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="more good job",
                                                url='www.przypis.pl', annotation_link="www.przypispowszechny.com",
@@ -335,7 +335,7 @@ class AnnotationAPITest(TestCase):
              })
 
     def test_post_new_annotation(self):
-        base_url = "/api/annotations/"
+        base_url = "/api/annotations"
 
         response = self.client.post(
             base_url,
@@ -406,7 +406,7 @@ class AnnotationAPITest(TestCase):
         )
 
     def test_post_new_annotation_with_null_request_annotation(self):
-        base_url = "/api/annotations/"
+        base_url = "/api/annotations"
 
         annotation_request = AnnotationRequest.objects.create(
             user=self.user,

@@ -8,9 +8,9 @@ from apps.pp.tests.utils import create_test_user
 
 
 class AnnotationUpvoteAPITest(TestCase):
-    upvote_url = "/api/annotation_upvotes/"
-    upvote_single_url = "/api/annotation_upvotes/{}/"
-    annotation_related_upvote_url = "/api/annotations/{}/upvote/"
+    upvote_url = "/api/annotation_upvotes"
+    upvote_single_url = "/api/annotation_upvotes/{}"
+    annotation_related_upvote_url = "/api/annotations/{}/upvote"
     maxDiff = None
 
     # IMPORTANT: we log in for each test, so self.user has already an open session with server
