@@ -212,9 +212,9 @@ class AnnotationReportSerializer(ResourceSerializer, AnnotationReportDeserialize
     relationships = Relationships()
 
 
-# Feedback
+# Upvote
 
-class FeedbackDeserializer(ResourceTypeSerializer):
+class AnnotationUpvoteDeserializer(ResourceTypeSerializer):
     class Relationships(serializers.Serializer):
         class Annotation(RelationDeserializer):
             pass
@@ -224,22 +224,7 @@ class FeedbackDeserializer(ResourceTypeSerializer):
     relationships = Relationships()
 
 
-class FeedbackSerializer(ResourceSerializer):
-    """
-    Used only for introspection purposes by schema generator.
-
-    Should be same as Upvote and Objection serializers with only exception to link parameter.
-    """
-    class Relationships(serializers.Serializer):
-        class Annotation(RelationSerializer):
-            pass
-
-        annotation = Annotation()
-
-    relationships = Relationships()
-
-
-class UpvoteSerializer(ResourceSerializer):
+class AnnotationUpvoteSerializer(ResourceSerializer):
     class Relationships(serializers.Serializer):
         class Annotation(RelationSerializer):
             related_link_url_name = 'api:annotation_upvote_related_annotation'

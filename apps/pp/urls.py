@@ -4,6 +4,7 @@ from apps.pp.views import users
 from .views import annotations, annotation_reports, annotation_upvotes
 
 
+# TODO: do we make annotationReports, annotation-reports or annotation_reports urls? check redux-json-api view on that
 urlpatterns = [
     url(r'^annotations/', include([
         url(r'^(?P<annotation_id>[0-9]+)/$', annotations.AnnotationSingle.as_view(),
@@ -13,21 +14,20 @@ urlpatterns = [
         # Related
         url(r'^(?P<annotation_id>[0-9]+)/user/$', users.AnnotationRelatedUserSingle.as_view(),
             name='annotation_related_user'),
-        url(r'^(?P<annotation_id>[0-9]+)/upvote/$', annotation_upvotes.AnnotationRelatedUpvoteSingle.as_view(),
+        url(r'^(?P<annotation_id>[0-9]+)/upvote/$', annotation_upvotes.AnnotationRelatedAnnotationUpvoteSingle.as_view(),
             name='annotation_related_upvote'),
         url(r'^(?P<annotation_id>[0-9]+)/reports/$', annotation_reports.AnnotationRelatedAnnotationReportList.as_view(),
             name='annotation_related_reports'),
     ])),
     url(r'^upvotes/', include([
-        url(r'^(?P<feedback_id>[0-9]+)/$', annotation_upvotes.UpvoteSingle.as_view(),
+        url(r'^(?P<feedback_id>[0-9]+)/$', annotation_upvotes.AnnotationUpvoteSingle.as_view(),
             name='annotation_upvote'),
-        url(r'^$', annotation_upvotes.UpvoteList.as_view(),
+        url(r'^$', annotation_upvotes.AnnotationUpvoteList.as_view(),
             name='annotation_upvote'),
         # Related
         url(r'^(?P<feedback_id>[0-9]+)/annotation/$', annotations.AnnotationUpvoteRelatedAnnotationSingle.as_view(),
             name='annotation_upvote_related_annotation'),
     ])),
-    # TODO: do we make annotationReports, annotation-reports or annotation_reports urls? check redux-json-api view on that
     url(r'^annotation_reports/', include([
         url(r'^(?P<report_id>[0-9]+)/$', annotation_reports.AnnotationReportSingle.as_view(),
             name='annotation_report'),
