@@ -8,7 +8,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('pp', '0010_auto_20180426_2101'),
+        ('pp', '0010_remove_fields_objection_useful'),
     ]
 
     operations = [
