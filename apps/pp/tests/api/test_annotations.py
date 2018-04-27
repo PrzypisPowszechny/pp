@@ -4,8 +4,9 @@ from datetime import timedelta
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+from model_mommy import mommy
 
-from apps.pp.models import Annotation, AnnotationUpvote
+from apps.pp.models import Annotation, AnnotationUpvote, AnnotationReport
 from apps.pp.models import AnnotationRequest
 from apps.pp.tests.utils import create_test_user
 from apps.pp.utils import get_resource_name
@@ -13,6 +14,8 @@ from apps.pp.utils import get_resource_name
 
 class AnnotationAPITest(TestCase):
     base_url = "/api/annotations/{}/"
+    report_related_url = "/api/annotation_reports/{}/annotation/"
+    upvote_related_url = "/api/annotation_upvotes/{}/annotation/"
     maxDiff = None
 
     # IMPORTANT: we log in for each test, so self.user has already an open session with server
@@ -77,6 +80,120 @@ class AnnotationAPITest(TestCase):
                                                    kwargs={'annotation_id': annotation.id})
                             },
                             'data': []
+                        },
+                    }
+                }
+            }
+        )
+
+    def test_get_annotation_report_related_annotation(self):
+        annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
+                                               annotation_link="www.przypispowszechny.com",
+                                               annotation_link_title="very nice")
+        report = mommy.make(AnnotationReport, annotation=annotation, user=self.user)
+        urf = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
+        upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).count()
+
+        response = self.client.get(self.report_related_url.format(report.id))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            json.loads(response.content.decode('utf8')),
+            {
+                'data': {
+                    'id': str(annotation.id),
+                    'type': 'annotations',
+                    'attributes': {
+                        'url': annotation.url,
+                        'ranges': annotation.ranges,
+                        'quote': annotation.quote,
+                        'priority': annotation.priority,
+                        'comment': annotation.comment,
+                        'annotation_link': annotation.annotation_link,
+                        'annotation_link_title': annotation.annotation_link_title,
+                        'upvote': bool(urf),
+                        'upvote_count': upvote_count,
+                        'does_belong_to_user': True,
+                    },
+                    'relationships': {
+                        'user': {
+                            'links': {
+                                'related': reverse('api:annotation_related_user',
+                                                   kwargs={'annotation_id': annotation.id})
+                            },
+                            'data': {'type': 'users', 'id': str(self.user.id)}
+                        },
+                        'upvote': {
+                            'links': {
+                                'related': reverse('api:annotation_related_upvote',
+                                                   kwargs={'annotation_id': annotation.id})
+                            },
+                            'data': {'id': str(urf.id), 'type': get_resource_name(urf, always_single=True)}
+                        },
+                        'reports': {
+                            'links': {
+                                'related': reverse('api:annotation_related_reports',
+                                                   kwargs={'annotation_id': annotation.id})
+                            },
+                            'data': [
+                                {'type': 'annotation_reports', 'id': str(report.id)}
+                            ]
+                        },
+                    }
+                }
+            }
+        )
+
+    def test_get_annotation_upvote_related_annotation(self):
+        annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
+                                               annotation_link="www.przypispowszechny.com",
+                                               annotation_link_title="very nice")
+        report = mommy.make(AnnotationReport, annotation=annotation, user=self.user)
+        upvote = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
+        upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).count()
+
+        response = self.client.get(self.upvote_related_url.format(upvote.id))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            json.loads(response.content.decode('utf8')),
+            {
+                'data': {
+                    'id': str(annotation.id),
+                    'type': 'annotations',
+                    'attributes': {
+                        'url': annotation.url,
+                        'ranges': annotation.ranges,
+                        'quote': annotation.quote,
+                        'priority': annotation.priority,
+                        'comment': annotation.comment,
+                        'annotation_link': annotation.annotation_link,
+                        'annotation_link_title': annotation.annotation_link_title,
+                        'upvote': bool(upvote),
+                        'upvote_count': upvote_count,
+                        'does_belong_to_user': True,
+                    },
+                    'relationships': {
+                        'user': {
+                            'links': {
+                                'related': reverse('api:annotation_related_user',
+                                                   kwargs={'annotation_id': annotation.id})
+                            },
+                            'data': {'type': 'users', 'id': str(self.user.id)}
+                        },
+                        'upvote': {
+                            'links': {
+                                'related': reverse('api:annotation_related_upvote',
+                                                   kwargs={'annotation_id': annotation.id})
+                            },
+                            'data': {'id': str(upvote.id), 'type': get_resource_name(upvote, always_single=True)}
+                        },
+                        'reports': {
+                            'links': {
+                                'related': reverse('api:annotation_related_reports',
+                                                   kwargs={'annotation_id': annotation.id})
+                            },
+                            'data': [
+                                {'type': 'annotation_reports', 'id': str(report.id)}
+                            ]
                         },
                     }
                 }
@@ -449,12 +566,57 @@ class AnnotationAPITest(TestCase):
                     'quote': put_string
                 }
             }
-        }
+        })
+        response = self.client.patch(self.base_url.format(annotation.id), put_data,
+                                     content_type='application/vnd.api+json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_patch_inaccessible_relationhips_annotation(self):
+        annotation = Annotation.objects.create(
+            user=self.user, priority='NORMAL', url='www.przypis.pl', comment="good job",
+            annotation_link="www.przypispowszechny.com", annotation_link_title="very nice",
+            quote='not this time'
         )
+        AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
+
+        put_string = 'not so well'
+        put_data = json.dumps({
+            'data': {
+                'type': 'annotations',
+                'id': annotation.id,
+                'attributes': {
+                    'annotation_link_title': put_string
+                },
+                'relationships': {}
+            }
+        })
         response = self.client.patch(self.base_url.format(annotation.id), put_data,
                                      content_type='application/vnd.api+json')
         annotation = Annotation.objects.get(id=annotation.id)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
+        self.assertNotEqual(annotation.comment, put_string)
+
+    def test_patch_deny_non_owner(self):
+        owner_user, owner_user_pass = create_test_user(unique=True)
+        annotation = Annotation.objects.create(
+            user=owner_user, priority='NORMAL', url='www.przypis.pl', comment="good job",
+            annotation_link="www.przypispowszechny.com", annotation_link_title="very nice",
+            quote='not this time'
+        )
+        put_string = 'not so well'
+        put_data = json.dumps({
+            'data': {
+                'type': 'annotations',
+                'id': annotation.id,
+                'attributes': {
+                    'annotation_link_title': put_string
+                }
+            }
+        })
+        response = self.client.patch(self.base_url.format(annotation.id), put_data,
+                                     content_type='application/vnd.api+json')
+        annotation = Annotation.objects.get(id=annotation.id)
+        self.assertEqual(response.status_code, 403)
         self.assertNotEqual(annotation.comment, put_string)
 
     def test_delete_annotation(self):
