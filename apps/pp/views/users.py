@@ -12,7 +12,6 @@ from apps.pp.utils import DataPreSerializer
 User = get_user_model()
 
 
-# TODO: add test
 class UserSingle(APIView):
 
     @swagger_auto_schema(responses={200: UserSerializer})
