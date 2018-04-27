@@ -1,9 +1,9 @@
 from django.urls import reverse
 from rest_framework import serializers
 
-from apps.pp.models import ReferenceReport
+from apps.pp.models import AnnotationReport
 from apps.pp.utils import data_wrapped
-from .models import Reference, UserReferenceFeedback
+from .models import Annotation, AnnotationUpvote
 
 
 # Resource
@@ -76,57 +76,45 @@ class RelationManySerializer(RelationManyDeserializer):
     links = RelationLinksSerializer(required=True)
 
 
-# Reference
+# Annotation
 
-class ReferenceDeserializer(ResourceTypeSerializer):
+class AnnotationDeserializer(ResourceTypeSerializer):
     class Attributes(serializers.ModelSerializer):
         comment = serializers.CharField(required=False)
 
         class Meta:
-            model = Reference
+            model = Annotation
             fields = ('url', 'ranges', 'quote',
-                      'priority', 'comment', 'reference_link', 'reference_link_title')
+                      'priority', 'comment', 'annotation_link', 'annotation_link_title')
 
     attributes = Attributes()
 
 
-class ReferenceSerializer(ResourceSerializer, ReferenceDeserializer):
-    class Attributes(ReferenceDeserializer.Attributes):
-        useful_count = serializers.SerializerMethodField()
-        objection_count = serializers.SerializerMethodField()
-        useful = serializers.SerializerMethodField('is_useful')
-        objection = serializers.SerializerMethodField('is_objection')
+class AnnotationSerializer(ResourceSerializer, AnnotationDeserializer):
+    class Attributes(AnnotationDeserializer.Attributes):
+        upvote_count = serializers.SerializerMethodField()
+        upvote = serializers.SerializerMethodField('is_upvote')
         does_belong_to_user = serializers.SerializerMethodField()
 
         class Meta:
-            model = ReferenceDeserializer.Attributes.Meta.model
+            model = AnnotationDeserializer.Attributes.Meta.model
 
-            fields = ReferenceDeserializer.Attributes.Meta.fields + (
-                'useful', 'useful_count', 'objection', 'objection_count', 'does_belong_to_user',
+            fields = AnnotationDeserializer.Attributes.Meta.fields + (
+                'upvote', 'upvote_count', 'does_belong_to_user',
             )
 
         @property
         def request_user(self):
             return self.context['request'].user if self.context.get('request') else None
 
-        def get_useful_count(self, instance):
+        def get_upvote_count(self, instance):
             assert self.request_user is not None
-            return UserReferenceFeedback.objects.filter(user=self.request_user, reference=instance, useful=True) \
+            return AnnotationUpvote.objects.filter(user=self.request_user, annotation=instance) \
                 .count()
 
-        def get_objection_count(self, instance):
+        def is_upvote(self, instance):
             assert self.request_user is not None
-            return UserReferenceFeedback.objects.filter(user=self.request_user, reference=instance, objection=True) \
-                .count()
-
-        def is_useful(self, instance):
-            assert self.request_user is not None
-            return UserReferenceFeedback.objects.filter(user=self.request_user, reference=instance, useful=True) \
-                .exists()
-
-        def is_objection(self, instance):
-            assert self.request_user is not None
-            return UserReferenceFeedback.objects.filter(user=self.request_user, reference=instance, objection=True) \
+            return AnnotationUpvote.objects.filter(user=self.request_user, annotation=instance) \
                 .exists()
 
         def get_does_belong_to_user(self, instance):
@@ -135,102 +123,92 @@ class ReferenceSerializer(ResourceSerializer, ReferenceDeserializer):
 
     class Relationships(serializers.Serializer):
         class User(RelationSerializer):
-            related_link_url_name = 'api:reference_user'
+            related_link_url_name = 'api:annotation_user'
 
-        class Objection(RelationSerializer):
-            related_link_url_name = 'api:reference_objection'
+        class Upvote(RelationSerializer):
+            related_link_url_name = 'api:annotation_upvote'
 
-        class Useful(RelationSerializer):
-            related_link_url_name = 'api:reference_useful'
-
-        class ReferenceReports(RelationManySerializer):
-            related_link_url_name = 'api:reference_reports'
+        class AnnotationReports(RelationManySerializer):
+            related_link_url_name = 'api:annotation_reports'
 
         user = User(required=True)
-        useful = Useful()
-        objection = Objection()
-        reference_reports = ReferenceReports()
+        upvote = Upvote()
+        annotation_reports = AnnotationReports()
 
     attributes = Attributes()
     relationships = Relationships()
 
 
-class ReferenceListSerializer(ResourceSerializer):
+class AnnotationListSerializer(ResourceSerializer):
     class Attributes(serializers.ModelSerializer):
-        useful_count = serializers.IntegerField(default=0)
-        objection_count = serializers.IntegerField(default=0)
-        useful = serializers.BooleanField(default=False)
-        objection = serializers.BooleanField(default=False)
+        upvote_count = serializers.IntegerField(default=0)
+        upvote = serializers.BooleanField(default=False)
         does_belong_to_user = serializers.BooleanField(default=False)
 
         class Meta:
-            model = Reference
+            model = Annotation
             fields = ('url', 'ranges', 'quote',
-                      'priority', 'comment', 'reference_link', 'reference_link_title',
-                      'useful', 'useful_count', 'objection', 'objection_count',
+                      'priority', 'comment', 'annotation_link', 'annotation_link_title',
+                      'upvote', 'upvote_count',
                       'does_belong_to_user',
                       )
-            read_only_fields = ('useful', 'useful_count', 'objection', 'objection_count',
+            read_only_fields = ('upvote', 'upvote_count',
                                 'does_belong_to_user')
 
     class Relationships(serializers.Serializer):
         class User(RelationSerializer):
-            related_link_url_name = 'api:reference_user'
+            related_link_url_name = 'api:annotation_user'
 
-        class Objection(RelationSerializer):
-            related_link_url_name = 'api:reference_objection'
+        class Upvote(RelationSerializer):
+            related_link_url_name = 'api:annotation_upvote'
 
-        class Useful(RelationSerializer):
-            related_link_url_name = 'api:reference_useful'
-
-        class ReferenceReports(RelationManySerializer):
-            related_link_url_name = 'api:reference_reports'
+        class AnnotationReports(RelationManySerializer):
+            related_link_url_name = 'api:annotation_reports'
 
         user = User(required=True)
-        useful = Useful()
-        objection = Objection()
-        reference_reports = ReferenceReports()
+        upvote = Upvote()
+        annotation_reports = AnnotationReports()
 
     class Links(ResourceLinksSerializer):
-        self_link_url_name = 'api:reference'
+        self_link_url_name = 'api:annotation'
 
     attributes = Attributes()
     relationships = Relationships()
     links = Links()
 
 
-class ReferencePatchDeserializer(ResourceSerializer):
+class AnnotationPatchDeserializer(ResourceSerializer):
     class Attributes(serializers.ModelSerializer):
         class Meta:
-            model = Reference
-            fields = ('priority', 'comment', 'reference_link', 'reference_link_title')
+            model = Annotation
+            fields = ('priority', 'comment', 'annotation_link', 'annotation_link_title')
 
     attributes = Attributes()
 
 # Report
 
-class ReferenceReportDeserializer(ResourceTypeSerializer):
+class AnnotationReportDeserializer(ResourceTypeSerializer):
     class Attributes(serializers.ModelSerializer):
         class Meta:
-            model = ReferenceReport
+            model = AnnotationReport
             fields = ('reason', 'comment')
 
     class Relationships(serializers.Serializer):
-        class Reference(RelationDeserializer):
+        class Annotation(RelationDeserializer):
             pass
 
-        reference = Reference()
+        annotation = Annotation()
 
     attributes = Attributes()
     relationships = Relationships()
 
 
-class ReferenceReportSerializer(ResourceSerializer, ReferenceReportDeserializer):
+class AnnotationReportSerializer(ResourceSerializer, AnnotationReportDeserializer):
     class Relationships(serializers.Serializer):
-        class Reference(RelationSerializer):
-            related_link_url_name = 'api:report_reference'
+        class Annotation(RelationSerializer):
+            related_link_url_name = 'api:report_annotation'
 
-        reference = Reference()
+        annotation = Annotation()
 
     relationships = Relationships()
 
@@ -239,10 +217,10 @@ class ReferenceReportSerializer(ResourceSerializer, ReferenceReportDeserializer)
 
 class FeedbackDeserializer(ResourceTypeSerializer):
     class Relationships(serializers.Serializer):
-        class Reference(RelationDeserializer):
+        class Annotation(RelationDeserializer):
             pass
 
-        reference = Reference()
+        annotation = Annotation()
 
     relationships = Relationships()
 
@@ -251,33 +229,23 @@ class FeedbackSerializer(ResourceSerializer):
     """
     Used only for introspection purposes by schema generator.
 
-    Should be same as Useful and Objection serializers with only exception to link parameter.
+    Should be same as Upvote and Objection serializers with only exception to link parameter.
     """
     class Relationships(serializers.Serializer):
-        class Reference(RelationSerializer):
+        class Annotation(RelationSerializer):
             pass
 
-        reference = Reference()
+        annotation = Annotation()
 
     relationships = Relationships()
 
 
-class UsefulSerializer(ResourceSerializer):
+class UpvoteSerializer(ResourceSerializer):
     class Relationships(serializers.Serializer):
-        class Reference(RelationSerializer):
-            related_link_url_name = 'api:useful_reference'
+        class Annotation(RelationSerializer):
+            related_link_url_name = 'api:upvote_annotation'
 
-        reference = Reference()
-
-    relationships = Relationships()
-
-
-class ObjectionSerializer(ResourceSerializer):
-    class Relationships(serializers.Serializer):
-        class Reference(RelationSerializer):
-            related_link_url_name = 'api:objection_reference'
-
-        reference = Reference()
+        annotation = Annotation()
 
     relationships = Relationships()
 

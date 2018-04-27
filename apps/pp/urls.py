@@ -1,53 +1,41 @@
 from django.conf.urls import url, include
 
 from apps.pp.views import users
-from .views import references, reference_reports, reference_usefuls, reference_objections
+from .views import annotations, annotation_reports, annotation_upvotes
 
 
 urlpatterns = [
-    url(r'^references/', include([
-        url(r'^(?P<reference_id>[0-9]+)/$', references.ReferenceSingle.as_view(),
-            name='reference'),
-        url(r'^$', references.ReferenceList.as_view(),
-            name='reference'),
+    url(r'^annotations/', include([
+        url(r'^(?P<annotation_id>[0-9]+)/$', annotations.AnnotationSingle.as_view(),
+            name='annotation'),
+        url(r'^$', annotations.AnnotationList.as_view(),
+            name='annotation'),
         # Related
-        url(r'^(?P<reference_id>[0-9]+)/user/$', users.ReferenceRelatedUserSingle.as_view(),
-            name='reference_user'),
-        url(r'^(?P<reference_id>[0-9]+)/useful/$', reference_usefuls.ReferenceRelatedUsefulSingle.as_view(),
-            name='reference_useful'),
-        url(r'^(?P<reference_id>[0-9]+)/objection/$', reference_objections.ReferenceRelatedObjectionSingle.as_view(),
-            name='reference_objection'),
-        url(r'^(?P<reference_id>[0-9]+)/reports/$', reference_reports.ReferenceRelatedReferenceReportList.as_view(),
-            name='reference_reports'),
+        url(r'^(?P<annotation_id>[0-9]+)/user/$', users.AnnotationRelatedUserSingle.as_view(),
+            name='annotation_user'),
+        url(r'^(?P<annotation_id>[0-9]+)/upvote/$', annotation_upvotes.AnnotationRelatedUpvoteSingle.as_view(),
+            name='annotation_upvote'),
+        url(r'^(?P<annotation_id>[0-9]+)/reports/$', annotation_reports.AnnotationRelatedAnnotationReportList.as_view(),
+            name='annotation_reports'),
     ])),
-    url(r'^usefuls/', include([
-        url(r'^(?P<feedback_id>[0-9]+)/$', reference_usefuls.UsefulSingle.as_view(),
-            name='useful'),
-        url(r'^$', reference_usefuls.UsefulList.as_view(),
-            name='useful'),
+    url(r'^upvotes/', include([
+        url(r'^(?P<feedback_id>[0-9]+)/$', annotation_upvotes.UpvoteSingle.as_view(),
+            name='upvote'),
+        url(r'^$', annotation_upvotes.UpvoteList.as_view(),
+            name='upvote'),
         # Related
-        url(r'^(?P<feedback_id>[0-9]+)/reference/$', references.ReferenceUsefulRelatedReferenceSingle.as_view(),
-            name='useful_reference'),
+        url(r'^(?P<feedback_id>[0-9]+)/annotation/$', annotations.AnnotationUpvoteRelatedAnnotationSingle.as_view(),
+            name='upvote_annotation'),
     ])),
-    url(r'^objections/', include([
-        url(r'^(?P<feedback_id>[0-9]+)/$', reference_objections.ObjectionSingle.as_view(),
-            name='objection'),
-        url(r'^$', reference_objections.ObjectionList.as_view(),
-            name='objection'),
+    # TODO: do we make annotationReports, annotation-reports or annotation_reports urls? check redux-json-api view on that
+    url(r'^annotation_reports/', include([
+        url(r'^(?P<report_id>[0-9]+)/$', annotation_reports.AnnotationReportSingle.as_view(),
+            name='annotation_report'),
+        url(r'^$', annotation_reports.AnnotationReportList.as_view(),
+            name='annotation_report'),
         # Related
-        url(r'^(?P<feedback_id>[0-9]+)/reference/$', references.ReferenceObjectionRelatedReferenceSingle.as_view(),
-            name='objection_reference'),
-
-    ])),
-    # TODO: do we make referenceReports, reference-reports or reference_reports urls? check redux-json-api view on that
-    url(r'^reference_reports/', include([
-        url(r'^(?P<report_id>[0-9]+)/$', reference_reports.ReferenceReportSingle.as_view(),
-            name='reference_report'),
-        url(r'^$', reference_reports.ReferenceReportList.as_view(),
-            name='reference_report'),
-        # Related
-        url(r'^(?P<report_id>[0-9]+)/reference/$', references.ReferenceReportRelatedReferenceSingle.as_view(),
-            name='report_reference'),
+        url(r'^(?P<report_id>[0-9]+)/annotation/$', annotations.AnnotationReportRelatedAnnotationSingle.as_view(),
+            name='report_annotation'),
     ])),
     url(r'^users/', include([
         url(r'^(?P<user_id>[0-9]+)/$', users.UserSingle.as_view(),

@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from apps.pp.models import Reference, UserReferenceFeedback, UserReferenceRequestFeedback, ReferenceRequest
+from apps.pp.models import Annotation, AnnotationUpvote, AnnotationRequestFeedback, AnnotationRequest
 
 
 class UserModelTest(TestCase):
@@ -15,38 +15,32 @@ class UserModelTest(TestCase):
         self.assertEqual(40, get_user_model().objects.count())
 
 
-class UserReferenceFeedbackModelTest(TestCase):
+class AnnotationUpvoteModelTest(TestCase):
 
     @classmethod
     def setUpTestData(cls):
         cls.user = get_user_model().objects.create_user(username="Alibaba")
         cls.user2 = get_user_model().objects.create_user(username="Rozbójnik")
-        cls.reference = Reference.objects.create(user=cls.user, priority='NORMAL', comment="good job",
-                                                 reference_link="www.przypispowszechny.com",
-                                                 reference_link_title="very nice")
+        cls.annotation = Annotation.objects.create(user=cls.user, priority='NORMAL', comment="good job",
+                                                  annotation_link="www.przypispowszechny.com",
+                                                  annotation_link_title="very nice")
 
     def test_creating(self):
-        UserReferenceFeedback.objects.create(user=self.user, reference=self.reference, useful=True, objection=True)
-        self.assertEqual(1, UserReferenceFeedback.objects.count())
-
-    def test_useful(self):
-        UserReferenceFeedback.objects.create(user=self.user, reference=self.reference, useful=True, objection=True)
-        urf2 = UserReferenceFeedback.objects.get(user=self.user, reference=self.reference)
-        self.assertTrue(urf2.useful)
-
-    def test_updating_reference_useful_and_objection_count(self):
-        UserReferenceFeedback.objects.create(user=self.user, reference=self.reference, useful=False, objection=True)
-        UserReferenceFeedback.objects.create(user=self.user2, reference=self.reference, useful=True, objection=False)
-        self.reference.count_useful_and_objection()
-        self.assertEqual(1, self.reference.useful_count)
-        self.assertEqual(1, self.reference.objection_count)
+        AnnotationUpvote.objects.create(user=self.user, annotation=self.annotation)
+        self.assertEqual(1, AnnotationUpvote.objects.count())
 
 
-class UserReferenceRequestFeedbackModelTest(TestCase):
+    def test_updating_annotation_upvote_count(self):
+        AnnotationUpvote.objects.create(user=self.user2, annotation=self.annotation)
+        self.annotation.count_upvote()
+        self.assertEqual(1, self.annotation.upvote_count)
+
+
+class AnnotationRequestFeedbackModelTest(TestCase):
     def setUp(self):
         self.user = get_user_model().objects.create_user(username="Alibaba")
 
     def test_creating(self):
-        rr = ReferenceRequest.objects.create(user=self.user)
-        UserReferenceRequestFeedback.objects.create(user=self.user, reference_request=rr, )
-        self.assertEqual(1, UserReferenceRequestFeedback.objects.count())
+        rr = AnnotationRequest.objects.create(user=self.user)
+        AnnotationRequestFeedback.objects.create(user=self.user, annotation_request=rr, )
+        self.assertEqual(1, AnnotationRequestFeedback.objects.count())

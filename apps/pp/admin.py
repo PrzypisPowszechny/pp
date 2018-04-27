@@ -3,21 +3,21 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
 from simple_history.admin import SimpleHistoryAdmin
 
-from apps.pp.models import Reference
-from apps.pp.models import ReferenceRequest
+from apps.pp.models import Annotation
+from apps.pp.models import AnnotationRequest
 
 admin.site.register(get_user_model(), UserAdmin)
 
 
-class ReferenceAdmin(SimpleHistoryAdmin):
+class AnnotationAdmin(SimpleHistoryAdmin):
     pass
 
 
-admin.site.register(Reference, ReferenceAdmin)
+admin.site.register(Annotation, AnnotationAdmin)
 
 
-class ReferenceRequestAdmin(SimpleHistoryAdmin):
+class AnnotationRequestAdmin(SimpleHistoryAdmin):
     pass
 
 
-admin.site.register(ReferenceRequest, ReferenceRequestAdmin)
+admin.site.register(AnnotationRequest, AnnotationRequestAdmin)

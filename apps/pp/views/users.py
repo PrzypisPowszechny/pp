@@ -28,12 +28,12 @@ class UserSingle(APIView):
 
 
 # TODO: add test
-class ReferenceRelatedUserSingle(APIView):
+class AnnotationRelatedUserSingle(APIView):
 
     @swagger_auto_schema(responses={200: UserSerializer(many=True)})
-    def get(self, request, reference_id):
+    def get(self, request, annotation_id):
         try:
-            other_user = User.objects.get(reference=reference_id, reference__active=True)
+            other_user = User.objects.get(annotation=annotation_id, annotation__active=True)
         except User.DoesNotExist:
             return NotFoundResponse()
 
