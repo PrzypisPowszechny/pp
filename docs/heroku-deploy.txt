@@ -1,0 +1,22 @@
+# Install heroku-cli from
+https://devcenter.heroku.com/articles/heroku-cli
+
+# Authenticate
+$ heroku login
+
+# Add git remote by appending it to ./.git/config
+[remote "heroku"]
+    url = https://git.heroku.com/damp-headland-12387.git
+    fetch = +refs/heads/*:refs/remotes/heroku/*
+
+# Push changes to heroku from you local prod-heroku branch to master on heroku
+$ git push heroku prod-heroku:master
+
+# Migrate database if necessary
+$ heroku run python manage.py migrate
+
+
+# Current heroku deployment assumes below var to exist:
+DJANGO_SETTINGS_MODULE=settings.prod_heroku
+# And additionally database configuration exposed using url format as var:
+DATABASE_URL=

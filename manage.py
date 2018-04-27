@@ -7,7 +7,7 @@ if __name__ == "__main__":
     settings = "settings.dev.base"
 
     if 'test' in sys.argv:
-        settings = "settings.test.base"
+        settings = "settings.test"
 
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", settings)
 

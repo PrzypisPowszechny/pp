@@ -1,0 +1,258 @@
+{% load static %}
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Strona Przypisu Powszechnego</title>
+  <!-- <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Open+Sans" /> -->
+  <link rel="stylesheet" href="{% static 'style/style.css' %}">
+</head>
+
+<body>
+  <header class="nav-bar">
+    <div class="row">
+      <div class="logo-col">
+        <h3>Przypis Powszechny</h3>
+      </div>
+      <nav class="menu-col">
+        <ul class="menu">
+          <li><a href="#about-app-section" class="menu-item" data="scroll-button">Jak to działa?</a></li>
+          <li><a href="#faq-section" class="menu-item">O projekcie</a></li>
+          <li><a href="#" class="menu-item">Kim jesteśmy?</a></li>
+          <li><a href="#contact-section" class="menu-item">Kontakt</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- LANDING SECTION -->
+    <section class="landing-section" id="landing-section">
+      <form class="cta-container" action="index.html" method="post">
+        <h1 class="cta-header">Dołącz do <br> pierwszej <br> społeczności</h1>
+        <h5>Zostaw maila,<br> a poinformujemy Cię o pierwszej wersji aplikacji</h5>
+        <input type="text" name="email" value="" class="mail-input" placeholder="Wpisz swój adres email">
+        <input class="submit-button" type="submit" name="" value="Wyślij">
+      </form>
+    </section>
+
+    <!-- ABOUT APP SECTION -->
+    <section class="about-app-section" id="about-app-section">
+      <div class="centered-container">
+        <h2 class="slogan">*PP towarzyszy przy codziennym czytaniu newsów i zdobywaniu informacji w internecie</h2>
+        <img class="computer-photo" src="{% static "img/124092.svg" %}" alt="">
+      </div>
+  </section>
+
+      <!-- ABOUT NEED SECTION -->
+
+    <section class="about-need-section" id="about-need-section">
+      <div class="question-container">
+        <h2 class="section-header">Czy zdarzyło Ci się kiedyś, że:</h2>
+        <p>nie mogłeś znaleźć treści ustawy albo innego rządowego dokumentu, o którym chciałeś dowiedzieć się więcej?</p>
+        <p>przeczytana w internecie informacja wydała Ci się podejrzana, ale zrezygnowałeś ze sprawdzenia jej, bo nie miałeś czasu?</p>
+        <p>trafiłeś na sprzeczne informacje na dwóch różnych stronach i nie wiedziałeś, której zaufać, bo brakowało Ci danych, żeby to ocenić?</p>
+      </div>
+
+    </section>
+
+<!-- MAIN FUNCTIONS SECTION -->
+
+    <section>
+      <h3>Aplikacja *Przypis Powszechny to:</h3>
+      <div class="boxes">
+        <div class="box-row">
+          <div class="box3">
+            <div class="function-icon teal"></div>
+            <p class="function-header">szybkie weryfikowanie informacji</p>
+          </div>
+          <div class="box3">
+            <div class="function-icon blue"></div>
+            <p class="function-header">rzetelne źródła pod ręką</p>
+          </div>
+          <div class="box3">
+            <div class="function-icon teal"></div>
+            <p class="function-header">zabezpieczenie przed fałszymymi informacjami</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- HOW DOES IT WORK SECTION -->
+
+    <section class="infographic-section teal">
+
+      <h2 class="section-header">Jak to działa?</h2>
+
+
+      <p class="paragraph"> Aplikacja *PP pozwala <b>dodawać bezpośrednio na stronie</b> z artykułem różnego rodzaju użyteczne treści - brakujące źródła, dopowiedzenia, a także sprostowania fałszywych lub zmanipulowanych informacji. <br><br> Użytkownicy mogą <b>wyświetlać przypisy</b>        dodane przez innych i <b>tworzyć
+        nowe</b> - dzięki temu każdy użytkownik ma pod ręką informacje zgromadzone przez innych i może łatwo i szybko z nich skorzystać, aby <b>ocenić wiarygodność artykułu lub zaoszczędzić sobie czas potrzebny na wyszukiwanie źródeł</b>.</p>
+        <br>
+        <p>*PP to wtyczka do przeglądarki Google Chrome, tworzona w ramach   <a href="#about-project-section">projektu non-profit </a>.</p>
+    </section>
+
+
+    <section class="box-section">
+      <div class="boxes boxes-big-spaces">
+        <div class="box-row">
+          <div class="box grey">
+            <h2 class="">Wyświetlaj przypisy</h2>
+            <h3 class="subtitle"> korzystaj z przydatnych źródeł i sprostowań</h3>
+            <div class="icon-wrapper">
+              <img class="icon" src="{% static "img/124092.svg" %}" alt="">
+            </div>
+          </div>
+          <div class="box">
+            <p>
+              <ul class="pros-list">
+                <li>
+                  <p class="pros-header">pod ręką, kiedy ich potrzebujesz</p>
+                  <p>przypisy wyświetlają się bezpośrednio na stronie z artykułem - nie musisz googlać, aby zweryfikować informację lub dowiedzieć się więcej</p>
+                </li>
+                <li>
+                  <p class="pros-header">oparte na źródłach</p>
+                  <p>każdy przypis zawiera link do źródła, z którego pochodzą zawarte w nim informacje</p>
+                </li>
+                <li>
+                  <p class="pros-header">merytoryczne</p>
+                  <p>przypisy służą dzieleniu się faktami, a nie opiniami</p>
+                </li>
+                <li>
+                  <p class="pros-header">kluczowe informacje w pigłuce</p>
+                  <p>przypisy są krótkie i dają szybki dostęp do najważniejszych informacji ze źródła</p>
+                </li>
+                <li>
+                  <p class="pros-header">ostatnie słowo należy do Ciebie</p>
+                  <p>*PP nie ma monopolu na prawdę. Daje wygodny i szybki dostęp do jak najlepszej jakości źródeł po to, żeby ułatwić ocenę użytkownikowi. </p>
+                </li>
+              </ul>
+            </p>
+          </div>
+        </div>
+        <div class="box-row">
+          <div class="box">
+            <ul class="pros-list">
+              <li>
+                <p class="pros-header">dziel się i pomagaj</p>
+                <p>Przeczytałeś trochę na dany temat i masz akurat linki lub informacje, które mogłyby się komuś przydać? Dodaj przypis, a zaoszczędzisz komuś czasu na poszukiwania albo dzięki Tobie nie da się nabrać na fake'ową informację </p>
+              </li>
+              <li>
+                <p class="pros-header">to proste!</p>
+                <p>Nie musisz wypełniać skomplikowanych formularzy. Po prostu zaznaczasz tekst, wklejasz link i gotowe.</p>
+              </li>
+
+              <li>
+                <p class="pros-header">sprostowania o dużym zasięgu</p>
+                <p>Denerwują Cię powtarzane w sieci nieprawdziwe informacje? <br>Niestety, <strong>fake'i mają zwykle o wiele więcej wyświetleń, niż ich sprostowania.</strong>
+                  <br>Przypis z dodanym sprostowaniem będzie rozpowszechniać się razem z artykułem, dzięki czemu dotrze do większej liczby osób.  </p>
+              </li>
+            </ul>
+          </div>
+          <div class="box grey">
+            <h2 class="">Dodawaj przypisy</h2>
+            <h3 class="subtitle"> puszczaj w świat wartościowe informacje</h3>
+            <div class="icon-wrapper">
+              <img class="icon" src="{% static "img/124092.svg" %}" alt="">
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+
+
+<!-- ABOUT MODERATION -->
+    <section>
+
+      <h3 class="teal-text">Narzędzie, o które dba sama społeczność</h3>
+      <p class="paragraph">Tylko <b>merytoryczne i poparte źródłami</b> przypisy mogą być przydatną pomocą przy weryfikowaniu informacji. Dlatego aplikacja *PP dysponuje systemem <b>moderacji</b>, opartym przede wszystkim na aktywności samej społeczności użytkowników, którzy mogą zgłaszać nierzetelne przypisy lub sugerować poprawki. </p>
+<p class="paragraph">W internecie jest pełno miejsc do dyskusji. <b>*PP nie jest jednym z nich</b>. Wierzymy, że istnieje taka płaszczyzna, na której dodawane przypisy będą niekontrowersyjne dla użytkowników niezależnie od ich światopogladu -- i na niej chcemy działać. Tak jak przypisy w kiążkach i opracowaniach naukowych są niekontrowersyjne dla ich czytelników, tak przypisy mają być niekontrowersyjne dla społeczności *PP. </p>
+    </section>
+
+
+
+
+    <!-- ABOUT PROJECT SECTION -->
+    <section class="about-project-section blue" id="about-project-section">
+      <h2 class="section-header">O projekcie *Przypis Powszechny</h2>
+      <p class="paragraph">
+        Przypis Powszechny to projekt non-profit, w którym łączymy technologię i możliwości społeczności, by ułatwić codzienne zdobywanie informacji w internecie i skrócić dostęp do wiarygodnych źródeł. Kolejnym, prawie równie ważnym celem projektu jest zapewnienie skutecznych mechanizmów chroniących przed wprowadzeniem w błąd.
+      </p>
+    </section>
+
+    <section class="faq-section" id="faq-section">
+      <h2 class="subsection-header">Co chcemy ulepszyć?</h2>
+      <p class="paragraph"> Możliwości ogólnodostępnych narzędzi do wyszukiwania w internecie są wprawdzie duże, jednak nie zawsze je wykorzystujemy.
+        Nawet jeśli potrzebowalibyśmy jedynie 10 minut, żeby sprawdzić prawdziwość podejrzanej informacji, często nie robimy tego, bo zwyczajnie
+        nie mamy czasu lub nie chcemy zgubić głównego wątku artykułu. Nieraz też poddajemy się, gdy nie znajdujemy od razu odpowiedzi.
+        A równie zaskakujących informacji jest przecież w artykule wiele.
+        <!-- co gorsza prawdopodobnie są prawdziwe, a cóż jest gorszego niż poczucie nadgorliwej weryfikacji? -->
+
+        Choć mało kto ma czas, żeby na własną rękę weryfikować każdą napotkaną w internecie informację, szersza społeczność może tego dokonać niewielkim kosztem.
+      </p>
+      <p class="paragraph">
+
+        Wyszukiwanie informacji często wymaga od nas także wiedzy specyficznej dla danej dziedziny --
+        przykładowo, gdy autor posługuje się nazwą dokumentu inną niż ta, pod którą występuje on w sieci, możemy zniecierpliwić się szukając go. Do tego, paradoksalnie,
+        najbardziej bezpośrednie źródła wiedzy mają tendencję do pojawiania się na dalszych stronach wyszukiwarek.
+      </p>
+      <h2 class="subsection-header right">Który element projektu jest najważniejszy?</h2>
+      <p class="paragraph">
+        Najważniejszym wsparciem, jakie Przypis Powszechny ma za zadanie dostarczać czytelnikowi, są istotne dla artykułów źródła informacji. Przypisy dodane w aplikacji nie mają stanowić dodatkowego głosu w dyskusji, a jedynie dołączać już istniejące źródła.
+      </p>
+      <p class="paragraph">
+        Przypisy stworzone przez pozostałych czytelników pozwolą użytkownikowi *PP w razie potrzeby szybko wesprzeć się dodatkowymi informacjami, dzięki którym lepiej zorientuje się w tematyce artykułu. W skrajnych przypadkach przypis wprost potwierdzi podawane przez autora informacje lub jednoznacznie wskaże na pomyłkę autora.
+      </p>
+      <br>
+      <h2 class="subsection-header">Skąd takie rozwiązanie?</h2>
+      <p class="paragraph">
+        Obecne w tle rozszerzenie do przeglądarki pozwala użytkownikowi korzystać z internetu tak samo jak zawsze i nie wymaga od niego, by korzystał z oddzielnej aplikacji lub portalu. Świadome korzystanie z dodatkowego interfejsu wymagałoby od niego pewnych
+        nawyków i dodatkowego wysiłku, podczas gdy za pomocą aplikacji staramy się minimalizować właśnie te prozaiczne, choć na większą skalę znaczące problemy związane z weryfikacją.
+      </p>
+      <p class="paragraph">
+        Naszą inspirację​ w kategorii​ tworzenia​ merytorycznej​ treści​ przez​ szeroką​ społeczność stanowi​ ​Wikipedia. Choć w ogromie jej treści można z pewnością w dowolnym momencie wskazać kontrowersje czy błędy, stanowi niesamowicie użyteczne źródło informacji dla gigantycznej populacji.
+      </p>
+    </section>
+
+    <!-- TEAM SECTION -->
+    <section class="team-section" id="team-section">
+      <h2 class="section-header right">Nasz zespół</h2>
+      <div class="team-profile-container">
+        <div class="">
+          <div class="profile teal"></div>
+          <p class="center">Osoba Pierwsza</p>
+        </div>
+        <div class="">
+          <div class="profile teal"></div>
+          <p class="center">Osoba Druga</p>
+        </div>
+        <div class="">
+          <div class="profile">
+            <img class="profile-photo" src="{% static "img/team2.jpg" %}" alt="">
+          </div>
+          <p class="center">Jakiś Azjata</p>
+        </div>
+        <div class="">
+          <div class="profile blue">
+            <div class="cta-join-us">
+              <a href="#" class="">Dołącz do nas</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT SECTION -->
+    <section class="contact-section" id="contact-section">
+      <h2 class="section-header">Kontakt</h2>
+      <p>przypis.powszechny@gmail.com</p>
+      <p>www.facebook.com/przypis.powszechny/</p>
+      <p></p>
+    </section>
+  </main>
+  <script src="{% static 'scripts/main.js' %}" charset="utf-8">
+  </script>
+</body>
+
+</html>
