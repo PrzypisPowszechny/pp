@@ -4,24 +4,6 @@ from django.db import models
 from rest_framework import serializers
 
 
-def data_wrapped(wrapped_serializer, *args, **kwargs):
-    """
-    Deprecated.
-
-    As we move towards relations with links, shorcut for wrapping with data is useless.
-    """
-    if isinstance(wrapped_serializer, serializers.BaseSerializer):
-        wrapped_serializer_class = wrapped_serializer.__class__
-    else:
-        # Initialize if class was passed instead of instance
-        wrapped_serializer_class = wrapped_serializer
-        wrapped_serializer = wrapped_serializer_class()
-    wrapper_field_class = type('%sData' % wrapped_serializer_class.__name__,
-                               (serializers.Serializer,),
-                               {'data': wrapped_serializer})
-    return wrapper_field_class(*args, **kwargs)
-
-
 def get_relationship_id(root_serializer, name):
     """
     Use only when passing relation with url parameter does not do the job.
@@ -46,16 +28,7 @@ def get_jsonapimeta(obj, related_field=None):
 
 def get_resource_name(obj, related_field=None, model=None, always_single=False):
     meta = get_jsonapimeta(model if model else obj, related_field)
-    name = getattr(meta, 'resource_name', None)
-    if name is not None:
-        return name
-    get_names = getattr(meta, 'get_resource_names', None)
-    if get_names is not None:
-        names = get_names(obj)
-        if always_single:
-            return [name for name, is_active_name in names.items() if is_active_name][0]
-        return names
-    raise ValueError('obj need to have either resource_name or get_resource_names defined')
+    return getattr(meta, 'resource_name', None)
 
 
 class DataPreSerializer(object):
@@ -116,26 +89,3 @@ class DataPreSerializer(object):
                 'data': data,
                 'links': self.root_obj.id
             }
-
-
-def set_relationship(root_data, obj, attr=None, root_obj=None):
-    """
-    Deprecated. Use DataPreSerializer.set_relation instead.
-    """
-    resource = get_resource_name(obj, attr)
-    if not isinstance(resource, dict):
-        resources = {resource: True}
-    else:
-        resources = resource
-    val = getattr(obj, attr) if obj and attr else None
-    for resource, resource_is_not_none in resources.items():
-        if val is None or not resource_is_not_none:
-            data = None
-        else:
-            data = {
-                'type': resource, 'id': val,
-            }
-        root_data.setdefault('relationships', {})[resource[:-1]] = {
-            'data': data,
-            'links': root_obj.id if root_obj else None
-        }
