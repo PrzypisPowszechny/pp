@@ -4,10 +4,10 @@ import sys
 
 if __name__ == "__main__":
     # By default start with base settings
-    settings = "settings.prod"
+    settings = "settings.dev.base"
 
     if 'test' in sys.argv:
-        settings = "settings.test.base"
+        settings = "settings.test"
 
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", settings)
 

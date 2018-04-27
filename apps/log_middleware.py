@@ -1,5 +1,6 @@
 import logging
 
+
 class ExceptionLoggingMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
