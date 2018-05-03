@@ -167,6 +167,7 @@ SWAGGER_SETTINGS = {
     'DEFAULT_FIELD_INSPECTORS': [
         'apps.pp.inspectors.RootSerializerInspector',
         'apps.pp.inspectors.IDFieldInspector',
+        'apps.pp.inspectors.ObjectFieldInspector',
         'drf_yasg.inspectors.CamelCaseJSONFilter',
         # ReferencingS... replaced with InlineS... which does not create serializers definitions index,
         # but does not require serializers class names to be unique across whole application
