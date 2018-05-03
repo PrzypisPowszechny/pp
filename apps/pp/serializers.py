@@ -106,11 +106,11 @@ class RelationManySerializer(RelationManyDeserializer):
 class AnnotationDeserializer(ResourceTypeSerializer):
     class Attributes(serializers.ModelSerializer):
         comment = serializers.CharField(required=False)
-        ranges = ObjectField(json_internal_type=True)
+        range = ObjectField(json_internal_type=True)
 
         class Meta:
             model = Annotation
-            fields = ('url', 'ranges', 'quote',
+            fields = ('url', 'range', 'quote',
                       'priority', 'comment', 'annotation_link', 'annotation_link_title')
 
     attributes = Attributes()
@@ -170,11 +170,11 @@ class AnnotationListSerializer(ResourceSerializer):
         upvote_count = serializers.IntegerField(default=0)
         upvote = serializers.BooleanField(default=False)
         does_belong_to_user = serializers.BooleanField(default=False)
-        ranges = ObjectField(json_internal_type=True)
+        range = ObjectField(json_internal_type=True)
 
         class Meta:
             model = Annotation
-            fields = ('url', 'ranges', 'quote',
+            fields = ('url', 'range', 'quote',
                       'priority', 'comment', 'annotation_link', 'annotation_link_title',
                       'upvote', 'upvote_count',
                       'does_belong_to_user',

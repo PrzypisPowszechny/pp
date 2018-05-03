@@ -28,7 +28,7 @@ class LazySignupAnnotationAPITest(TestCase):
                     'type': 'annotations',
                     'attributes': {
                         'url': "www.przypis.pl",
-                        'ranges': "Od tad do tad",
+                        'range': "Od tad do tad",
                         'quote': 'very nice',
                         'priority': 'NORMAL',
                         'comment': "komentarz",
@@ -49,7 +49,7 @@ class LazySignupAnnotationAPITest(TestCase):
                 'type': 'annotations',
                 'attributes': {
                     'url': "www.przypis.pl",
-                    'ranges': "Od tad do tad",
+                    'range': "Od tad do tad",
                     'quote': 'very nice',
                     'priority': 'NORMAL',
                     'comment': "komentarz",
