@@ -32,8 +32,8 @@ class LazySignupAnnotationAPITest(TestCase):
                         'quote': 'very nice',
                         'priority': 'NORMAL',
                         'comment': "komentarz",
-                        'annotation_link': 'www.przypispowszechny.com',
-                        'annotation_link_title': 'very nice too'
+                        'annotationLink': 'www.przypispowszechny.com',
+                        'annotationLinkTitle': 'very nice too'
                     }
                 }
             }),
@@ -53,8 +53,8 @@ class LazySignupAnnotationAPITest(TestCase):
                     'quote': 'very nice',
                     'priority': 'NORMAL',
                     'comment': "komentarz",
-                    'annotation_link': 'www.przypispowszechny.com',
-                    'annotation_link_title': 'very nice too'
+                    'annotationLink': 'www.przypispowszechny.com',
+                    'annotationLinkTitle': 'very nice too'
                 }
             }
         })

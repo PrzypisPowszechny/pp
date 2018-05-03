@@ -1,9 +1,8 @@
-from rest_framework import parsers
-
+from djangorestframework_camel_case.parser import CamelCaseJSONParser
 from .renderers import JSONAPIRenderer
 
 
-class JSONAPIParser(parsers.JSONParser):
+class JSONAPIParser(CamelCaseJSONParser):
     media_type = 'application/vnd.api+json'
     renderer_class = JSONAPIRenderer
 

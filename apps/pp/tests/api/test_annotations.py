@@ -56,11 +56,11 @@ class AnnotationAPITest(TestCase):
                         'quote': annotation.quote,
                         'priority': annotation.priority,
                         'comment': annotation.comment,
-                        'annotation_link': annotation.annotation_link,
-                        'annotation_link_title': annotation.annotation_link_title,
+                        'annotationLink': annotation.annotation_link,
+                        'annotationLinkTitle': annotation.annotation_link_title,
                         'upvote': bool(urf),
-                        'upvote_count': upvote_count,
-                        'does_belong_to_user': True,
+                        'upvoteCount': upvote_count,
+                        'doesBelongToUser': True,
                     },
                     'relationships': {
                         'user': {
@@ -112,11 +112,11 @@ class AnnotationAPITest(TestCase):
                         'quote': annotation.quote,
                         'priority': annotation.priority,
                         'comment': annotation.comment,
-                        'annotation_link': annotation.annotation_link,
-                        'annotation_link_title': annotation.annotation_link_title,
+                        'annotationLink': annotation.annotation_link,
+                        'annotationLinkTitle': annotation.annotation_link_title,
                         'upvote': bool(urf),
-                        'upvote_count': upvote_count,
-                        'does_belong_to_user': True,
+                        'upvoteCount': upvote_count,
+                        'doesBelongToUser': True,
                     },
                     'relationships': {
                         'user': {
@@ -170,11 +170,11 @@ class AnnotationAPITest(TestCase):
                         'quote': annotation.quote,
                         'priority': annotation.priority,
                         'comment': annotation.comment,
-                        'annotation_link': annotation.annotation_link,
-                        'annotation_link_title': annotation.annotation_link_title,
+                        'annotationLink': annotation.annotation_link,
+                        'annotationLinkTitle': annotation.annotation_link_title,
                         'upvote': bool(upvote),
-                        'upvote_count': upvote_count,
-                        'does_belong_to_user': True,
+                        'upvoteCount': upvote_count,
+                        'doesBelongToUser': True,
                     },
                     'relationships': {
                         'user': {
@@ -271,11 +271,11 @@ class AnnotationAPITest(TestCase):
                  'quote': annotation.quote,
                  'priority': annotation.priority,
                  'comment': annotation.comment,
-                 'annotation_link': annotation.annotation_link,
-                 'annotation_link_title': annotation.annotation_link_title,
+                 'annotationLink': annotation.annotation_link,
+                 'annotationLinkTitle': annotation.annotation_link_title,
                  'upvote': bool(urf),
-                 'upvote_count': upvote_count,
-                 'does_belong_to_user': True,
+                 'upvoteCount': upvote_count,
+                 'doesBelongToUser': True,
              },
              'relationships': {
                  'user': {
@@ -312,11 +312,11 @@ class AnnotationAPITest(TestCase):
                  'quote': annotation2.quote,
                  'priority': annotation2.priority,
                  'comment': annotation2.comment,
-                 'annotation_link': annotation2.annotation_link,
-                 'annotation_link_title': annotation2.annotation_link_title,
+                 'annotationLink': annotation2.annotation_link,
+                 'annotationLinkTitle': annotation2.annotation_link_title,
                  'upvote': False,
-                 'upvote_count': upvote_count2,
-                 'does_belong_to_user': True,
+                 'upvoteCount': upvote_count2,
+                 'doesBelongToUser': True,
              },
              'relationships': {
                  'user': {
@@ -362,8 +362,8 @@ class AnnotationAPITest(TestCase):
                         'quote': 'very nice',
                         'priority': 'NORMAL',
                         'comment': "komentarz",
-                        'annotation_link': 'www.przypispowszechny.com',
-                        'annotation_link_title': 'very nice too',
+                        'annotationLink': 'www.przypispowszechny.com',
+                        'annotationLinkTitle': 'very nice too',
                     },
                 }
             }),
@@ -387,11 +387,11 @@ class AnnotationAPITest(TestCase):
                         'quote': annotation.quote,
                         'priority': annotation.priority,
                         'comment': annotation.comment,
-                        'annotation_link': annotation.annotation_link,
-                        'annotation_link_title': annotation.annotation_link_title,
+                        'annotationLink': annotation.annotation_link,
+                        'annotationLinkTitle': annotation.annotation_link_title,
                         'upvote': False,
-                        'upvote_count': upvote_count,
-                        'does_belong_to_user': True,
+                        'upvoteCount': upvote_count,
+                        'doesBelongToUser': True,
                     },
                     'relationships': {
                         'user': {
@@ -437,7 +437,7 @@ class AnnotationAPITest(TestCase):
                 'id': annotation.id,
                 'type': 'annotations',
                 'attributes': {
-                    'annotation_link_title': put_string
+                    'annotationLinkTitle': put_string
                 }
             }
         })
@@ -460,11 +460,11 @@ class AnnotationAPITest(TestCase):
                     'quote': annotation.quote,
                     'priority': annotation.priority,
                     'comment': annotation.comment,
-                    'annotation_link': annotation.annotation_link,
-                    'annotation_link_title': annotation.annotation_link_title,
+                    'annotationLink': annotation.annotation_link,
+                    'annotationLinkTitle': annotation.annotation_link_title,
                     'upvote': bool(urf),
-                    'upvote_count': upvote_count,
-                    'does_belong_to_user': True,
+                    'upvoteCount': upvote_count,
+                    'doesBelongToUser': True,
                 },
                 'relationships': {
                     'user': {
@@ -529,7 +529,7 @@ class AnnotationAPITest(TestCase):
                 'type': 'annotations',
                 'id': annotation.id,
                 'attributes': {
-                    'annotation_link_title': put_string
+                    'annotationLinkTitle': put_string
                 },
                 'relationships': {}
             }
@@ -553,7 +553,7 @@ class AnnotationAPITest(TestCase):
                 'type': 'annotations',
                 'id': annotation.id,
                 'attributes': {
-                    'annotation_link_title': put_string
+                    'annotationLinkTitle': put_string
                 }
             }
         })
