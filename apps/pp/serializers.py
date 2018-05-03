@@ -107,6 +107,8 @@ class AnnotationDeserializer(ResourceTypeSerializer):
     class Attributes(serializers.ModelSerializer):
         comment = serializers.CharField(required=False)
         range = ObjectField(json_internal_type=True)
+        # TODO: this field is no longer used in the frontend, so required=False, but consider removing
+        quote = serializers.CharField(required=False)
 
         class Meta:
             model = Annotation
@@ -171,6 +173,8 @@ class AnnotationListSerializer(ResourceSerializer):
         upvote = serializers.BooleanField(default=False)
         does_belong_to_user = serializers.BooleanField(default=False)
         range = ObjectField(json_internal_type=True)
+        # TODO: this field is no longer used in the frontend, so required=False, but consider removing
+        quote = serializers.CharField(required=False)
 
         class Meta:
             model = Annotation
