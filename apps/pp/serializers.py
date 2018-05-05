@@ -1,4 +1,7 @@
+import json
+
 from django.urls import reverse
+from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
 from apps.pp.models import AnnotationReport
@@ -11,6 +14,30 @@ class IDField(serializers.IntegerField):
     def to_representation(self, value):
         value = super().to_representation(value)
         return str(value)
+
+
+class ObjectField(serializers.Field):
+    default_error_messages = {
+        'invalid': _('Value must be a valid object that can be JSON serialized')
+    }
+    initial = {}
+    def __init__(self, *args, **kwargs):
+        self.json_internal_type = kwargs.pop('json_internal_type', False)
+        super().__init__(*args, **kwargs)
+
+    def to_internal_value(self, data):
+        try:
+            json_data = json.dumps(data)
+        except (TypeError, ValueError):
+            self.fail('invalid')
+        return json_data if self.json_internal_type else data
+
+    def to_representation(self, value):
+        if value is None or value == "":
+            return {}
+        if self.json_internal_type:
+            return json.loads(value)
+        return value
 
 
 class ResourceIdSerializer(serializers.Serializer):
@@ -74,16 +101,18 @@ class RelationManySerializer(RelationManyDeserializer):
     related_link_url_name = None
     links = RelationLinksSerializer(required=True)
 
-
 # Annotation
 
 class AnnotationDeserializer(ResourceTypeSerializer):
     class Attributes(serializers.ModelSerializer):
         comment = serializers.CharField(required=False)
+        range = ObjectField(json_internal_type=True)
+        # TODO: this field is no longer used in the frontend, so required=False, but consider removing
+        quote = serializers.CharField(required=False)
 
         class Meta:
             model = Annotation
-            fields = ('url', 'ranges', 'quote',
+            fields = ('url', 'range', 'quote',
                       'priority', 'comment', 'annotation_link', 'annotation_link_title')
 
     attributes = Attributes()
@@ -143,10 +172,13 @@ class AnnotationListSerializer(ResourceSerializer):
         upvote_count = serializers.IntegerField(default=0)
         upvote = serializers.BooleanField(default=False)
         does_belong_to_user = serializers.BooleanField(default=False)
+        range = ObjectField(json_internal_type=True)
+        # TODO: this field is no longer used in the frontend, so required=False, but consider removing
+        quote = serializers.CharField(required=False)
 
         class Meta:
             model = Annotation
-            fields = ('url', 'ranges', 'quote',
+            fields = ('url', 'range', 'quote',
                       'priority', 'comment', 'annotation_link', 'annotation_link_title',
                       'upvote', 'upvote_count',
                       'does_belong_to_user',

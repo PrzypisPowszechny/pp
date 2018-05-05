@@ -1,7 +1,7 @@
-from rest_framework import renderers
+from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 
 
-class JSONAPIRenderer(renderers.JSONRenderer):
+class JSONAPIRenderer(CamelCaseJSONRenderer):
     media_type = 'application/vnd.api+json'
     format = 'vnd.api+json'
 
@@ -18,5 +18,4 @@ class JSONAPIRenderer(renderers.JSONRenderer):
         # Pagination case: response consists of results, meta and links, just replace results key with data
         if 'results' in data:
             data['data'] = data.pop('results')
-
         return super().render(data, accepted_media_type, renderer_context)

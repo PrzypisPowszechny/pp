@@ -10,9 +10,9 @@ from apps.pp.tests.utils import create_test_user
 
 
 class AnnotationReportAPITest(TestCase):
-    report_url = "/api/annotation_reports/"
-    report_single_url = "/api/annotation_reports/{}/"
-    annotation_related_reports_url = "/api/annotations/{}/reports/"
+    report_url = "/api/annotation_reports"
+    report_single_url = "/api/annotation_reports/{}"
+    annotation_related_reports_url = "/api/annotations/{}/reports"
     maxDiff = None
 
     # IMPORTANT: we log in for each test, so self.user has already an open session with server

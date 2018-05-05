@@ -150,23 +150,26 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework_json_api.pagination.LimitOffsetPagination',
     'DEFAULT_PARSER_CLASSES': (
         'apps.pp.parsers.JSONAPIParser',
-        'rest_framework.parsers.JSONParser',
         'rest_framework.parsers.FormParser',
         'rest_framework.parsers.MultiPartParser'
     ),
     'DEFAULT_RENDERER_CLASSES': (
         'apps.pp.renderers.JSONAPIRenderer',
-        'rest_framework.renderers.JSONRenderer',
-        'rest_framework.renderers.BrowsableAPIRenderer',
     ),
-    # 'DEFAULT_METADATA_CLASS': 'rest_framework_json_api.metadata.JSONAPIMetadata',
-
 }
+
+
+JSON_CAMEL_CASE = {
+    'PARSER_CLASS': 'rest_framework.parsers.JSONParser',
+    'RENDERER_CLASS': 'rest_framework.renderers.JSONRenderer',
+}
+
 
 SWAGGER_SETTINGS = {
     'DEFAULT_FIELD_INSPECTORS': [
         'apps.pp.inspectors.RootSerializerInspector',
         'apps.pp.inspectors.IDFieldInspector',
+        'apps.pp.inspectors.ObjectFieldInspector',
         'drf_yasg.inspectors.CamelCaseJSONFilter',
         # ReferencingS... replaced with InlineS... which does not create serializers definitions index,
         # but does not require serializers class names to be unique across whole application

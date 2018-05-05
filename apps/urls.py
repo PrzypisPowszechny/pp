@@ -46,7 +46,6 @@ urlpatterns = [
         yasg_schema_view.with_ui('swagger', cache_timeout=None), name='schema_swagger'),
     url(r'^api/docs-redoc/$',
         yasg_schema_view.with_ui('redoc', cache_timeout=None), name='schema_redoc'),
-    url(r'^api/docs-rest/', include_docs_urls(public=False)),
-
+    
     url(r'^site_test/', site_test.index, name='site_test')
 ]

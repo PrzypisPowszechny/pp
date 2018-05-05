@@ -5,6 +5,7 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 from model_mommy import mommy
+from parameterized import parameterized
 
 from apps.pp.models import Annotation, AnnotationUpvote, AnnotationReport
 from apps.pp.models import AnnotationRequest
@@ -13,9 +14,9 @@ from apps.pp.utils import get_resource_name
 
 
 class AnnotationAPITest(TestCase):
-    base_url = "/api/annotations/{}/"
-    report_related_url = "/api/annotation_reports/{}/annotation/"
-    upvote_related_url = "/api/annotation_upvotes/{}/annotation/"
+    base_url = "/api/annotations/{}"
+    report_related_url = "/api/annotation_reports/{}/annotation"
+    upvote_related_url = "/api/annotation_upvotes/{}/annotation"
     maxDiff = None
 
     # IMPORTANT: we log in for each test, so self.user has already an open session with server
@@ -25,6 +26,7 @@ class AnnotationAPITest(TestCase):
 
     def test_get_returns_json_200(self):
         annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
+                                               range='{}',
                                                annotation_link="www.przypispowszechny.com",
                                                annotation_link_title="very nice")
         urf = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
@@ -34,6 +36,7 @@ class AnnotationAPITest(TestCase):
 
     def test_get_returns_annotation(self):
         annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
+                                               range='{}',
                                                annotation_link="www.przypispowszechny.com",
                                                annotation_link_title="very nice")
         urf = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
@@ -49,15 +52,15 @@ class AnnotationAPITest(TestCase):
                     'type': 'annotations',
                     'attributes': {
                         'url': annotation.url,
-                        'ranges': annotation.ranges,
+                        'range': json.loads(annotation.range),
                         'quote': annotation.quote,
                         'priority': annotation.priority,
                         'comment': annotation.comment,
-                        'annotation_link': annotation.annotation_link,
-                        'annotation_link_title': annotation.annotation_link_title,
+                        'annotationLink': annotation.annotation_link,
+                        'annotationLinkTitle': annotation.annotation_link_title,
                         'upvote': bool(urf),
-                        'upvote_count': upvote_count,
-                        'does_belong_to_user': True,
+                        'upvoteCount': upvote_count,
+                        'doesBelongToUser': True,
                     },
                     'relationships': {
                         'user': {
@@ -88,6 +91,7 @@ class AnnotationAPITest(TestCase):
 
     def test_get_annotation_report_related_annotation(self):
         annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
+                                               range='{}',
                                                annotation_link="www.przypispowszechny.com",
                                                annotation_link_title="very nice")
         report = mommy.make(AnnotationReport, annotation=annotation, user=self.user)
@@ -104,15 +108,15 @@ class AnnotationAPITest(TestCase):
                     'type': 'annotations',
                     'attributes': {
                         'url': annotation.url,
-                        'ranges': annotation.ranges,
+                        'range': json.loads(annotation.range),
                         'quote': annotation.quote,
                         'priority': annotation.priority,
                         'comment': annotation.comment,
-                        'annotation_link': annotation.annotation_link,
-                        'annotation_link_title': annotation.annotation_link_title,
+                        'annotationLink': annotation.annotation_link,
+                        'annotationLinkTitle': annotation.annotation_link_title,
                         'upvote': bool(urf),
-                        'upvote_count': upvote_count,
-                        'does_belong_to_user': True,
+                        'upvoteCount': upvote_count,
+                        'doesBelongToUser': True,
                     },
                     'relationships': {
                         'user': {
@@ -145,6 +149,7 @@ class AnnotationAPITest(TestCase):
 
     def test_get_annotation_upvote_related_annotation(self):
         annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
+                                               range='{}',
                                                annotation_link="www.przypispowszechny.com",
                                                annotation_link_title="very nice")
         report = mommy.make(AnnotationReport, annotation=annotation, user=self.user)
@@ -161,15 +166,15 @@ class AnnotationAPITest(TestCase):
                     'type': 'annotations',
                     'attributes': {
                         'url': annotation.url,
-                        'ranges': annotation.ranges,
+                        'range': json.loads(annotation.range),
                         'quote': annotation.quote,
                         'priority': annotation.priority,
                         'comment': annotation.comment,
-                        'annotation_link': annotation.annotation_link,
-                        'annotation_link_title': annotation.annotation_link_title,
+                        'annotationLink': annotation.annotation_link,
+                        'annotationLinkTitle': annotation.annotation_link_title,
                         'upvote': bool(upvote),
-                        'upvote_count': upvote_count,
-                        'does_belong_to_user': True,
+                        'upvoteCount': upvote_count,
+                        'doesBelongToUser': True,
                     },
                     'relationships': {
                         'user': {
@@ -201,7 +206,7 @@ class AnnotationAPITest(TestCase):
         )
 
     def test_empty_search_return_json_200(self):
-        search_base_url = "/api/annotations/?url={}"
+        search_base_url = "/api/annotations?url={}"
         response = self.client.get(search_base_url.format('przypis powszechny'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/vnd.api+json')
@@ -213,11 +218,13 @@ class AnnotationAPITest(TestCase):
         )
 
     def test_nonempty_search_return_json_200(self):
-        search_base_url = "/api/annotations/?&url={}"
+        search_base_url = "/api/annotations?&url={}"
         annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
+                                               range='{}',
                                                annotation_link="www.przypispowszechny.com",
                                                annotation_link_title="very nice")
         annotation2 = Annotation.objects.create(user=self.user, priority='NORMAL', comment="more good job",
+                                                range='{}',
                                                 annotation_link="www.przypispowszechny.com",
                                                 annotation_link_title="very nice again")
         response = self.client.get(search_base_url.format('przypis powszechny'))
@@ -225,9 +232,10 @@ class AnnotationAPITest(TestCase):
         self.assertEqual(response['content-type'], 'application/vnd.api+json')
 
     def test_search_return_list(self):
-        search_base_url = "/api/annotations/?url={}"
+        search_base_url = "/api/annotations?url={}"
         # First annotation
         annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="more good job",
+                                               range='{}',
                                                url='www.przypis.pl', annotation_link="www.przypispowszechny.com",
                                                annotation_link_title="very nice again",
                                                create_date=timezone.now() + timedelta(seconds=-1000))
@@ -237,6 +245,7 @@ class AnnotationAPITest(TestCase):
 
         # Second annotation
         annotation2 = Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
+                                                range='{}',
                                                 url='www.przypis.pl',
                                                 annotation_link="www.przypispowszechny2.com",
                                                 annotation_link_title="very nice",
@@ -258,15 +267,15 @@ class AnnotationAPITest(TestCase):
              'type': 'annotations',
              'attributes': {
                  'url': annotation.url,
-                 'ranges': annotation.ranges,
+                 'range': json.loads(annotation.range),
                  'quote': annotation.quote,
                  'priority': annotation.priority,
                  'comment': annotation.comment,
-                 'annotation_link': annotation.annotation_link,
-                 'annotation_link_title': annotation.annotation_link_title,
+                 'annotationLink': annotation.annotation_link,
+                 'annotationLinkTitle': annotation.annotation_link_title,
                  'upvote': bool(urf),
-                 'upvote_count': upvote_count,
-                 'does_belong_to_user': True,
+                 'upvoteCount': upvote_count,
+                 'doesBelongToUser': True,
              },
              'relationships': {
                  'user': {
@@ -299,15 +308,15 @@ class AnnotationAPITest(TestCase):
              'type': 'annotations',
              'attributes': {
                  'url': annotation2.url,
-                 'ranges': annotation2.ranges,
+                 'range': json.loads(annotation2.range),
                  'quote': annotation2.quote,
                  'priority': annotation2.priority,
                  'comment': annotation2.comment,
-                 'annotation_link': annotation2.annotation_link,
-                 'annotation_link_title': annotation2.annotation_link_title,
+                 'annotationLink': annotation2.annotation_link,
+                 'annotationLinkTitle': annotation2.annotation_link_title,
                  'upvote': False,
-                 'upvote_count': upvote_count2,
-                 'does_belong_to_user': True,
+                 'upvoteCount': upvote_count2,
+                 'doesBelongToUser': True,
              },
              'relationships': {
                  'user': {
@@ -334,9 +343,14 @@ class AnnotationAPITest(TestCase):
              },
              })
 
-    def test_post_new_annotation(self):
-        base_url = "/api/annotations/"
-
+    @parameterized.expand([
+        [{'start': "Od tad", 'end': "do tad"}],
+        [{}],
+        ['string range: od tad do tad'],
+        [''],
+    ])
+    def test_post_new_annotation(self, range):
+        base_url = "/api/annotations"
         response = self.client.post(
             base_url,
             json.dumps({
@@ -344,12 +358,12 @@ class AnnotationAPITest(TestCase):
                     'type': 'annotations',
                     'attributes': {
                         'url': "www.przypis.pl",
-                        'ranges': "Od tad do tad",
+                        'range': range,
                         'quote': 'very nice',
                         'priority': 'NORMAL',
                         'comment': "komentarz",
-                        'annotation_link': 'www.przypispowszechny.com',
-                        'annotation_link_title': 'very nice too',
+                        'annotationLink': 'www.przypispowszechny.com',
+                        'annotationLinkTitle': 'very nice too',
                     },
                 }
             }),
@@ -359,7 +373,8 @@ class AnnotationAPITest(TestCase):
         annotation = Annotation.objects.get(user=self.user)
 
         upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).count()
-        self.assertEqual(annotation.ranges, "Od tad do tad")
+
+        # Check response
         self.assertDictEqual(
             json.loads(response.content.decode('utf8')),
             {
@@ -368,15 +383,15 @@ class AnnotationAPITest(TestCase):
                     'type': 'annotations',
                     'attributes': {
                         'url': annotation.url,
-                        'ranges': annotation.ranges,
+                        'range': range,
                         'quote': annotation.quote,
                         'priority': annotation.priority,
                         'comment': annotation.comment,
-                        'annotation_link': annotation.annotation_link,
-                        'annotation_link_title': annotation.annotation_link_title,
+                        'annotationLink': annotation.annotation_link,
+                        'annotationLinkTitle': annotation.annotation_link_title,
                         'upvote': False,
-                        'upvote_count': upvote_count,
-                        'does_belong_to_user': True,
+                        'upvoteCount': upvote_count,
+                        'doesBelongToUser': True,
                     },
                     'relationships': {
                         'user': {
@@ -405,86 +420,13 @@ class AnnotationAPITest(TestCase):
             }
         )
 
-    def test_post_new_annotation_with_null_request_annotation(self):
-        base_url = "/api/annotations/"
-
-        annotation_request = AnnotationRequest.objects.create(
-            user=self.user,
-            ranges="Od tad do tad",
-            quote='very nice',
-        )
-
-        response = self.client.post(
-            base_url,
-            json.dumps({
-                'data': {
-                    'type': 'annotations',
-                    'attributes': {
-                        'url': "www.przypis.pl",
-                        'ranges': "Od tad do tad",
-                        'quote': 'very nice',
-                        'priority': 'NORMAL',
-                        'comment': "komentarz",
-                        'annotation_link': 'www.przypispowszechny.com',
-                        'annotation_link_title': 'very nice too',
-                    }
-                }
-            }),
-            content_type='application/vnd.api+json')
-
-        self.assertEqual(response.status_code, 200, msg=response.data)
-        annotation = Annotation.objects.get(user=self.user)
-
-        upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).count()
-        self.assertEqual(annotation.ranges, "Od tad do tad")
-        self.assertDictEqual(
-            json.loads(response.content.decode('utf8')),
-            {
-                'data': {
-                    'id': str(annotation.id),
-                    'type': 'annotations',
-                    'attributes': {
-                        'url': annotation.url,
-                        'ranges': annotation.ranges,
-                        'quote': annotation.quote,
-                        'priority': annotation.priority,
-                        'comment': annotation.comment,
-                        'annotation_link': annotation.annotation_link,
-                        'annotation_link_title': annotation.annotation_link_title,
-                        'upvote': False,
-                        'upvote_count': upvote_count,
-                        'does_belong_to_user': True,
-                    },
-                    'relationships': {
-                        'user': {
-                            'links': {
-                                'related': reverse('api:annotation_related_user',
-                                                   kwargs={'annotation_id': annotation.id})
-                            },
-                            'data': {'type': 'users', 'id': str(self.user.id)}
-                        },
-                        'upvote': {
-                            'links': {
-                                'related': reverse('api:annotation_related_upvote',
-                                                   kwargs={'annotation_id': annotation.id})
-                            },
-                            'data': None
-                        },
-                        'reports': {
-                            'links': {
-                                'related': reverse('api:annotation_related_reports',
-                                                   kwargs={'annotation_id': annotation.id})
-                            },
-                            'data': []
-                        },
-                    }
-                }
-            }
-        )
+        # Check if range is stored as json (despite being posted and returned as normal dict)
+        self.assertEqual(annotation.range, json.dumps(range))
 
     def test_patch_annotation(self):
         annotation = Annotation.objects.create(user=self.user, priority='NORMAL', url='www.przypis.pl',
                                                comment="good job",
+                                               range='{}',
                                                annotation_link="www.przypispowszechny.com",
                                                annotation_link_title="very nice",
                                                quote='not this time')
@@ -495,7 +437,7 @@ class AnnotationAPITest(TestCase):
                 'id': annotation.id,
                 'type': 'annotations',
                 'attributes': {
-                    'annotation_link_title': put_string
+                    'annotationLinkTitle': put_string
                 }
             }
         })
@@ -514,15 +456,15 @@ class AnnotationAPITest(TestCase):
                 'type': 'annotations',
                 'attributes': {
                     'url': annotation.url,
-                    'ranges': annotation.ranges,
+                    'range': json.loads(annotation.range),
                     'quote': annotation.quote,
                     'priority': annotation.priority,
                     'comment': annotation.comment,
-                    'annotation_link': annotation.annotation_link,
-                    'annotation_link_title': annotation.annotation_link_title,
+                    'annotationLink': annotation.annotation_link,
+                    'annotationLinkTitle': annotation.annotation_link_title,
                     'upvote': bool(urf),
-                    'upvote_count': upvote_count,
-                    'does_belong_to_user': True,
+                    'upvoteCount': upvote_count,
+                    'doesBelongToUser': True,
                 },
                 'relationships': {
                     'user': {
@@ -552,6 +494,7 @@ class AnnotationAPITest(TestCase):
     def test_patch_inaccessible_field_annotation(self):
         annotation = Annotation.objects.create(
             user=self.user, priority='NORMAL', url='www.przypis.pl', comment="good job",
+            range='{}',
             annotation_link="www.przypispowszechny.com", annotation_link_title="very nice",
             quote='not this time'
         )
@@ -574,6 +517,7 @@ class AnnotationAPITest(TestCase):
     def test_patch_inaccessible_relationhips_annotation(self):
         annotation = Annotation.objects.create(
             user=self.user, priority='NORMAL', url='www.przypis.pl', comment="good job",
+            range='{}',
             annotation_link="www.przypispowszechny.com", annotation_link_title="very nice",
             quote='not this time'
         )
@@ -585,7 +529,7 @@ class AnnotationAPITest(TestCase):
                 'type': 'annotations',
                 'id': annotation.id,
                 'attributes': {
-                    'annotation_link_title': put_string
+                    'annotationLinkTitle': put_string
                 },
                 'relationships': {}
             }
@@ -609,7 +553,7 @@ class AnnotationAPITest(TestCase):
                 'type': 'annotations',
                 'id': annotation.id,
                 'attributes': {
-                    'annotation_link_title': put_string
+                    'annotationLinkTitle': put_string
                 }
             }
         })

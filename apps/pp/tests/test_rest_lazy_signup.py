@@ -7,8 +7,8 @@ from apps.pp.tests.utils import create_test_user
 
 
 class LazySignupAnnotationAPITest(TestCase):
-    GET_base_url = "/api/annotations/{}/"
-    POST_url = "/api/annotations/"
+    GET_base_url = "/api/annotations/{}"
+    POST_url = "/api/annotations"
 
     def test_client_can_access_annotation(self):
         self.user, self.password = create_test_user()
@@ -28,12 +28,12 @@ class LazySignupAnnotationAPITest(TestCase):
                     'type': 'annotations',
                     'attributes': {
                         'url': "www.przypis.pl",
-                        'ranges': "Od tad do tad",
+                        'range': "Od tad do tad",
                         'quote': 'very nice',
                         'priority': 'NORMAL',
                         'comment': "komentarz",
-                        'annotation_link': 'www.przypispowszechny.com',
-                        'annotation_link_title': 'very nice too'
+                        'annotationLink': 'www.przypispowszechny.com',
+                        'annotationLinkTitle': 'very nice too'
                     }
                 }
             }),
@@ -49,12 +49,12 @@ class LazySignupAnnotationAPITest(TestCase):
                 'type': 'annotations',
                 'attributes': {
                     'url': "www.przypis.pl",
-                    'ranges': "Od tad do tad",
+                    'range': "Od tad do tad",
                     'quote': 'very nice',
                     'priority': 'NORMAL',
                     'comment': "komentarz",
-                    'annotation_link': 'www.przypispowszechny.com',
-                    'annotation_link_title': 'very nice too'
+                    'annotationLink': 'www.przypispowszechny.com',
+                    'annotationLinkTitle': 'very nice too'
                 }
             }
         })
