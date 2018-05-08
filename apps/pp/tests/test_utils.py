@@ -8,7 +8,7 @@ from model_mommy import mommy
 from parameterized import parameterized
 
 from apps.pp.models import Annotation, AnnotationRequest
-from apps.pp.utils import standardize_url, standardize_url_index
+from apps.pp.utils import standardize_url, standardize_url_id
 
 JSONAPIMeta = namedtuple('JSONAPIMeta', ('resource_name',))
 
@@ -16,6 +16,9 @@ JSONAPIMeta = namedtuple('JSONAPIMeta', ('resource_name',))
 class StandardizeURLTest(SimpleTestCase):
 
     @parameterized.expand([
+        # Accepts empty, returns empty
+        ("",
+         ""),
         # No change
         ("https://docs.python.org/",
          "https://docs.python.org/"),
@@ -40,6 +43,9 @@ class StandardizeURLTest(SimpleTestCase):
 
 
     @parameterized.expand([
+        # Accepts empty, returns empty
+        ("",
+         ""),
         # No change
         ("docs.python.org/",
          "docs.python.org/"),
@@ -59,8 +65,8 @@ class StandardizeURLTest(SimpleTestCase):
         ("https://docs.python.org/2/library/urlparse.html?utm_campaign=buy-it&a=1",
          "docs.python.org/2/library/urlparse.html?a=1"),
     ])
-    def test_standardize_url(self, input_url, expected_url):
-        self.assertEqual(standardize_url_index(input_url), expected_url)
+    def test_standardize_url_id(self, input_url, expected_url):
+        self.assertEqual(standardize_url_id(input_url), expected_url)
 
 
 

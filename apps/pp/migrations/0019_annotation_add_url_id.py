@@ -16,7 +16,7 @@ OMITTED_QUERY_VARS = (
 )
 
 
-def standardize_url_index(data):
+def standardize_url_id(data):
     """
     Format url in the way that:
       - ignores protocol
@@ -40,7 +40,7 @@ def standardize_url_index(data):
 
 def migrate_one_class(model_class):
     for instance in model_class.objects.all():
-        instance.url_id = standardize_url_index(instance.url)
+        instance.url_id = standardize_url_id(instance.url)
         instance.save()
 
 

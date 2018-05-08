@@ -92,15 +92,18 @@ class DataPreSerializer(object):
 
 
 OMITTED_QUERY_VARS = (
+    # Universal Tracking Module convention names
     'utm_campaign',
     'utm_medium',
     'utm_term',
     'utm_name',
     'utm_source',
+    # General convention for references
+    'ref',
 )
 
 
-def standardize_url_index(data):
+def standardize_url_id(data):
     """
     Format url in the way that:
       - ignores protocol

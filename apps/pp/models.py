@@ -43,8 +43,8 @@ class AnnotationBase(UserInput):
         abstract = True
 
     def save(self, *args, **kwargs):
-        from apps.pp.utils import standardize_url_index
-        self.url_id = standardize_url_index(self.url)
+        from apps.pp.utils import standardize_url_id
+        self.url_id = standardize_url_id(self.url)
         super().save(*args, **kwargs)
 
 
