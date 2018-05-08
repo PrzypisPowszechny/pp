@@ -27,7 +27,7 @@ class LazySignupAnnotationAPITest(TestCase):
                 'data': {
                     'type': 'annotations',
                     'attributes': {
-                        'url': "www.przypis.pl",
+                        'url': "https://www.przypis.pl",
                         'range': "Od tad do tad",
                         'quote': 'very nice',
                         'priority': 'NORMAL',
@@ -48,7 +48,7 @@ class LazySignupAnnotationAPITest(TestCase):
             'data': {
                 'type': 'annotations',
                 'attributes': {
-                    'url': "www.przypis.pl",
+                    'url': "http://www.przypis.pl",
                     'range': "Od tad do tad",
                     'quote': 'very nice',
                     'priority': 'NORMAL',

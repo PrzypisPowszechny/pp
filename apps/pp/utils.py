@@ -94,6 +94,9 @@ class DataPreSerializer(object):
 OMITTED_QUERY_VARS = (
     'utm_campaign',
     'utm_medium',
+    'utm_term',
+    'utm_name',
+    'utm_source',
 )
 
 
@@ -133,8 +136,8 @@ def standardize_url(data):
     for var_name, val in query_tuples:
         if var_name not in OMITTED_QUERY_VARS:
             new_query_tuples.append((var_name, val))
-    return '{scheme}://{netloc}{path}{query}'.format(
-        scheme=url_parsed.scheme,
+    return '{scheme}{netloc}{path}{query}'.format(
+        scheme=url_parsed.scheme + '://' if url_parsed.scheme else '',
         netloc=url_parsed.netloc,
         path=url_parsed.path if url_parsed.path else '/',
         query='?' + urlencode(new_query_tuples) if new_query_tuples else ''

@@ -26,6 +26,9 @@ class AnnotationBase(UserInput):
     url = models.CharField(max_length=200)
     # URL where the annotation has been made
 
+    url_id = models.CharField(max_length=200, blank=True)
+    # Processed URL striped of some (probably) irrelevant data that might make identification harder
+
     range = models.TextField(max_length=1000)
     # Json data with information aboute the annotation location
 
@@ -38,6 +41,11 @@ class AnnotationBase(UserInput):
 
     class Meta:
         abstract = True
+
+    def save(self, *args, **kwargs):
+        from apps.pp.utils import standardize_url_index
+        self.url_id = standardize_url_index(self.url)
+        super().save(*args, **kwargs)
 
 
 class AnnotationRequest(AnnotationBase):

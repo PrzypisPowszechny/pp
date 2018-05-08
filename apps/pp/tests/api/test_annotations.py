@@ -36,7 +36,7 @@ class AnnotationAPITest(TestCase):
 
     def test_get_returns_annotation(self):
         annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
-                                               range='{}',
+                                               range='{}', url='http://localhost/',
                                                annotation_link="www.przypispowszechny.com",
                                                annotation_link_title="very nice")
         urf = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
@@ -91,7 +91,7 @@ class AnnotationAPITest(TestCase):
 
     def test_get_annotation_report_related_annotation(self):
         annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
-                                               range='{}',
+                                               range='{}', url='http://localhost/',
                                                annotation_link="www.przypispowszechny.com",
                                                annotation_link_title="very nice")
         report = mommy.make(AnnotationReport, annotation=annotation, user=self.user)
@@ -149,7 +149,7 @@ class AnnotationAPITest(TestCase):
 
     def test_get_annotation_upvote_related_annotation(self):
         annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
-                                               range='{}',
+                                               range='{}', url='http://localhost/',
                                                annotation_link="www.przypispowszechny.com",
                                                annotation_link_title="very nice")
         report = mommy.make(AnnotationReport, annotation=annotation, user=self.user)
@@ -357,7 +357,7 @@ class AnnotationAPITest(TestCase):
                 'data': {
                     'type': 'annotations',
                     'attributes': {
-                        'url': "www.przypis.pl",
+                        'url': "http://www.przypis.pl/",
                         'range': range,
                         'quote': 'very nice',
                         'priority': 'NORMAL',

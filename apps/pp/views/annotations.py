@@ -1,13 +1,15 @@
+import coreapi
+import coreschema
 from django.db.models import Case, Prefetch
 from django.db.models import IntegerField
 from django.db.models import Sum
 from django.db.models import When
 from django.db.models.functions import Coalesce
 from django.utils.decorators import method_decorator
-from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend, filters
 from drf_yasg.utils import swagger_auto_schema
 from lazysignup.decorators import allow_lazy_user
-from rest_framework.filters import OrderingFilter
+from rest_framework.filters import OrderingFilter, BaseFilterBackend
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -17,7 +19,7 @@ from apps.pp.models import Annotation, AnnotationUpvote, AnnotationReport
 from apps.pp.responses import PermissionDenied, ValidationErrorResponse, ErrorResponse, NotFoundResponse, Forbidden
 from apps.pp.serializers import AnnotationPatchDeserializer, AnnotationListSerializer, AnnotationDeserializer, \
     AnnotationSerializer
-from apps.pp.utils import get_resource_name, DataPreSerializer
+from apps.pp.utils import get_resource_name, DataPreSerializer, standardize_url_index, standardize_url
 
 
 class AnnotationBase(object):
@@ -94,13 +96,39 @@ class AnnotationSingle(AnnotationBase, APIView):
         return Response()
 
 
+class StandardizedURLIndexFilterBackend(BaseFilterBackend):
+    url_data_field = 'url'
+    url_model_field = 'url_id'
+
+    def filter_queryset(self, request, queryset, view):
+        query_val = request.query_params.get(self.url_data_field)
+        if query_val:
+            return queryset.filter(**{
+                "{field}__exact".format(field=self.url_model_field): standardize_url_index(query_val)
+            })
+        return queryset
+
+    def get_schema_fields(self, view):
+        return [
+            coreapi.Field(
+                name=self.url_data_field,
+                required=False,
+                location='query',
+                schema=coreschema.String(
+                    title='',
+                    description=''
+                )
+            )
+        ]
+
+
 class AnnotationList(AnnotationBase, GenericAPIView):
     resource_name = 'annotations'
     pagination_class = LimitOffsetPagination
-    filter_backends = (OrderingFilter, DjangoFilterBackend)
+    filter_backends = (OrderingFilter, DjangoFilterBackend, StandardizedURLIndexFilterBackend)
     ordering_fields = ('create_date', 'id')
     ordering = "-create_date"
-    filter_fields = ('url',)
+    filter_fields = ()
 
     @swagger_auto_schema(request_body=AnnotationDeserializer,
                          responses={200: AnnotationSerializer})
