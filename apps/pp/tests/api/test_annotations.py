@@ -1,5 +1,6 @@
 import json
 from datetime import timedelta
+from urllib.parse import quote
 
 from django.test import TestCase
 from django.urls import reverse
@@ -8,7 +9,6 @@ from model_mommy import mommy
 from parameterized import parameterized
 
 from apps.pp.models import Annotation, AnnotationUpvote, AnnotationReport
-from apps.pp.models import AnnotationRequest
 from apps.pp.tests.utils import create_test_user
 from apps.pp.utils import get_resource_name
 
@@ -205,7 +205,7 @@ class AnnotationAPITest(TestCase):
             }
         )
 
-    def test_empty_search_return_json_200(self):
+    def test_list_annotations_empty_return_json_200(self):
         search_base_url = "/api/annotations?url={}"
         response = self.client.get(search_base_url.format('przypis powszechny'))
         self.assertEqual(response.status_code, 200)
@@ -217,21 +217,85 @@ class AnnotationAPITest(TestCase):
             test_answer
         )
 
-    def test_nonempty_search_return_json_200(self):
-        search_base_url = "/api/annotations?&url={}"
-        annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
-                                               range='{}',
-                                               annotation_link="www.przypispowszechny.com",
-                                               annotation_link_title="very nice")
-        annotation2 = Annotation.objects.create(user=self.user, priority='NORMAL', comment="more good job",
-                                                range='{}',
-                                                annotation_link="www.przypispowszechny.com",
-                                                annotation_link_title="very nice again")
-        response = self.client.get(search_base_url.format('przypis powszechny'))
+    def test_list_annotations__nonempty_return_json_200(self):
+        annotation_url = 'http://example.com/subpage.html'
+        search_base_url = "/api/annotations"
+        Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
+                                  range='{}', url=annotation_url,
+                                  annotation_link="www.przypispowszechny.com",
+                                  annotation_link_title="very nice")
+        Annotation.objects.create(user=self.user, priority='NORMAL', comment="more good job",
+                                  range='{}', url=annotation_url,
+                                  annotation_link="www.przypispowszechny.com",
+                                  annotation_link_title="very nice again")
+
+        response = self.client.get(search_base_url.format(annotation_url))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/vnd.api+json')
+        response_content_data = json.loads(response.content.decode('utf8')).get('data')
+        self.assertIsNotNone(response_content_data)
+        self.assertEqual(len(response_content_data), 2)
 
-    def test_search_return_list(self):
+    @parameterized.expand([
+        # No filtering - include
+        ("https://docs.python.org/",
+         "",
+         1),
+        # Exact - include
+        ("https://docs.python.org/",
+         "https://docs.python.org/",
+         1),
+        # Protocol different - include
+        ("https://docs.python.org/",
+         "http://docs.python.org/",
+         1),
+        # Domain different - exclude
+        ("https://docs.python.org/",
+         "https://docs.python.com/",
+         0),
+        # Slash different - include
+        ("https://docs.python.org",
+         "https://docs.python.org/",
+         1),
+        # Slash different - include
+        ("https://docs.python.org/",
+         "https://docs.python.org",
+         1),
+        # Path different - exclude
+        ("https://docs.python.org/",
+         "https://docs.python.org/page",
+         0),
+        # Fragment (anchor) different - include
+        ("https://docs.python.org/2/library/urlparse.html?a=1&b=2#urlparse-result-object",
+         "https://docs.python.org/2/library/urlparse.html?a=1&b=2#differnt-anchor",
+         1),
+        # Fragment (anchor) different - include
+        ("https://docs.python.org/2/library/urlparse.html?",
+         "https://docs.python.org/2/library/urlparse.html",
+         1),
+        # Irrelevant querystring different - include
+        ("https://docs.python.org/2/library/urlparse.html?utm_campaign=buy-it&a=1",
+         "https://docs.python.org/2/library/urlparse.html?a=1",
+         1),
+        # Relevant querystring different - exclude
+        ("https://docs.python.org/2/library/urlparse.html?a=black",
+         "https://docs.python.org/2/library/urlparse.html?a=white",
+         0),
+    ])
+    def test_list_annotations__url_filtering(self, annotation_url, query_url, expected_count):
+        search_base_url = "/api/annotations?&url={}"
+        Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
+                                  range='{}', url=annotation_url,
+                                  annotation_link="www.przypispowszechny.com",
+                                  annotation_link_title="very nice")
+        response = self.client.get(search_base_url.format(quote(query_url)))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['content-type'], 'application/vnd.api+json')
+        response_content_data = json.loads(response.content.decode('utf8')).get('data')
+        self.assertIsNotNone(response_content_data)
+        self.assertEqual(len(response_content_data), expected_count)
+
+    def test_list_annotations__exact_records(self):
         search_base_url = "/api/annotations?url={}"
         # First annotation
         annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="more good job",
