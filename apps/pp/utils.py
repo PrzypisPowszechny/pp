@@ -109,6 +109,8 @@ def standardize_url_index(data):
       - set '/' as a path if none given
       - removes '?' if no query string
     """
+    if not data:
+        return ''
     url_parsed = urlsplit(data)
     query_tuples = parse_qsl(url_parsed.query)
     new_query_tuples = []
@@ -129,7 +131,9 @@ def standardize_url(data):
           - ignores some blacklisted query vars like utm etc
           - set '/' as a path if none given
           - removes '?' if no query string
-        """
+    """
+    if not data:
+        return ''
     url_parsed = urlsplit(data)
     query_tuples = parse_qsl(url_parsed.query)
     new_query_tuples = []

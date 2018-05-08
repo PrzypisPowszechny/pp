@@ -41,8 +41,6 @@ def standardize_url_index(data):
 def migrate_one_class(model_class):
     for instance in model_class.objects.all():
         instance.url_id = standardize_url_index(instance.url)
-        print(instance.url)
-        print(instance.url_id)
         instance.save()
 
 
