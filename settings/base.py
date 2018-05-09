@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     # framework for creating api
     'rest_framework',
 
-    # Adds cross-origin headers to http request
+    # Adds cross-origin headers to http request in development
     'corsheaders',
 
     # Main project app
@@ -66,8 +66,6 @@ AUTHENTICATION_BACKENDS = (
 # Crucial for 'lazysignup' to recognize anonymous user in subsequent requests
 # NOTE: the session cookie won't be sent to the user anyway after Server Internal Error
 SESSION_SAVE_EVERY_REQUEST = True
-
-CORS_ORIGIN_ALLOW_ALL = True
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
