@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_json_api.pagination import LimitOffsetPagination
 
+from apps.pp.filters import StandardizedURLFilterBackend
 from apps.pp.models import Annotation, AnnotationUpvote, AnnotationReport
 from apps.pp.responses import PermissionDenied, ValidationErrorResponse, ErrorResponse, NotFoundResponse, Forbidden
 from apps.pp.serializers import AnnotationPatchDeserializer, AnnotationListSerializer, AnnotationDeserializer, \
@@ -97,10 +98,10 @@ class AnnotationSingle(AnnotationBase, APIView):
 class AnnotationList(AnnotationBase, GenericAPIView):
     resource_name = 'annotations'
     pagination_class = LimitOffsetPagination
-    filter_backends = (OrderingFilter, DjangoFilterBackend)
+    filter_backends = (OrderingFilter, DjangoFilterBackend, StandardizedURLFilterBackend)
     ordering_fields = ('create_date', 'id')
     ordering = "-create_date"
-    filter_fields = ('url',)
+    filter_fields = ()
 
     @swagger_auto_schema(request_body=AnnotationDeserializer,
                          responses={200: AnnotationSerializer})

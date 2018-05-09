@@ -5,6 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
 from apps.pp.models import AnnotationReport
+from apps.pp.utils import standardize_url
 from .models import Annotation, AnnotationUpvote
 
 
@@ -38,6 +39,11 @@ class ObjectField(serializers.Field):
         if self.json_internal_type:
             return json.loads(value)
         return value
+
+
+class StandardizedRepresentationURLField(serializers.URLField):
+    def to_representation(self, value):
+        return standardize_url(value)
 
 
 class ResourceIdSerializer(serializers.Serializer):
@@ -109,6 +115,7 @@ class AnnotationDeserializer(ResourceTypeSerializer):
         range = ObjectField(json_internal_type=True)
         # TODO: this field is no longer used in the frontend, so required=False, but consider removing
         quote = serializers.CharField(required=False)
+        url = StandardizedRepresentationURLField()
 
         class Meta:
             model = Annotation
@@ -175,6 +182,7 @@ class AnnotationListSerializer(ResourceSerializer):
         range = ObjectField(json_internal_type=True)
         # TODO: this field is no longer used in the frontend, so required=False, but consider removing
         quote = serializers.CharField(required=False)
+        url = StandardizedRepresentationURLField()
 
         class Meta:
             model = Annotation
