@@ -1,4 +1,4 @@
-from django.db.models import Case, Prefetch
+from django.db.models import Case, Prefetch, Count
 from django.db.models import IntegerField
 from django.db.models import Sum
 from django.db.models import When
@@ -118,11 +118,8 @@ class AnnotationList(AnnotationBase, GenericAPIView):
                                              context={'request': request}).data)
 
     def get_queryset(self):
-        queryset = Annotation.objects \
-            .filter(active=True).annotate(
-            upvote_count=Coalesce(
-                Sum(Case(When(feedbacks__id=True, then=1)), default=0, output_field=IntegerField()),
-                0),
+        queryset = Annotation.objects.filter(active=True).annotate(
+            upvote_count=Count('feedbacks__id')
         ).prefetch_related(
             Prefetch('annotation_reports', queryset=AnnotationReport.objects.filter(user=self.request.user),
                      to_attr='user_annotation_reports')
