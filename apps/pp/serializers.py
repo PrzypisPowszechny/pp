@@ -143,7 +143,7 @@ class AnnotationSerializer(ResourceSerializer, AnnotationDeserializer):
             model = AnnotationDeserializer.Attributes.Meta.model
 
             fields = AnnotationDeserializer.Attributes.Meta.fields + (
-                'upvote_count_except_user', 'does_belong_to_user',
+                'create_date', 'upvote_count_except_user', 'does_belong_to_user',
             )
 
         @property
@@ -189,8 +189,7 @@ class AnnotationListSerializer(ResourceSerializer):
             model = Annotation
             fields = ('url', 'range', 'quote',
                       'priority', 'comment', 'annotation_link', 'annotation_link_title',
-                      'upvote_count_except_user',
-                      'does_belong_to_user',
+                      'create_date', 'upvote_count_except_user', 'does_belong_to_user',
                       )
             read_only_fields = ('upvote_count_except_user',
                                 'does_belong_to_user')

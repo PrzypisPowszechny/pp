@@ -7,6 +7,7 @@ from django.urls import reverse
 from django.utils import timezone
 from model_mommy import mommy
 from parameterized import parameterized
+from rest_framework import serializers
 
 from apps.pp.models import Annotation, AnnotationUpvote, AnnotationReport
 from apps.pp.tests.utils import create_test_user
@@ -58,6 +59,7 @@ class AnnotationAPITest(TestCase):
                         'comment': annotation.comment,
                         'annotationLink': annotation.annotation_link,
                         'annotationLinkTitle': annotation.annotation_link_title,
+                        'createDate': serializers.DateTimeField().to_representation(annotation.create_date),
                         'upvoteCountExceptUser': upvote_count,
                         'doesBelongToUser': True,
                     },
@@ -187,6 +189,7 @@ class AnnotationAPITest(TestCase):
                         'comment': annotation.comment,
                         'annotationLink': annotation.annotation_link,
                         'annotationLinkTitle': annotation.annotation_link_title,
+                        'createDate': serializers.DateTimeField().to_representation(annotation.create_date),
                         'upvoteCountExceptUser': upvote_count,
                         'doesBelongToUser': True,
                     },
@@ -244,6 +247,7 @@ class AnnotationAPITest(TestCase):
                         'comment': annotation.comment,
                         'annotationLink': annotation.annotation_link,
                         'annotationLinkTitle': annotation.annotation_link_title,
+                        'createDate': serializers.DateTimeField().to_representation(annotation.create_date),
                         'upvoteCountExceptUser': upvote_count,
                         'doesBelongToUser': True,
                     },
@@ -408,6 +412,7 @@ class AnnotationAPITest(TestCase):
                  'comment': annotation.comment,
                  'annotationLink': annotation.annotation_link,
                  'annotationLinkTitle': annotation.annotation_link_title,
+                 'createDate': serializers.DateTimeField().to_representation(annotation.create_date),
                  'upvoteCountExceptUser': upvote_count,
                  'doesBelongToUser': True,
              },
@@ -448,6 +453,7 @@ class AnnotationAPITest(TestCase):
                  'comment': annotation2.comment,
                  'annotationLink': annotation2.annotation_link,
                  'annotationLinkTitle': annotation2.annotation_link_title,
+                 'createDate': serializers.DateTimeField().to_representation(annotation2.create_date),
                  'upvoteCountExceptUser': upvote_count2,
                  'doesBelongToUser': True,
              },
@@ -598,6 +604,7 @@ class AnnotationAPITest(TestCase):
                         'comment': annotation.comment,
                         'annotationLink': annotation.annotation_link,
                         'annotationLinkTitle': annotation.annotation_link_title,
+                        'createDate': serializers.DateTimeField().to_representation(annotation.create_date),
                         'upvoteCountExceptUser': upvote_count,
                         'doesBelongToUser': True,
                     },
@@ -670,6 +677,7 @@ class AnnotationAPITest(TestCase):
                     'comment': annotation.comment,
                     'annotationLink': annotation.annotation_link,
                     'annotationLinkTitle': annotation.annotation_link_title,
+                    'createDate': serializers.DateTimeField().to_representation(annotation.create_date),
                     'upvoteCountExceptUser': upvote_count,
                     'doesBelongToUser': True,
                 },
