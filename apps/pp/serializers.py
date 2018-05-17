@@ -136,30 +136,23 @@ class AnnotationDeserializer(ResourceTypeSerializer):
 
 class AnnotationSerializer(ResourceSerializer, AnnotationDeserializer):
     class Attributes(AnnotationDeserializer.Attributes):
-        upvote_count = serializers.SerializerMethodField()
-        upvote = serializers.SerializerMethodField('is_upvote')
+        upvote_count_except_user = serializers.SerializerMethodField()
         does_belong_to_user = serializers.SerializerMethodField()
 
         class Meta:
             model = AnnotationDeserializer.Attributes.Meta.model
 
             fields = AnnotationDeserializer.Attributes.Meta.fields + (
-                'upvote', 'upvote_count', 'does_belong_to_user',
+                'upvote_count_except_user', 'does_belong_to_user',
             )
 
         @property
         def request_user(self):
             return self.context['request'].user if self.context.get('request') else None
 
-        def get_upvote_count(self, instance):
+        def get_upvote_count_except_user(self, instance):
             assert self.request_user is not None
-            return AnnotationUpvote.objects.filter(user=self.request_user, annotation=instance) \
-                .count()
-
-        def is_upvote(self, instance):
-            assert self.request_user is not None
-            return AnnotationUpvote.objects.filter(user=self.request_user, annotation=instance) \
-                .exists()
+            return AnnotationUpvote.objects.filter(annotation=instance).exclude(user=self.request_user).count()
 
         def get_does_belong_to_user(self, instance):
             assert self.request_user is not None
@@ -185,8 +178,7 @@ class AnnotationSerializer(ResourceSerializer, AnnotationDeserializer):
 
 class AnnotationListSerializer(ResourceSerializer):
     class Attributes(serializers.ModelSerializer):
-        upvote_count = serializers.IntegerField(default=0)
-        upvote = serializers.BooleanField(default=False)
+        upvote_count_except_user = serializers.IntegerField(default=0)
         does_belong_to_user = serializers.BooleanField(default=False)
         range = ObjectField(json_internal_type=True)
         # TODO: this field is no longer used in the frontend, so required=False, but consider removing
@@ -197,10 +189,10 @@ class AnnotationListSerializer(ResourceSerializer):
             model = Annotation
             fields = ('url', 'range', 'quote',
                       'priority', 'comment', 'annotation_link', 'annotation_link_title',
-                      'upvote', 'upvote_count',
+                      'upvote_count_except_user',
                       'does_belong_to_user',
                       )
-            read_only_fields = ('upvote', 'upvote_count',
+            read_only_fields = ('upvote_count_except_user',
                                 'does_belong_to_user')
 
     class Relationships(serializers.Serializer):

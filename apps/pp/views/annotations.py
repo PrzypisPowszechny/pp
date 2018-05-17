@@ -119,7 +119,7 @@ class AnnotationList(AnnotationBase, GenericAPIView):
 
     def get_queryset(self):
         queryset = Annotation.objects.filter(active=True).annotate(
-            upvote_count=Count('feedbacks__id')
+            total_upvote_count=Count('feedbacks__id')
         ).prefetch_related(
             Prefetch('annotation_reports', queryset=AnnotationReport.objects.filter(user=self.request.user),
                      to_attr='user_annotation_reports')
@@ -139,8 +139,7 @@ class AnnotationList(AnnotationBase, GenericAPIView):
         annotation_to_feedback = {feedback.annotation_id: feedback for feedback in feedbacks}
         for annotation in queryset:
             feedback = annotation_to_feedback.get(annotation.id)
-            # TODO: setting upvote and objection attrs duplicates corresponding relationships, consider removing
-            annotation.upvote = bool(feedback)
+            annotation.upvote_count_except_user = annotation.total_upvote_count - int(bool(feedback))
             annotation.does_belong_to_user = annotation.id in user_annotation_ids
             annotation.user_feedback = feedback
         return queryset
