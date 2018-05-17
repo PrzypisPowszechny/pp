@@ -1,5 +1,6 @@
 import json
 
+import inflection
 from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
@@ -41,6 +42,14 @@ class ObjectField(serializers.Field):
         return value
 
 
+class TypeField(serializers.CharField):
+    def to_internal_value(self, data):
+        return inflection.underscore(data)
+
+    def to_representation(self, value):
+        return value[0].lower() + inflection.camelize(value)[1:]
+
+
 class StandardizedRepresentationURLField(serializers.URLField):
     def to_representation(self, value):
         return standardize_url(value)
@@ -51,7 +60,7 @@ class ResourceIdSerializer(serializers.Serializer):
 
 
 class ResourceTypeSerializer(serializers.Serializer):
-    type = serializers.CharField(required=True)
+    type = TypeField(required=True)
 
 
 class ResourceSerializer(ResourceIdSerializer, ResourceTypeSerializer):
@@ -167,8 +176,8 @@ class AnnotationSerializer(ResourceSerializer, AnnotationDeserializer):
             related_link_url_name = 'api:annotation_related_reports'
 
         user = User(required=True)
-        upvote = Upvote()
-        reports = AnnotationReports()
+        annotation_upvote = Upvote()
+        annotation_reports = AnnotationReports()
 
     attributes = Attributes()
     relationships = Relationships()
@@ -205,8 +214,8 @@ class AnnotationListSerializer(ResourceSerializer):
             related_link_url_name = 'api:annotation_related_reports'
 
         user = User(required=True)
-        upvote = Upvote()
-        reports = AnnotationReports()
+        annotation_upvote = Upvote()
+        annotation_reports = AnnotationReports()
 
     class Links(ResourceLinksSerializer):
         self_link_url_name = 'api:annotation'

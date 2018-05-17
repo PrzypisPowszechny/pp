@@ -8,8 +8,8 @@ from apps.pp.tests.utils import create_test_user
 
 
 class AnnotationUpvoteAPITest(TestCase):
-    upvote_url = "/api/annotation_upvotes"
-    upvote_single_url = "/api/annotation_upvotes/{}"
+    upvote_url = "/api/annotationUpvotes"
+    upvote_single_url = "/api/annotationUpvotes/{}"
     annotation_related_upvote_url = "/api/annotations/{}/upvote"
     maxDiff = None
 
@@ -29,7 +29,7 @@ class AnnotationUpvoteAPITest(TestCase):
             json.loads(response.content.decode('utf8')),
             {'data': {
                 'id': str(upvote.id),
-                'type': 'annotation_upvotes',
+                'type': 'annotationUpvotes',
                 'relationships': {
                     'annotation': {
                         'links': {
@@ -58,7 +58,7 @@ class AnnotationUpvoteAPITest(TestCase):
             json.loads(response.content.decode('utf8')),
             {'data': {
                 'id': str(upvote.id),
-                'type': 'annotation_upvotes',
+                'type': 'annotationUpvotes',
                 'relationships': {
                     'annotation': {
                         'links': {
@@ -102,7 +102,7 @@ class AnnotationUpvoteAPITest(TestCase):
             json.loads(response.content.decode('utf8')),
             {'data': {
                 'id': str(upvote.id),
-                'type': 'annotation_upvotes',
+                'type': 'annotationUpvotes',
                 'relationships': {
                     'annotation': {
                         'links': {

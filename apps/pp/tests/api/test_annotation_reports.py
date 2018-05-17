@@ -10,8 +10,8 @@ from apps.pp.tests.utils import create_test_user
 
 
 class AnnotationReportAPITest(TestCase):
-    report_url = "/api/annotation_reports"
-    report_single_url = "/api/annotation_reports/{}"
+    report_url = "/api/annotationReports"
+    report_single_url = "/api/annotationReports/{}"
     annotation_related_reports_url = "/api/annotations/{}/reports"
     maxDiff = None
 
@@ -29,7 +29,7 @@ class AnnotationReportAPITest(TestCase):
             json.loads(response.content.decode('utf8')),
             {'data': {
                 'id': str(report.id),
-                'type': 'annotation_reports',
+                'type': 'annotationReports',
                 'attributes': {
                     'reason': report.reason,
                     'comment': report.comment,
@@ -68,7 +68,7 @@ class AnnotationReportAPITest(TestCase):
             {'data':
                 [{
                     'id': str(report.id),
-                    'type': 'annotation_reports',
+                    'type': 'annotationReports',
                     'attributes': {
                         'reason': report.reason,
                         'comment': report.comment,
@@ -101,7 +101,7 @@ class AnnotationReportAPITest(TestCase):
 
         body = json.dumps({
             'data': {
-                'type': 'annotation_reports',
+                'type': 'annotationReports',
                 'attributes': {
                     'reason': report_data['reason'],
                     'comment': report_data['comment'],
@@ -109,7 +109,7 @@ class AnnotationReportAPITest(TestCase):
                 'relationships': {
                     'annotation': {
                         'data': {
-                            'type': 'annotation_reports',
+                            'type': 'annotationReports',
                             'id': str(annotation.id)
                         }
                     }
@@ -126,7 +126,7 @@ class AnnotationReportAPITest(TestCase):
         correct_response = {
             'data': {
                 'id': str(report.id),
-                'type': 'annotation_reports',
+                'type': 'annotationReports',
                 'attributes': {
                     'reason': report_data['reason'],
                     'comment': report_data['comment'],
