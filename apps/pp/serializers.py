@@ -100,19 +100,24 @@ class RelationLinksSerializer(serializers.Serializer):
 
 
 class RelationDeserializer(serializers.Serializer):
-    data = ResourceSerializer(required=False)
+    data = ResourceSerializer(required=True)
 
 
-class RelationSerializer(RelationDeserializer):
+class NullableRelationDeserializer(serializers.Serializer):
+    """
+    For relations which are optional, then data must be present but can be null
+    """
+    data = ResourceSerializer(required=True, allow_null=True)
+
+
+class RelationSerializer(serializers.Serializer):
+    data = ResourceSerializer(required=True, allow_null=True)
     related_link_url_name = None
     links = RelationLinksSerializer(required=True)
 
 
-class RelationManyDeserializer(serializers.Serializer):
-    data = ResourceSerializer(required=False, many=True)
-
-
-class RelationManySerializer(RelationManyDeserializer):
+class RelationManySerializer(serializers.Serializer):
+    data = ResourceSerializer(required=True, many=True)
     related_link_url_name = None
     links = RelationLinksSerializer(required=True)
 

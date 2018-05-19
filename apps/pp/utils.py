@@ -5,14 +5,13 @@ from django.db import models
 
 
 def get_relationship_id(root_serializer, name):
-    """
-    Use only when passing relation with url parameter does not do the job.
-    """
     path = ['relationships', name, 'data', 'id']
     val = root_serializer.validated_data
     while path and val:
         key = path.pop(0)
         val = val.get(key)
+    assert isinstance(val, (int, str, None.__class__)), \
+        "Relationship value can only be int or str, got: %s" % val.__class__.__name__
     return val
 
 
