@@ -5,14 +5,13 @@ from django.db import models
 
 
 def get_relationship_id(root_serializer, name):
-    """
-    Use only when passing relation with url parameter does not do the job.
-    """
     path = ['relationships', name, 'data', 'id']
     val = root_serializer.validated_data
     while path and val:
         key = path.pop(0)
         val = val.get(key)
+    assert isinstance(val, (int, str, None.__class__)), \
+        "Relationship value can only be int or str, got: %s" % val.__class__.__name__
     return val
 
 
@@ -46,21 +45,7 @@ class DataPreSerializer(object):
         return self.root_data
 
     def get_relation_name(self, resource_name, is_single_relation):
-        """
-        If resource name of the main object is prefix of resource name of relation then
-        remove that prefix to make relation name shorter"
-        For example:
-         - main resource "annotation", related resource "annotation_reports" -> relation name "reports"
-         - main resource "annotation_x", related resource "annotation_y" -> relation name "y"
-
-        """
-        rrn, rn = self._root_resource_name, resource_name
-        prefix = rrn[:rrn.find('_')] if rrn.find('_') > 0 else rrn[:-1]
-        if rn.find('_') > 0 and rn.startswith(prefix):
-            name = rn[len(prefix) + 1:]
-        else:
-            name = rn
-        return name[:-1] if is_single_relation else name
+        return resource_name[:-1] if is_single_relation else resource_name
 
     def set_relation(self, resource_name, resource_id, relation_name=None):
         # resource_names_map is dict of resource_names with falses and only one true

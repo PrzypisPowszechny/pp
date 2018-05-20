@@ -1,15 +1,17 @@
 import json
 
-from django.test import TestCase
+from django.test import TransactionTestCase
 from django.urls import reverse
 
 from apps.pp.models import Annotation, AnnotationUpvote
 from apps.pp.tests.utils import create_test_user
 
 
-class AnnotationUpvoteAPITest(TestCase):
-    upvote_url = "/api/annotation_upvotes"
-    upvote_single_url = "/api/annotation_upvotes/{}"
+# Sqlite sometimes crashes when there are very many TestCases,
+# then TransactionTestCase, which is more robust, solves the issue
+class AnnotationUpvoteAPITest(TransactionTestCase):
+    upvote_url = "/api/annotationUpvotes"
+    upvote_single_url = "/api/annotationUpvotes/{}"
     annotation_related_upvote_url = "/api/annotations/{}/upvote"
     maxDiff = None
 
@@ -29,7 +31,7 @@ class AnnotationUpvoteAPITest(TestCase):
             json.loads(response.content.decode('utf8')),
             {'data': {
                 'id': str(upvote.id),
-                'type': 'annotation_upvotes',
+                'type': 'annotationUpvotes',
                 'relationships': {
                     'annotation': {
                         'links': {
@@ -58,7 +60,7 @@ class AnnotationUpvoteAPITest(TestCase):
             json.loads(response.content.decode('utf8')),
             {'data': {
                 'id': str(upvote.id),
-                'type': 'annotation_upvotes',
+                'type': 'annotationUpvotes',
                 'relationships': {
                     'annotation': {
                         'links': {
@@ -80,7 +82,7 @@ class AnnotationUpvoteAPITest(TestCase):
         annotation = Annotation.objects.create(user=self.user)
         post_payload = {
             'data': {
-                'type': 'annotation_upvote',
+                'type': 'annotationUpvotes',
                 'relationships': {
                     'annotation': {
                         'data': {
@@ -102,7 +104,7 @@ class AnnotationUpvoteAPITest(TestCase):
             json.loads(response.content.decode('utf8')),
             {'data': {
                 'id': str(upvote.id),
-                'type': 'annotation_upvotes',
+                'type': 'annotationUpvotes',
                 'relationships': {
                     'annotation': {
                         'links': {
@@ -125,11 +127,11 @@ class AnnotationUpvoteAPITest(TestCase):
     def test_post_upvote_fail__no_relation(self):
         post_payload = {
             'data': {
-                'type': 'annotation_upvote',
+                'type': 'annotationUpvotes',
                 'relationships': {
                     'annotation': {
                         'data': {
-                            'type': 'annotation_upvote', 'id': None
+                            'type': 'annotationUpvotes', 'id': None
                         }
                     }
                 }
@@ -140,8 +142,8 @@ class AnnotationUpvoteAPITest(TestCase):
             self.upvote_url, content_type='application/vnd.api+json',
             data=json.dumps(post_payload))
         self.assertEqual(response.status_code, 400)
+        self.assertEqual(response['content-type'], 'application/vnd.api+json', msg=response.content.decode('utf8'))
         self.assertIsNone(AnnotationUpvote.objects.last())
-
         self.assertEqual(
             json.loads(response.content.decode('utf8'))['errors'][0]['source']['pointer'],
             '/relationships/annotation/data/id'
@@ -154,6 +156,7 @@ class AnnotationUpvoteAPITest(TestCase):
             self.upvote_url, content_type='application/vnd.api+json',
             data=json.dumps(post_payload))
         self.assertEqual(response.status_code, 400)
+        self.assertEqual(response['content-type'], 'application/vnd.api+json', msg=response.content.decode('utf8'))
         self.assertEqual(
             json.loads(response.content.decode('utf8'))['errors'][0]['source']['pointer'],
             '/relationships/annotation/data'
@@ -164,6 +167,7 @@ class AnnotationUpvoteAPITest(TestCase):
             self.upvote_url, content_type='application/vnd.api+json',
             data=json.dumps(post_payload))
         self.assertEqual(response.status_code, 400)
+        self.assertEqual(response['content-type'], 'application/vnd.api+json', msg=response.content.decode('utf8'))
         self.assertEqual(
             json.loads(response.content.decode('utf8'))['errors'][0]['source']['pointer'],
             '/relationships/annotation'
@@ -178,6 +182,29 @@ class AnnotationUpvoteAPITest(TestCase):
         self.assertEqual(
             json.loads(response.content.decode('utf8'))['errors'][0]['source']['pointer'],
             '/relationships'
+        )
+
+    def test_post_upvote_fail__malformed_relation(self):
+        post_payload = {
+            'data': {
+                'type': 'annotationUpvotes',
+                'relationships': {
+                    'annotation': {
+                        'type': 'annotationUpvotes', 'id': None
+                    }
+                }
+            }
+        }
+
+        response = self.client.post(
+            self.upvote_url, content_type='application/vnd.api+json',
+            data=json.dumps(post_payload))
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response['content-type'], 'application/vnd.api+json', msg=response.content.decode('utf8'))
+        self.assertIsNone(AnnotationUpvote.objects.last())
+        self.assertEqual(
+            json.loads(response.content.decode('utf8'))['errors'][0]['source']['pointer'],
+            '/relationships/annotation/data'
         )
 
     def test_delete_upvote(self):

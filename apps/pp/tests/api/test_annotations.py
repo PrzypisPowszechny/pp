@@ -7,6 +7,7 @@ from django.urls import reverse
 from django.utils import timezone
 from model_mommy import mommy
 from parameterized import parameterized
+from rest_framework import serializers
 
 from apps.pp.models import Annotation, AnnotationUpvote, AnnotationReport
 from apps.pp.tests.utils import create_test_user
@@ -15,8 +16,8 @@ from apps.pp.utils import get_resource_name
 
 class AnnotationAPITest(TestCase):
     base_url = "/api/annotations/{}"
-    report_related_url = "/api/annotation_reports/{}/annotation"
-    upvote_related_url = "/api/annotation_upvotes/{}/annotation"
+    report_related_url = "/api/annotationReports/{}/annotation"
+    upvote_related_url = "/api/annotationUpvotes/{}/annotation"
     maxDiff = None
 
     # IMPORTANT: we log in for each test, so self.user has already an open session with server
@@ -42,7 +43,7 @@ class AnnotationAPITest(TestCase):
         urf = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
         response = self.client.get(self.base_url.format(annotation.id))
 
-        upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).count()
+        upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).exclude(user=self.user).count()
 
         self.assertEqual(
             json.loads(response.content.decode('utf8')),
@@ -58,8 +59,8 @@ class AnnotationAPITest(TestCase):
                         'comment': annotation.comment,
                         'annotationLink': annotation.annotation_link,
                         'annotationLinkTitle': annotation.annotation_link_title,
-                        'upvote': bool(urf),
-                        'upvoteCount': upvote_count,
+                        'createDate': serializers.DateTimeField().to_representation(annotation.create_date),
+                        'upvoteCountExceptUser': upvote_count,
                         'doesBelongToUser': True,
                     },
                     'relationships': {
@@ -70,14 +71,14 @@ class AnnotationAPITest(TestCase):
                             },
                             'data': {'type': 'users', 'id': str(self.user.id)}
                         },
-                        'upvote': {
+                        'annotationUpvote': {
                             'links': {
                                 'related': reverse('api:annotation_related_upvote',
                                                    kwargs={'annotation_id': annotation.id})
                             },
-                            'data': {'id': str(urf.id), 'type': get_resource_name(urf, always_single=True)}
+                            'data': {'id': str(urf.id), 'type': 'annotationUpvotes'}
                         },
-                        'reports': {
+                        'annotationReports': {
                             'links': {
                                 'related': reverse('api:annotation_related_reports',
                                                    kwargs={'annotation_id': annotation.id})
@@ -89,6 +90,80 @@ class AnnotationAPITest(TestCase):
             }
         )
 
+    def test_get_returns_annotation__upvote_count(self):
+        annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
+                                               range='{}', url='http://localhost/',
+                                               annotation_link="www.przypispowszechny.com",
+                                               annotation_link_title="very nice")
+
+        # No relation, no count
+
+        response = self.client.get(self.base_url.format(annotation.id))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['content-type'], 'application/vnd.api+json')
+        response_content_data = json.loads(response.content.decode('utf8')).get('data')
+        self.assertIsNotNone(response_content_data)
+        attributes = response_content_data.get('attributes')
+        self.assertIsNotNone(attributes)
+        self.assertEqual(attributes.get('upvoteCountExceptUser'), 0)
+        relationships = response_content_data.get('relationships')
+        self.assertIsNotNone(relationships)
+        self.assertDictEqual(relationships.get('annotationUpvote'), {
+            'links': {
+                'related': reverse('api:annotation_related_upvote',
+                                   kwargs={'annotation_id': annotation.id})
+            },
+            'data': None
+        })
+
+        # Existing relation, no count
+
+        urf = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
+
+        response = self.client.get(self.base_url.format(annotation.id))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['content-type'], 'application/vnd.api+json')
+        response_content_data = json.loads(response.content.decode('utf8')).get('data')
+        self.assertIsNotNone(response_content_data)
+        attributes = response_content_data.get('attributes')
+        self.assertIsNotNone(attributes)
+        self.assertEqual(attributes.get('upvoteCountExceptUser'), 0)
+        relationships = response_content_data.get('relationships')
+        self.assertIsNotNone(relationships)
+        self.assertDictEqual(relationships.get('annotationUpvote'), {
+            'links': {
+                'related': reverse('api:annotation_related_upvote',
+                                   kwargs={'annotation_id': annotation.id})
+            },
+            'data': {'id': str(urf.id), 'type': 'annotationUpvotes'}
+        })
+
+        # Existing relation, positive count
+
+        other_user1, password1 = create_test_user(unique=True)
+        other_user2, password2 = create_test_user(unique=True)
+        AnnotationUpvote.objects.create(user=other_user1, annotation=annotation)
+        AnnotationUpvote.objects.create(user=other_user2, annotation=annotation)
+        upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).exclude(user=self.user).count()
+
+        response = self.client.get(self.base_url.format(annotation.id))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['content-type'], 'application/vnd.api+json')
+        response_content_data = json.loads(response.content.decode('utf8')).get('data')
+        self.assertIsNotNone(response_content_data)
+        attributes = response_content_data.get('attributes')
+        self.assertIsNotNone(attributes)
+        self.assertEqual(attributes.get('upvoteCountExceptUser'), upvote_count)
+        relationships = response_content_data.get('relationships')
+        self.assertIsNotNone(relationships)
+        self.assertDictEqual(relationships.get('annotationUpvote'), {
+            'links': {
+                'related': reverse('api:annotation_related_upvote',
+                                   kwargs={'annotation_id': annotation.id})
+            },
+            'data': {'id': str(urf.id), 'type': 'annotationUpvotes'}
+        })
+
     def test_get_annotation_report_related_annotation(self):
         annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
                                                range='{}', url='http://localhost/',
@@ -96,7 +171,7 @@ class AnnotationAPITest(TestCase):
                                                annotation_link_title="very nice")
         report = mommy.make(AnnotationReport, annotation=annotation, user=self.user)
         urf = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
-        upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).count()
+        upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).exclude(user=self.user).count()
 
         response = self.client.get(self.report_related_url.format(report.id))
         self.assertEqual(response.status_code, 200)
@@ -114,8 +189,8 @@ class AnnotationAPITest(TestCase):
                         'comment': annotation.comment,
                         'annotationLink': annotation.annotation_link,
                         'annotationLinkTitle': annotation.annotation_link_title,
-                        'upvote': bool(urf),
-                        'upvoteCount': upvote_count,
+                        'createDate': serializers.DateTimeField().to_representation(annotation.create_date),
+                        'upvoteCountExceptUser': upvote_count,
                         'doesBelongToUser': True,
                     },
                     'relationships': {
@@ -126,20 +201,20 @@ class AnnotationAPITest(TestCase):
                             },
                             'data': {'type': 'users', 'id': str(self.user.id)}
                         },
-                        'upvote': {
+                        'annotationUpvote': {
                             'links': {
                                 'related': reverse('api:annotation_related_upvote',
                                                    kwargs={'annotation_id': annotation.id})
                             },
-                            'data': {'id': str(urf.id), 'type': get_resource_name(urf, always_single=True)}
+                            'data': {'id': str(urf.id), 'type': 'annotationUpvotes'}
                         },
-                        'reports': {
+                        'annotationReports': {
                             'links': {
                                 'related': reverse('api:annotation_related_reports',
                                                    kwargs={'annotation_id': annotation.id})
                             },
                             'data': [
-                                {'type': 'annotation_reports', 'id': str(report.id)}
+                                {'type': 'annotationReports', 'id': str(report.id)}
                             ]
                         },
                     }
@@ -154,7 +229,7 @@ class AnnotationAPITest(TestCase):
                                                annotation_link_title="very nice")
         report = mommy.make(AnnotationReport, annotation=annotation, user=self.user)
         upvote = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
-        upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).count()
+        upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).exclude(user=self.user).count()
 
         response = self.client.get(self.upvote_related_url.format(upvote.id))
         self.assertEqual(response.status_code, 200)
@@ -172,8 +247,8 @@ class AnnotationAPITest(TestCase):
                         'comment': annotation.comment,
                         'annotationLink': annotation.annotation_link,
                         'annotationLinkTitle': annotation.annotation_link_title,
-                        'upvote': bool(upvote),
-                        'upvoteCount': upvote_count,
+                        'createDate': serializers.DateTimeField().to_representation(annotation.create_date),
+                        'upvoteCountExceptUser': upvote_count,
                         'doesBelongToUser': True,
                     },
                     'relationships': {
@@ -184,20 +259,20 @@ class AnnotationAPITest(TestCase):
                             },
                             'data': {'type': 'users', 'id': str(self.user.id)}
                         },
-                        'upvote': {
+                        'annotationUpvote': {
                             'links': {
                                 'related': reverse('api:annotation_related_upvote',
                                                    kwargs={'annotation_id': annotation.id})
                             },
-                            'data': {'id': str(upvote.id), 'type': get_resource_name(upvote, always_single=True)}
+                            'data': {'id': str(upvote.id), 'type': 'annotationUpvotes'}
                         },
-                        'reports': {
+                        'annotationReports': {
                             'links': {
                                 'related': reverse('api:annotation_related_reports',
                                                    kwargs={'annotation_id': annotation.id})
                             },
                             'data': [
-                                {'type': 'annotation_reports', 'id': str(report.id)}
+                                {'type': 'annotationReports', 'id': str(report.id)}
                             ]
                         },
                     }
@@ -318,8 +393,8 @@ class AnnotationAPITest(TestCase):
 
         urf = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
 
-        upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).count()
-        upvote_count2 = AnnotationUpvote.objects.filter(annotation=annotation2).count()
+        upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).exclude(user=self.user).count()
+        upvote_count2 = AnnotationUpvote.objects.filter(annotation=annotation2).exclude(user=self.user).count()
 
         raw_response = self.client.get(search_base_url.format(annotation.url))
         response = json.loads(raw_response.content.decode('utf8'))['data']
@@ -337,8 +412,8 @@ class AnnotationAPITest(TestCase):
                  'comment': annotation.comment,
                  'annotationLink': annotation.annotation_link,
                  'annotationLinkTitle': annotation.annotation_link_title,
-                 'upvote': bool(urf),
-                 'upvoteCount': upvote_count,
+                 'createDate': serializers.DateTimeField().to_representation(annotation.create_date),
+                 'upvoteCountExceptUser': upvote_count,
                  'doesBelongToUser': True,
              },
              'relationships': {
@@ -348,13 +423,13 @@ class AnnotationAPITest(TestCase):
                      },
                      'data': {'type': 'users', 'id': str(self.user.id)}
                  },
-                 'upvote': {
+                 'annotationUpvote': {
                      'links': {
                          'related': reverse('api:annotation_related_upvote', kwargs={'annotation_id': annotation.id})
                      },
-                     'data': {'type': 'annotation_upvotes', 'id': str(urf.id)}
+                     'data': {'type': 'annotationUpvotes', 'id': str(urf.id)}
                  },
-                 'reports': {
+                 'annotationReports': {
                      'links': {
                          'related': reverse('api:annotation_related_reports', kwargs={'annotation_id': annotation.id})
                      },
@@ -378,8 +453,8 @@ class AnnotationAPITest(TestCase):
                  'comment': annotation2.comment,
                  'annotationLink': annotation2.annotation_link,
                  'annotationLinkTitle': annotation2.annotation_link_title,
-                 'upvote': False,
-                 'upvoteCount': upvote_count2,
+                 'createDate': serializers.DateTimeField().to_representation(annotation2.create_date),
+                 'upvoteCountExceptUser': upvote_count2,
                  'doesBelongToUser': True,
              },
              'relationships': {
@@ -389,13 +464,13 @@ class AnnotationAPITest(TestCase):
                      },
                      'data': {'type': 'users', 'id': str(self.user.id)}
                  },
-                 'upvote': {
+                 'annotationUpvote': {
                      'links': {
                          'related': reverse('api:annotation_related_upvote', kwargs={'annotation_id': annotation2.id})
                      },
                      'data': None
                  },
-                 'reports': {
+                 'annotationReports': {
                      'links': {
                          'related': reverse('api:annotation_related_reports', kwargs={'annotation_id': annotation2.id})
                      },
@@ -406,6 +481,82 @@ class AnnotationAPITest(TestCase):
                  'self': reverse('api:annotation', kwargs={'annotation_id': annotation2.id})
              },
              })
+
+    def test_list_annotations__upvote_count(self):
+        list_url = '/api/annotations'
+        annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
+                                               range='{}', url='http://localhost/',
+                                               annotation_link="www.przypispowszechny.com",
+                                               annotation_link_title="very nice")
+
+        # No relation, no count
+
+        response = self.client.get(list_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['content-type'], 'application/vnd.api+json')
+        response_content_data = json.loads(response.content.decode('utf8')).get('data')
+        self.assertTrue(response_content_data)
+        attributes = response_content_data[0].get('attributes')
+        self.assertIsNotNone(attributes)
+        self.assertEqual(attributes.get('upvoteCountExceptUser'), 0)
+        relationships = response_content_data[0].get('relationships')
+        self.assertIsNotNone(relationships)
+        self.assertDictEqual(relationships.get('annotationUpvote'), {
+            'links': {
+                'related': reverse('api:annotation_related_upvote',
+                                   kwargs={'annotation_id': annotation.id})
+            },
+            'data': None
+        })
+
+        # Existing relation, no count
+
+        urf = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
+
+        response = self.client.get(list_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['content-type'], 'application/vnd.api+json')
+        response_content_data = json.loads(response.content.decode('utf8')).get('data')
+        self.assertTrue(response_content_data)
+        attributes = response_content_data[0].get('attributes')
+        self.assertIsNotNone(attributes)
+        self.assertEqual(attributes.get('upvoteCountExceptUser'), 0)
+        relationships = response_content_data[0].get('relationships')
+        self.assertIsNotNone(relationships)
+        self.assertDictEqual(relationships.get('annotationUpvote'), {
+            'links': {
+                'related': reverse('api:annotation_related_upvote',
+                                   kwargs={'annotation_id': annotation.id})
+            },
+            'data': {'id': str(urf.id), 'type': 'annotationUpvotes'}
+        })
+
+        # Existing relation, positive count
+
+        other_user1, password1 = create_test_user(unique=True)
+        other_user2, password2 = create_test_user(unique=True)
+        AnnotationUpvote.objects.create(user=other_user1, annotation=annotation)
+        AnnotationUpvote.objects.create(user=other_user2, annotation=annotation)
+        upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).exclude(user=self.user).count()
+
+        response = self.client.get(list_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['content-type'], 'application/vnd.api+json')
+        response_content_data = json.loads(response.content.decode('utf8')).get('data')
+        self.assertTrue(response_content_data)
+        attributes = response_content_data[0].get('attributes')
+        self.assertIsNotNone(attributes)
+        self.assertEqual(attributes.get('upvoteCountExceptUser'), upvote_count)
+        relationships = response_content_data[0].get('relationships')
+        self.assertIsNotNone(relationships)
+        self.assertDictEqual(relationships.get('annotationUpvote'), {
+            'links': {
+                'related': reverse('api:annotation_related_upvote',
+                                   kwargs={'annotation_id': annotation.id})
+            },
+            'data': {'id': str(urf.id), 'type': 'annotationUpvotes'}
+        })
+
 
     @parameterized.expand([
         [{'start': "Od tad", 'end': "do tad"}],
@@ -436,7 +587,7 @@ class AnnotationAPITest(TestCase):
         self.assertEqual(response.status_code, 200, msg=response.data)
         annotation = Annotation.objects.get(user=self.user)
 
-        upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).count()
+        upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).exclude(user=self.user).count()
 
         # Check response
         self.assertDictEqual(
@@ -453,8 +604,8 @@ class AnnotationAPITest(TestCase):
                         'comment': annotation.comment,
                         'annotationLink': annotation.annotation_link,
                         'annotationLinkTitle': annotation.annotation_link_title,
-                        'upvote': False,
-                        'upvoteCount': upvote_count,
+                        'createDate': serializers.DateTimeField().to_representation(annotation.create_date),
+                        'upvoteCountExceptUser': upvote_count,
                         'doesBelongToUser': True,
                     },
                     'relationships': {
@@ -465,14 +616,14 @@ class AnnotationAPITest(TestCase):
                             },
                             'data': {'type': 'users', 'id': str(self.user.id)}
                         },
-                        'upvote': {
+                        'annotationUpvote': {
                             'links': {
                                 'related': reverse('api:annotation_related_upvote',
                                                    kwargs={'annotation_id': annotation.id})
                             },
                             'data': None
                         },
-                        'reports': {
+                        'annotationReports': {
                             'links': {
                                 'related': reverse('api:annotation_related_reports',
                                                    kwargs={'annotation_id': annotation.id})
@@ -509,7 +660,7 @@ class AnnotationAPITest(TestCase):
                                      content_type='application/vnd.api+json')
         annotation = Annotation.objects.get(id=annotation.id)
 
-        upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).count()
+        upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).exclude(user=self.user).count()
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(annotation.annotation_link_title, put_string)
@@ -526,8 +677,8 @@ class AnnotationAPITest(TestCase):
                     'comment': annotation.comment,
                     'annotationLink': annotation.annotation_link,
                     'annotationLinkTitle': annotation.annotation_link_title,
-                    'upvote': bool(urf),
-                    'upvoteCount': upvote_count,
+                    'createDate': serializers.DateTimeField().to_representation(annotation.create_date),
+                    'upvoteCountExceptUser': upvote_count,
                     'doesBelongToUser': True,
                 },
                 'relationships': {
@@ -537,13 +688,13 @@ class AnnotationAPITest(TestCase):
                         },
                         'data': {'type': 'users', 'id': str(self.user.id)}
                     },
-                    'upvote': {
+                    'annotationUpvote': {
                         'links': {
                             'related': reverse('api:annotation_related_upvote', kwargs={'annotation_id': annotation.id})
                         },
-                        'data': {'id': str(urf.id), 'type': get_resource_name(urf, always_single=True)}
+                        'data': {'id': str(urf.id), 'type': 'annotationUpvotes'}
                     },
-                    'reports': {
+                    'annotationReports': {
                         'links': {
                             'related': reverse('api:annotation_related_reports',
                                                kwargs={'annotation_id': annotation.id})
