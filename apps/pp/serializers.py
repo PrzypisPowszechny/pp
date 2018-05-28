@@ -125,7 +125,7 @@ class RelationManySerializer(serializers.Serializer):
 
 class AnnotationDeserializer(ResourceTypeSerializer):
     class Attributes(serializers.ModelSerializer):
-        comment = serializers.CharField(required=False)
+        comment = serializers.CharField(required=False, allow_blank=True)
         range = ObjectField(json_internal_type=True)
         # TODO: this field is no longer used in the frontend, so required=False, but consider removing
         quote = serializers.CharField(required=False)
