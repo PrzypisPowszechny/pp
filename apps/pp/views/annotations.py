@@ -61,7 +61,7 @@ class AnnotationSingle(AnnotationBase, APIView):
             return PermissionDenied()
         deserializer = AnnotationPatchDeserializer(data=request.data, context={'request': request}, partial=True)
         if not deserializer.is_valid():
-            return ErrorResponse(deserializer.errors)
+            return ValidationErrorResponse(deserializer.errors)
         if 'relationships' in request.data:
             return Forbidden(error_details='Updating relationships not supported')
 
