@@ -638,7 +638,8 @@ class AnnotationAPITest(TestCase):
         ['string range: od tad do tad'],
         [''],
     ])
-    def test_post_new_annotation__field_range(self, range):
+    def test_post_and_patch_annotation__field_range(self, range):
+        # POST
         base_url = "/api/annotations"
         request_payload = self.get_valid_request_template()
         request_payload['data']['attributes']['range'] = range
@@ -651,12 +652,25 @@ class AnnotationAPITest(TestCase):
         new_annotation = Annotation.objects.filter(user=self.user).last()
         self.assertIsNotNone(new_annotation)
         self.assertEqual(response['content-type'], 'application/vnd.api+json', msg=response.content.decode('utf8'))
+        response_data = json.loads(response.content.decode('utf8'))
         self.assertEqual(
-            json.loads(response.content.decode('utf8'))['data']['attributes']['range'], range
+            response_data['data']['attributes']['range'], range
         )
 
         # Check if range is stored as json (despite being posted and returned as normal dict)
         self.assertEqual(new_annotation.range, json.dumps(range))
+
+        # PATCH
+        id = response_data['data']['id']
+        response = self.client.patch(
+            '{}/{}'.format(base_url, id),
+            json.dumps(request_payload),
+            content_type='application/vnd.api+json')
+        self.assertEqual(response.status_code, 200, msg=response.data)
+        response_data = json.loads(response.content.decode('utf8'))
+        self.assertEqual(
+            response_data['data']['attributes']['range'], range
+        )
 
 
     @parameterized.expand([
@@ -664,7 +678,8 @@ class AnnotationAPITest(TestCase):
         [''],
         [None],
     ])
-    def test_post_new_annotation__field_comment(self, comment):
+    def test_post_and_patch_annotation__field_comment(self, comment):
+        # POST
         base_url = "/api/annotations"
         request_payload = self.get_valid_request_template()
         if comment is not None:
@@ -675,13 +690,25 @@ class AnnotationAPITest(TestCase):
             base_url,
             json.dumps(request_payload),
             content_type='application/vnd.api+json')
+        response_data = json.loads(response.content.decode('utf8'))
 
         self.assertEqual(response.status_code, 200, msg=response.data)
         new_annotation = Annotation.objects.filter(user=self.user).last()
         self.assertIsNotNone(new_annotation)
         self.assertEqual(response['content-type'], 'application/vnd.api+json', msg=response.content.decode('utf8'))
         self.assertEqual(
-            json.loads(response.content.decode('utf8'))['data']['attributes']['comment'], comment or ""
+            response_data['data']['attributes']['comment'], comment or ""
+        )
+
+        # PATCH
+        id = response_data['data']['id']
+        response = self.client.patch(
+            '{}/{}'.format(base_url, id),
+            json.dumps(request_payload),
+            content_type='application/vnd.api+json')
+        self.assertEqual(response.status_code, 200, msg=response.data)
+        self.assertEqual(
+            response_data['data']['attributes']['comment'], comment or ""
         )
 
     def test_patch_annotation(self):

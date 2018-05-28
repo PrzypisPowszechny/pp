@@ -223,6 +223,7 @@ class AnnotationListSerializer(ResourceSerializer):
 
 class AnnotationPatchDeserializer(ResourceSerializer):
     class Attributes(serializers.ModelSerializer):
+        comment = serializers.CharField(required=False, allow_blank=True)
         class Meta:
             model = Annotation
             fields = ('priority', 'comment', 'annotation_link', 'annotation_link_title')
