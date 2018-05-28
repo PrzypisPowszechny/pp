@@ -2,6 +2,9 @@ from settings.base import *
 import dj_database_url
 
 DEBUG = False
+
+SECRET_KEY = os.environ.get('PP_SECRET_KEY')
+
 ALLOWED_HOSTS = ['*.przypispowszechny.pl', 'przypispowszechny.pl']
 
 # Update database configuration with $DATABASE_URL.

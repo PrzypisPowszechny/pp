@@ -13,15 +13,10 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
+# This default key for development, it is overridden in the production
 SECRET_KEY = '_96(y+)c++%-5m6i*4i-4md6o1@zc(5a9fjpoop#%+q=fg3ig9'
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
 # Application definition
