@@ -779,7 +779,7 @@ class AnnotationAPITest(TestCase):
 
         )
 
-    def test_patch_inaccessible_field_annotation(self):
+    def test_patch_annotation__deny__attribute_quote(self):
         annotation = Annotation.objects.create(
             user=self.user, priority='NORMAL', url='www.przypis.pl', comment="good job",
             range='{}',
@@ -802,7 +802,7 @@ class AnnotationAPITest(TestCase):
                                      content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 400)
 
-    def test_patch_inaccessible_relationhips_annotation(self):
+    def test_patch_annotation__deny__relationship_annotation(self):
         annotation = Annotation.objects.create(
             user=self.user, priority='NORMAL', url='www.przypis.pl', comment="good job",
             range='{}',
@@ -828,7 +828,7 @@ class AnnotationAPITest(TestCase):
         self.assertEqual(response.status_code, 403)
         self.assertNotEqual(annotation.comment, put_string)
 
-    def test_patch_deny_non_owner(self):
+    def test_patch_annotation__deny__non_owner(self):
         owner_user, owner_user_pass = create_test_user(unique=True)
         annotation = Annotation.objects.create(
             user=owner_user, priority='NORMAL', url='www.przypis.pl', comment="good job",

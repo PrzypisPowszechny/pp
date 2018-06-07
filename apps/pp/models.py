@@ -5,6 +5,8 @@ from simple_history.models import HistoricalRecords
 
 from apps.pp import consts
 
+URL_SUPPORTED_LENGTH = 2048
+
 
 class User(AbstractUser):
     class Meta:
@@ -23,10 +25,10 @@ class UserInput(models.Model):
 
 
 class AnnotationBase(UserInput):
-    url = models.CharField(max_length=200)
+    url = models.CharField(max_length=URL_SUPPORTED_LENGTH)
     # URL where the annotation has been made
 
-    url_id = models.CharField(max_length=200, blank=True)
+    url_id = models.CharField(max_length=URL_SUPPORTED_LENGTH, blank=True)
     # Processed URL striped of some (probably) irrelevant data that might make identification harder
 
     range = models.TextField(max_length=1000)
@@ -66,7 +68,7 @@ class Annotation(AnnotationBase):
     priority = models.CharField(choices=consts.annotation_priorities, max_length=100)
     comment = models.TextField(max_length=100)
 
-    annotation_link = models.CharField(max_length=100)
+    annotation_link = models.CharField(max_length=URL_SUPPORTED_LENGTH)
     # A hyperlink
 
     annotation_link_title = models.CharField(max_length=100)
