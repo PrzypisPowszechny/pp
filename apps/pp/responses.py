@@ -1,3 +1,4 @@
+import inflection
 from rest_framework.response import Response
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND, HTTP_403_FORBIDDEN
 from simplejson import OrderedDict
@@ -85,7 +86,8 @@ class ValidationErrorResponse(ErrorResponse):
             else:
                 errors_content.append({
                     'source': {
-                        'pointer': '/'.join(field_path)
+                        'pointer': '/'.join([field[0:1].lower() + inflection.camelize(field)[1:]
+                                             for field in field_path])
                     },
                     'details': reason
                 })

@@ -672,6 +672,41 @@ class AnnotationAPITest(TestCase):
             response_data['data']['attributes']['range'], range
         )
 
+    @parameterized.expand([
+        (True, 'www.przypispowszechny.com'),
+        # Length: 2048 > len > 2000
+        (True, 'www.przypispowszechny.com/%s' % "".join(['10CharStr/' for i in range(200)]) ),
+        # Length: len > 2048
+        (False, 'www.przypispowszechny.com/%s' % "".join(['10CharStr/' for j in range(205)])),
+    ])
+    def test_post_and_patch_annotation__field_annotation_link(self, is_valid, annotation_link):
+        # POST
+        base_url = "/api/annotations"
+        request_payload = self.get_valid_request_template()
+        request_payload['data']['attributes']['annotationLink'] = annotation_link
+        response = self.client.post(
+            base_url,
+            json.dumps(request_payload),
+            content_type='application/vnd.api+json')
+
+        if is_valid:
+            self.assertEqual(response.status_code, 200, msg=response.data)
+            new_annotation = Annotation.objects.filter(user=self.user).last()
+            self.assertIsNotNone(new_annotation)
+            self.assertEqual(response['content-type'], 'application/vnd.api+json', msg=response.content.decode('utf8'))
+            response_data = json.loads(response.content.decode('utf8'))
+            self.assertEqual(
+                response_data['data']['attributes']['annotationLink'], annotation_link
+            )
+        else:
+            self.assertEqual(response.status_code, 400, msg=response.data)
+            new_annotation = Annotation.objects.filter(user=self.user).last()
+            self.assertIsNone(new_annotation)
+            self.assertEqual(response['content-type'], 'application/vnd.api+json', msg=response.content.decode('utf8'))
+            response_data = json.loads(response.content.decode('utf8'))
+            self.assertEqual(
+                response_data['errors'][0]['source']['pointer'], '/attributes/annotationLink'
+            )
 
     @parameterized.expand([
         ['komentarz'],
