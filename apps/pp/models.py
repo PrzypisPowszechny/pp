@@ -65,13 +65,13 @@ class Annotation(AnnotationBase):
     class JSONAPIMeta:
         resource_name = 'annotations'
 
-    priority = models.CharField(choices=consts.annotation_priorities, max_length=100)
-    comment = models.TextField(max_length=100)
+    priority = models.CharField(choices=consts.annotation_priorities, max_length=10)
+    comment = models.TextField(max_length=1000)
 
     annotation_link = models.CharField(max_length=URL_SUPPORTED_LENGTH)
     # A hyperlink
 
-    annotation_link_title = models.CharField(max_length=100)
+    annotation_link_title = models.CharField(max_length=110)
     # Short summary of the page referred to
 
     annotation_request = models.ForeignKey('AnnotationRequest', null=True)

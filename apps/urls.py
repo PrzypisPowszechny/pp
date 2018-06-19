@@ -49,6 +49,6 @@ urlpatterns = [
         yasg_schema_view.with_ui('redoc', cache_timeout=None), name='schema_redoc'),
     url(r'^site_test/', site_test.index, name='site_test'),
     # This is the challenge from cerbot (certbot.eff.org) after running "sudo certbot certonly --manual"
-    url(r'^\.well-known/acme-challenge/(?P<acme>.+)',
+    url(r'^\.well-known/acme-challenge/(?P<acme>.+)$',
         lambda request, acme: HttpResponse('%s.fP2MtOMJg03pQ5U9zfjwPdFzA-12z143KjztlvCkMqc' % acme))
 ]
