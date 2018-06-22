@@ -3,7 +3,9 @@ import json
 from django.test import TestCase
 from django.urls import reverse
 from model_mommy import mommy
+from parameterized import parameterized
 
+from apps.pp.consts import SUGGESTED_CORRECTION
 from apps.pp.models import Annotation
 from apps.pp.models import AnnotationReport
 from apps.pp.tests.utils import create_test_user
@@ -90,21 +92,22 @@ class AnnotationReportAPITest(TestCase):
                                    content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 404)
 
+    @parameterized.expand([
+        ('SPAM', 'komentarz', 200),
+        ('SPAM', '', 200),
+        (SUGGESTED_CORRECTION, 'komentarz', 200),
+        (SUGGESTED_CORRECTION, '', 400),
 
-    def test_post_new_annotation_report(self):
+    ])
+    def test_post_new_annotation_report(self, reason, comment, response_code):
         annotation = Annotation.objects.create(user=self.user)
-
-        report_data = {
-            'reason': 'SPAM',
-            'comment': "komentarz",
-        }
 
         body = json.dumps({
             'data': {
                 'type': 'annotationReports',
                 'attributes': {
-                    'reason': report_data['reason'],
-                    'comment': report_data['comment'],
+                    'reason': reason,
+                    'comment': comment,
                 },
                 'relationships': {
                     'annotation': {
@@ -118,29 +121,30 @@ class AnnotationReportAPITest(TestCase):
         })
 
         response = self.client.post(self.report_url.format(annotation.id), body, content_type='application/vnd.api+json')
-        self.assertEqual(response.status_code, 200)
-        response_data = json.loads(response.content.decode('utf8'))
+        self.assertEqual(response.status_code, response_code)
+        if response_code == 200:
+            response_data = json.loads(response.content.decode('utf8'))
 
-        # Get first annotation report there is
-        report = AnnotationReport.objects.first()
-        correct_response = {
-            'data': {
-                'id': str(report.id),
-                'type': 'annotationReports',
-                'attributes': {
-                    'reason': report_data['reason'],
-                    'comment': report_data['comment'],
-                },
-                'relationships': {
-                    'annotation': {
-                        'data': {'id': str(annotation.id), 'type': 'annotations'},
-                        'links': {
-                            'related': reverse('api:annotation_report_related_annotation',
-                                               kwargs={'report_id': report.id})
+            # Get first annotation report there is
+            report = AnnotationReport.objects.first()
+            correct_response = {
+                'data': {
+                    'id': str(report.id),
+                    'type': 'annotationReports',
+                    'attributes': {
+                        'reason': reason,
+                        'comment': comment,
+                    },
+                    'relationships': {
+                        'annotation': {
+                            'data': {'id': str(annotation.id), 'type': 'annotations'},
+                            'links': {
+                                'related': reverse('api:annotation_report_related_annotation',
+                                                   kwargs={'report_id': report.id})
+                            }
                         }
                     }
                 }
             }
-        }
 
-        self.assertEqual(response_data, correct_response)
+            self.assertEqual(response_data, correct_response)
