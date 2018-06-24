@@ -4,7 +4,9 @@ import inflection
 from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
+from apps.pp.consts import SUGGESTED_CORRECTION
 from apps.pp.models import AnnotationReport
 from apps.pp.utils import standardize_url
 from .models import Annotation, AnnotationUpvote
@@ -235,9 +237,17 @@ class AnnotationPatchDeserializer(ResourceSerializer):
 
 class AnnotationReportDeserializer(ResourceTypeSerializer):
     class Attributes(serializers.ModelSerializer):
+        def validate(self, data):
+            if data.get('reason') is SUGGESTED_CORRECTION and not data.get('comment'):
+                raise ValidationError({
+                    'comment': 'Comment is required for report "%s" reason' % SUGGESTED_CORRECTION}
+                )
+            return data
+
         class Meta:
             model = AnnotationReport
             fields = ('reason', 'comment')
+            extra_kwargs = {'comment': {'required': False, 'allow_blank': True}}
 
     class Relationships(serializers.Serializer):
         class Annotation(RelationDeserializer):
