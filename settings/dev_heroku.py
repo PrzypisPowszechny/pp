@@ -7,7 +7,8 @@ DEBUG = False
 SECRET_KEY = os.environ.get('PP_SECRET_KEY')
 
 ALLOWED_HOSTS = [
-    'przypispowszechny.pl', 'www.przypispowszechny.pl',
+    'devdeploy1.przypispowszechny.pl', 'www.devdeploy1.przypispowszechny.pl',
+    'devdeploy2.przypispowszechny.pl', 'www.devdeploy2.przypispowszechny.pl',
 ]
 
 # Update database configuration with $DATABASE_URL.
