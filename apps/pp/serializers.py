@@ -123,6 +123,7 @@ class RelationManySerializer(serializers.Serializer):
     related_link_url_name = None
     links = RelationLinksSerializer(required=True)
 
+
 # Annotation
 
 class AnnotationDeserializer(ResourceTypeSerializer):

@@ -14,3 +14,12 @@ annotation_report_reasons = (
     ('OTHER', 'inne'),
     (SUGGESTED_CORRECTION, 'sugerowana poprawka'),
 )
+
+
+PP_PUBLISHER = 'PP'
+DEMAGOG_PUBLISHER = 'DEMAGOG'
+
+publishers = (
+    (PP_PUBLISHER, 'Przypis Powszechny'),
+    (DEMAGOG_PUBLISHER, 'Demagog'),
+)

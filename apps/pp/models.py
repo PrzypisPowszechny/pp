@@ -31,11 +31,14 @@ class AnnotationBase(UserInput):
     url_id = models.CharField(max_length=URL_SUPPORTED_LENGTH, blank=True)
     # Processed URL striped of some (probably) irrelevant data that might make identification harder
 
-    range = models.TextField(max_length=1000)
-    # Json data with information aboute the annotation location
+    range = models.TextField(max_length=1000, blank=True)
+    # Json data with information about the annotation location
 
     quote = models.TextField(max_length=250)
     # The exact annotated text part
+
+    quote_context = models.TextField(max_length=250, blank=True)
+    # The annotated text with its surrounding
 
     active = models.BooleanField(blank=True, default=True)
 
@@ -64,6 +67,8 @@ class Annotation(AnnotationBase):
 
     class JSONAPIMeta:
         resource_name = 'annotations'
+
+    publisher = models.CharField(choices=consts.publishers, max_length=10, default=consts.PP_PUBLISHER)
 
     priority = models.CharField(choices=consts.annotation_priorities, max_length=10)
     comment = models.TextField(max_length=1000)
