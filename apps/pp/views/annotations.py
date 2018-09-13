@@ -160,7 +160,9 @@ class AnnotationList(AnnotationBase, GenericAPIView):
 
         data_list = self.pre_serialize_queryset(queryset)
 
-        return self.get_paginated_response(AnnotationListSerializer(data_list, many=True).data)
+        return self.get_paginated_response(
+            AnnotationListSerializer(data_list, many=True, context={'request': request}).data
+        )
 
 
 class AnnotationFeedbackRelatedAnnotationSingle(AnnotationBase, APIView):
