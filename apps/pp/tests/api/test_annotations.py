@@ -8,6 +8,7 @@ from model_mommy import mommy
 from parameterized import parameterized
 from rest_framework import serializers
 
+from apps.pp import consts
 from apps.pp.models import Annotation, AnnotationUpvote, AnnotationReport
 from apps.pp.tests.utils import create_test_user, testserver_reverse
 
@@ -28,7 +29,7 @@ class AnnotationAPITest(TestCase):
                                                range='{}',
                                                annotation_link="www.przypispowszechny.com",
                                                annotation_link_title="very nice")
-        urf = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
+        AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
         response = self.client.get(self.base_url.format(annotation.id))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/vnd.api+json')
@@ -571,23 +572,27 @@ class AnnotationAPITest(TestCase):
             'data': {'id': str(urf.id), 'type': 'annotationUpvotes'}
         })
 
+    def get_valid_annotation_attrs(self):
+        return {
+            'url': "http://www.przypis.pl/",
+            'range': {'start': "Od tad", 'end': "do tad"},
+            'quote': 'very nice',
+            'quote_context': 'it is indeed very nice and smooth',
+            'publisher': 'PP',
+            'priority': 'NORMAL',
+            'comment': "komentarz",
+            'annotation_link': 'www.przypispowszechny.com',
+            'annotation_link_title': 'very nice too',
+        }
+
     def get_valid_request_template(self):
         return {
             'data': {
                 'type': 'annotations',
-                'attributes': {
-                    'url': "http://www.przypis.pl/",
-                    'range': {'start': "Od tad", 'end': "do tad"},
-                    'quote': 'very nice',
-                    'quoteContext': 'it is indeed very nice and smooth',
-                    'publisher': 'PP',
-                    'priority': 'NORMAL',
-                    'comment': "komentarz",
-                    'annotationLink': 'www.przypispowszechny.com',
-                    'annotationLinkTitle': 'very nice too',
-                },
+                'attributes': self.get_valid_annotation_attrs()
             }
         }
+
 
     def test_post_new_annotation__exact(self):
         base_url = "/api/annotations"
@@ -678,16 +683,102 @@ class AnnotationAPITest(TestCase):
         # Check if range is stored as json (despite being posted and returned as normal dict)
         self.assertEqual(new_annotation.range, json.dumps(range))
 
-        # PATCH
-        id = response_data['data']['id']
+        # Reset annotation before patching it
+        initial_range = self.get_valid_annotation_attrs()['range']
+        annotation = Annotation.objects.last()
+        annotation.range = json.dumps(initial_range)
+        annotation.save()
+
+        # PATCH - ignore changes
         response = self.client.patch(
-            '{}/{}'.format(base_url, id),
+            '{}/{}'.format(base_url, annotation.id),
             json.dumps(request_payload),
             content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 200, msg=response.data)
         response_data = json.loads(response.content.decode('utf8'))
         self.assertEqual(
-            response_data['data']['attributes']['range'], range
+            response_data['data']['attributes']['range'], initial_range
+        )
+
+    # TODO: more valid cases + some invalid as well
+    @parameterized.expand([
+        ['xxxx quote'],
+        # Blank is invalid
+        # [''],
+    ])
+    def test_post_and_patch_annotation__field_quote(self, quote):
+        # POST
+        base_url = "/api/annotations"
+        request_payload = self.get_valid_request_template()
+        request_payload['data']['attributes']['quote'] = quote
+        response = self.client.post(
+            base_url,
+            json.dumps(request_payload),
+            content_type='application/vnd.api+json')
+
+        self.assertEqual(response.status_code, 200, msg=response.data)
+        new_annotation = Annotation.objects.filter(user=self.user).last()
+        self.assertIsNotNone(new_annotation)
+        self.assertEqual(response['content-type'], 'application/vnd.api+json', msg=response.content.decode('utf8'))
+        response_data = json.loads(response.content.decode('utf8'))
+        self.assertEqual(
+            response_data['data']['attributes']['quote'], quote
+        )
+
+        initial_quote = self.get_valid_annotation_attrs()['quote']
+        annotation = Annotation.objects.last()
+        annotation.quote = initial_quote
+        annotation.save()
+
+        # PATCH - ignore changes
+        response = self.client.patch(
+            '{}/{}'.format(base_url, annotation.id),
+            json.dumps(request_payload),
+            content_type='application/vnd.api+json')
+        self.assertEqual(response.status_code, 200, msg=response.data)
+        response_data = json.loads(response.content.decode('utf8'))
+        self.assertEqual(
+            response_data['data']['attributes']['quote'], initial_quote
+        )
+
+    # TODO: more valid cases + some invalid as well
+    @parameterized.expand([
+        ['xxxx quote context'],
+        [''],
+    ])
+    def test_post_and_patch_annotation__field_quote(self, quote_context):
+        # POST
+        base_url = "/api/annotations"
+        request_payload = self.get_valid_request_template()
+        request_payload['data']['attributes']['quoteContext'] = quote_context
+        response = self.client.post(
+            base_url,
+            json.dumps(request_payload),
+            content_type='application/vnd.api+json')
+
+        self.assertEqual(response.status_code, 200, msg=response.data)
+        new_annotation = Annotation.objects.filter(user=self.user).last()
+        self.assertIsNotNone(new_annotation)
+        self.assertEqual(response['content-type'], 'application/vnd.api+json', msg=response.content.decode('utf8'))
+        response_data = json.loads(response.content.decode('utf8'))
+        self.assertEqual(
+            response_data['data']['attributes']['quoteContext'], quote_context
+        )
+
+        initial_quote_context = self.get_valid_annotation_attrs()['quote_context']
+        annotation = Annotation.objects.last()
+        annotation.quote_context = initial_quote_context
+        annotation.save()
+
+        # PATCH - ignore changes
+        response = self.client.patch(
+            '{}/{}'.format(base_url, annotation.id),
+            json.dumps(request_payload),
+            content_type='application/vnd.api+json')
+        self.assertEqual(response.status_code, 200, msg=response.data)
+        response_data = json.loads(response.content.decode('utf8'))
+        self.assertEqual(
+            response_data['data']['attributes']['quoteContext'], initial_quote_context
         )
 
     @parameterized.expand([
@@ -707,7 +798,16 @@ class AnnotationAPITest(TestCase):
             json.dumps(request_payload),
             content_type='application/vnd.api+json')
 
-        if is_valid:
+        if not is_valid:
+            self.assertEqual(response.status_code, 400, msg=response.data)
+            new_annotation = Annotation.objects.filter(user=self.user).last()
+            self.assertIsNone(new_annotation)
+            self.assertEqual(response['content-type'], 'application/vnd.api+json', msg=response.content.decode('utf8'))
+            response_data = json.loads(response.content.decode('utf8'))
+            self.assertEqual(
+                response_data['errors'][0]['source']['pointer'], '/attributes/annotationLink'
+            )
+        else:
             self.assertEqual(response.status_code, 200, msg=response.data)
             new_annotation = Annotation.objects.filter(user=self.user).last()
             self.assertIsNotNone(new_annotation)
@@ -716,14 +816,20 @@ class AnnotationAPITest(TestCase):
             self.assertEqual(
                 response_data['data']['attributes']['annotationLink'], annotation_link
             )
-        else:
-            self.assertEqual(response.status_code, 400, msg=response.data)
-            new_annotation = Annotation.objects.filter(user=self.user).last()
-            self.assertIsNone(new_annotation)
-            self.assertEqual(response['content-type'], 'application/vnd.api+json', msg=response.content.decode('utf8'))
-            response_data = json.loads(response.content.decode('utf8'))
+
+            # Reset annotation to patch it
+            annotation = Annotation.objects.last()
+            annotation.annotation_link = request_payload['data']['attributes']['annotationLink']
+            annotation.save()
+
+            # PATCH
+            response = self.client.patch(
+                '{}/{}'.format(base_url, annotation.id),
+                json.dumps(request_payload),
+                content_type='application/vnd.api+json')
+            self.assertEqual(response.status_code, 200, msg=response.data)
             self.assertEqual(
-                response_data['errors'][0]['source']['pointer'], '/attributes/annotationLink'
+                response_data['data']['attributes']['annotationLink'], annotation_link
             )
 
     @parameterized.expand([
@@ -753,10 +859,14 @@ class AnnotationAPITest(TestCase):
             response_data['data']['attributes']['comment'], comment or ""
         )
 
+        # Reset annotation to patch it
+        annotation = Annotation.objects.last()
+        annotation.comment = request_payload['data']['attributes'].get('comment', '')
+        annotation.save()
+
         # PATCH
-        id = response_data['data']['id']
         response = self.client.patch(
-            '{}/{}'.format(base_url, id),
+            '{}/{}'.format(base_url, annotation.id),
             json.dumps(request_payload),
             content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 200, msg=response.data)
