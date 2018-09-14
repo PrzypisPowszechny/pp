@@ -14,6 +14,8 @@ ALLOWED_HOSTS = [
 # Update database configuration with $DATABASE_URL.
 DATABASES['default'].update(dj_database_url.config(conn_max_age=500))
 
+# Honor the X-Forwarded-Host header to know real domain (one from ALLOWED_HOSTS)
+USE_X_FORWARDED_HOST = True
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 

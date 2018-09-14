@@ -1,14 +1,13 @@
 import json
 
 from django.test import TestCase
-from django.urls import reverse
 from model_mommy import mommy
 from parameterized import parameterized
 
 from apps.pp.consts import SUGGESTED_CORRECTION
 from apps.pp.models import Annotation
 from apps.pp.models import AnnotationReport
-from apps.pp.tests.utils import create_test_user
+from apps.pp.tests.utils import create_test_user, testserver_reverse
 
 
 class AnnotationReportAPITest(TestCase):
@@ -40,8 +39,8 @@ class AnnotationReportAPITest(TestCase):
                     'annotation': {
                         'data': {'id': str(annotation.id), 'type': 'annotations'},
                         'links': {
-                            'related': reverse('api:annotation_report_related_annotation',
-                                               kwargs={'report_id': report.id})
+                            'related': testserver_reverse('api:annotation_report_related_annotation',
+                                                          kwargs={'report_id': report.id})
                         }
                     }
                 }
@@ -79,8 +78,8 @@ class AnnotationReportAPITest(TestCase):
                         'annotation': {
                             'data': {'id': str(annotation.id), 'type': 'annotations'},
                             'links': {
-                                'related': reverse('api:annotation_report_related_annotation',
-                                                   kwargs={'report_id': report.id})
+                                'related': testserver_reverse('api:annotation_report_related_annotation',
+                                                              kwargs={'report_id': report.id})
                             }
                         }
                     }
@@ -120,7 +119,8 @@ class AnnotationReportAPITest(TestCase):
             }
         })
 
-        response = self.client.post(self.report_url.format(annotation.id), body, content_type='application/vnd.api+json')
+        response = self.client.post(self.report_url.format(annotation.id), body,
+                                    content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, response_code)
         if response_code == 200:
             response_data = json.loads(response.content.decode('utf8'))
@@ -139,8 +139,8 @@ class AnnotationReportAPITest(TestCase):
                         'annotation': {
                             'data': {'id': str(annotation.id), 'type': 'annotations'},
                             'links': {
-                                'related': reverse('api:annotation_report_related_annotation',
-                                                   kwargs={'report_id': report.id})
+                                'related': testserver_reverse('api:annotation_report_related_annotation',
+                                                              kwargs={'report_id': report.id})
                             }
                         }
                     }

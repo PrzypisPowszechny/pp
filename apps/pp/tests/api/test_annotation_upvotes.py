@@ -1,10 +1,9 @@
 import json
 
 from django.test import TransactionTestCase
-from django.urls import reverse
 
 from apps.pp.models import Annotation, AnnotationUpvote
-from apps.pp.tests.utils import create_test_user
+from apps.pp.tests.utils import create_test_user, testserver_reverse
 
 
 # Sqlite sometimes crashes when there are very many TestCases,
@@ -35,7 +34,7 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
                 'relationships': {
                     'annotation': {
                         'links': {
-                            'related': reverse('api:annotation_upvote_related_annotation', args=(upvote.id,))
+                            'related': testserver_reverse('api:annotation_upvote_related_annotation', args=(upvote.id,))
                         },
                         'data': {
                             'type': 'annotations', 'id': str(annotation.id)
@@ -64,7 +63,7 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
                 'relationships': {
                     'annotation': {
                         'links': {
-                            'related': reverse('api:annotation_upvote_related_annotation', args=(upvote.id,))
+                            'related': testserver_reverse('api:annotation_upvote_related_annotation', args=(upvote.id,))
                         },
                         'data': {
                             'type': 'annotations', 'id': str(annotation.id)
@@ -108,7 +107,7 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
                 'relationships': {
                     'annotation': {
                         'links': {
-                            'related': reverse('api:annotation_upvote_related_annotation', args=(upvote.id,))
+                            'related': testserver_reverse('api:annotation_upvote_related_annotation', args=(upvote.id,))
                         },
                         'data': {
                             'type': 'annotations', 'id': str(annotation.id)

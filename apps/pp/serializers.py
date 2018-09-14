@@ -81,7 +81,7 @@ class ResourceLinksSerializer(serializers.Serializer):
 
     def get_self(self, instance):
         obj_id = getattr(instance, 'id', None) or instance
-        return reverse(self.self_link_url_name, args=(obj_id,))
+        return self.context['request'].build_absolute_uri(reverse(self.self_link_url_name, args=(obj_id,)))
 
 
 class RelationLinksSerializer(serializers.Serializer):
@@ -98,7 +98,7 @@ class RelationLinksSerializer(serializers.Serializer):
             "%s requires at least one parent to set related_link_url_name" % RelationLinksSerializer.__name__
 
         obj_id = getattr(instance, 'id', None) or instance
-        return reverse(related_link_url_name, args=(obj_id,))
+        return self.context['request'].build_absolute_uri(reverse(related_link_url_name, args=(obj_id,)))
 
 
 class RelationDeserializer(serializers.Serializer):
