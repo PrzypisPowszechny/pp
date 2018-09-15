@@ -577,12 +577,12 @@ class AnnotationAPITest(TestCase):
             'url': "http://www.przypis.pl/",
             'range': {'start': "Od tad", 'end': "do tad"},
             'quote': 'very nice',
-            'quote_context': 'it is indeed very nice and smooth',
+            'quoteContext': 'it is indeed very nice and smooth',
             'publisher': 'PP',
             'priority': 'NORMAL',
             'comment': "komentarz",
-            'annotation_link': 'www.przypispowszechny.com',
-            'annotation_link_title': 'very nice too',
+            'annotationLink': 'www.przypispowszechny.com',
+            'annotationLinkTitle': 'very nice too',
         }
 
     def get_valid_request_template(self):
@@ -746,7 +746,7 @@ class AnnotationAPITest(TestCase):
         ['xxxx quote context'],
         [''],
     ])
-    def test_post_and_patch_annotation__field_quote(self, quote_context):
+    def test_post_and_patch_annotation__field_quote_context(self, quote_context):
         # POST
         base_url = "/api/annotations"
         request_payload = self.get_valid_request_template()
@@ -755,7 +755,6 @@ class AnnotationAPITest(TestCase):
             base_url,
             json.dumps(request_payload),
             content_type='application/vnd.api+json')
-
         self.assertEqual(response.status_code, 200, msg=response.data)
         new_annotation = Annotation.objects.filter(user=self.user).last()
         self.assertIsNotNone(new_annotation)
@@ -765,7 +764,7 @@ class AnnotationAPITest(TestCase):
             response_data['data']['attributes']['quoteContext'], quote_context
         )
 
-        initial_quote_context = self.get_valid_annotation_attrs()['quote_context']
+        initial_quote_context = self.get_valid_annotation_attrs()['quoteContext']
         annotation = Annotation.objects.last()
         annotation.quote_context = initial_quote_context
         annotation.save()
