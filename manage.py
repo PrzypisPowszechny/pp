@@ -3,13 +3,7 @@ import os
 import sys
 
 if __name__ == "__main__":
-    # By default start with base settings
-    settings = "settings.dev.base"
-
-    if 'test' in sys.argv:
-        settings = "settings.test"
-
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", settings)
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", 'settings')
 
     try:
         from django.core.management import execute_from_command_line

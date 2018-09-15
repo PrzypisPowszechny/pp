@@ -11,7 +11,8 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 # noinspection PyUnresolvedReferences
-from .custom import *
+from .partial_custom import *
+from .partial_celery import *
 
 import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -80,7 +81,7 @@ MIDDLEWARE = [
 ]
 
 APPEND_SLASH = False
-ROOT_URLCONF = 'apps.urls'
+ROOT_URLCONF = 'urls'
 
 STATIC_ROOT = 'static'
 STATIC_URL = '/static/'
@@ -101,7 +102,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'apps.wsgi.application'
+WSGI_APPLICATION = 'wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
