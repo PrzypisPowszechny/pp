@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('pp', '0021_annotation_texts_lengths'),
+        ('pp', '0022_annotation_report_blank_comment'),
     ]
 
     operations = [

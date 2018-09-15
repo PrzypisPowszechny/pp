@@ -36,7 +36,7 @@ Push changes to heroku from you local prod-heroku branch to master on heroku
 `$ git push heroku-[prod|dev1] my-local-branch:master`
 
 Migrate database if necessary  
-`$ heroku run python manage.py migrate`
+`$ heroku run --app pp-[prod|dev1] python manage.py migrate`
 
 
 
