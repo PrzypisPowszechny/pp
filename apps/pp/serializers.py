@@ -123,19 +123,21 @@ class RelationManySerializer(serializers.Serializer):
     related_link_url_name = None
     links = RelationLinksSerializer(required=True)
 
+
 # Annotation
 
 class AnnotationDeserializer(ResourceTypeSerializer):
     class Attributes(serializers.ModelSerializer):
-        comment = serializers.CharField(required=False, allow_blank=True)
-        range = ObjectField(json_internal_type=True)
-        # TODO: this field is no longer used in the frontend, so required=False, but consider removing
-        quote = serializers.CharField(required=False)
         url = StandardizedRepresentationURLField()
+        range = ObjectField(json_internal_type=True)
+        quote = serializers.CharField(required=True)
+        # TODO: this will be required soon
+        quote_context = serializers.CharField(required=False, allow_blank=True)
+        comment = serializers.CharField(required=False, allow_blank=True)
 
         class Meta:
             model = Annotation
-            fields = ('url', 'range', 'quote',
+            fields = ('url', 'range', 'quote', 'quote_context',
                       'priority', 'comment', 'annotation_link', 'annotation_link_title')
 
     attributes = Attributes()
@@ -143,6 +145,7 @@ class AnnotationDeserializer(ResourceTypeSerializer):
 
 class AnnotationSerializer(ResourceSerializer, AnnotationDeserializer):
     class Attributes(AnnotationDeserializer.Attributes):
+        publisher = serializers.CharField(required=True)
         upvote_count_except_user = serializers.SerializerMethodField()
         does_belong_to_user = serializers.SerializerMethodField()
 
@@ -150,7 +153,7 @@ class AnnotationSerializer(ResourceSerializer, AnnotationDeserializer):
             model = AnnotationDeserializer.Attributes.Meta.model
 
             fields = AnnotationDeserializer.Attributes.Meta.fields + (
-                'create_date', 'upvote_count_except_user', 'does_belong_to_user',
+                'publisher', 'create_date', 'upvote_count_except_user', 'does_belong_to_user',
             )
 
         @property
@@ -185,16 +188,17 @@ class AnnotationSerializer(ResourceSerializer, AnnotationDeserializer):
 
 class AnnotationListSerializer(ResourceSerializer):
     class Attributes(serializers.ModelSerializer):
+        url = StandardizedRepresentationURLField()
+        range = ObjectField(json_internal_type=True)
+        quote = serializers.CharField(required=True)
+        quote_context = serializers.CharField()
+        publisher = serializers.CharField(required=True)
         upvote_count_except_user = serializers.IntegerField(default=0)
         does_belong_to_user = serializers.BooleanField(default=False)
-        range = ObjectField(json_internal_type=True)
-        # TODO: this field is no longer used in the frontend, so required=False, but consider removing
-        quote = serializers.CharField(required=False)
-        url = StandardizedRepresentationURLField()
 
         class Meta:
             model = Annotation
-            fields = ('url', 'range', 'quote',
+            fields = ('url', 'range', 'quote', 'quote_context', 'publisher',
                       'priority', 'comment', 'annotation_link', 'annotation_link_title',
                       'create_date', 'upvote_count_except_user', 'does_belong_to_user',
                       )
@@ -226,6 +230,7 @@ class AnnotationListSerializer(ResourceSerializer):
 class AnnotationPatchDeserializer(ResourceSerializer):
     class Attributes(serializers.ModelSerializer):
         comment = serializers.CharField(required=False, allow_blank=True)
+
         class Meta:
             model = Annotation
             fields = ('priority', 'comment', 'annotation_link', 'annotation_link_title')

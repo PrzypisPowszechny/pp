@@ -10,9 +10,10 @@ class UserModelTest(TestCase):
         self.assertEqual(str(user), user.username)
 
     def test_creating_multiple_users(self):
+        initial_count = get_user_model().objects.count()
         for i in range(40):
             get_user_model().objects.create_user(username="Rozbojnik_" + str(i + 1))
-        self.assertEqual(40, get_user_model().objects.count())
+        self.assertEqual(initial_count + 40, get_user_model().objects.count())
 
 
 class AnnotationUpvoteModelTest(TestCase):
