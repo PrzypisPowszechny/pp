@@ -817,8 +817,9 @@ class AnnotationAPITest(TestCase):
             )
 
             # Reset annotation to patch it
+            initial_annotation_link = self.get_valid_annotation_attrs()['annotationLink']
             annotation = Annotation.objects.last()
-            annotation.annotation_link = request_payload['data']['attributes']['annotationLink']
+            annotation.annotation_link = initial_annotation_link
             annotation.save()
 
             # PATCH
@@ -859,8 +860,9 @@ class AnnotationAPITest(TestCase):
         )
 
         # Reset annotation to patch it
+        initial_annotation_comment = self.get_valid_annotation_attrs()['comment']
         annotation = Annotation.objects.last()
-        annotation.comment = request_payload['data']['attributes'].get('comment', '')
+        annotation.comment = initial_annotation_comment
         annotation.save()
 
         # PATCH
