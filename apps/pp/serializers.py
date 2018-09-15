@@ -132,7 +132,7 @@ class AnnotationDeserializer(ResourceTypeSerializer):
         range = ObjectField(json_internal_type=True)
         quote = serializers.CharField(required=True)
         # TODO: this will be required soon
-        quote_context = serializers.CharField(required=False)
+        quote_context = serializers.CharField(required=False, allow_blank=True)
         comment = serializers.CharField(required=False, allow_blank=True)
 
         class Meta:
