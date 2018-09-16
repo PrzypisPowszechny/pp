@@ -1,0 +1,13 @@
+FROM python:3.6-slim
+ARG ENV_PATH
+
+RUN mkdir /code
+WORKDIR /code
+
+RUN pip install --no-cache-dir virtualenv && \
+    virtualenv ${ENV_PATH} && . $ENV_PATH/bin/activate
+VOLUME $ENV_PATH
+
+COPY ./docker/virtualenv_entrypoint.sh /virtualenv_entrypoint.sh
+ENTRYPOINT ["/virtualenv_entrypoint.sh"]
+CMD ["sh"]

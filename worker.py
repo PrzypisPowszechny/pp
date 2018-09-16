@@ -4,12 +4,12 @@ import os
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 
-app = Celery('pp-celery')
+celery_app = Celery('pp-celery')
 
 # Using a string here means the worker will not have to
 # pickle the object when using Windows.
 # All celery settings should be set within django settings.
-app.config_from_object('django.conf:settings')
+celery_app.config_from_object('django.conf:settings')
 
 # NOTE: lambda makes it lazy here, so importing recursion is avoided
-app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
+celery_app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)

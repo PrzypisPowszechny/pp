@@ -2,7 +2,7 @@ import sys
 
 # Initialize celery before anything else
 # noinspection PyUnresolvedReferences
-import run_celery
+import worker
 
 if 'test' in sys.argv:
     # For test command by default start with test settings
