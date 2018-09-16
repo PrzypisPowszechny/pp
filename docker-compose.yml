@@ -1,0 +1,30 @@
+version: '3'
+services:
+  web:
+    build: .
+    image: "pythonapp"
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/code
+    command: python manage.py runserver 0.0.0.0:8000
+  worker:
+    image: "pythonapp"
+    volumes:
+      - .:/code
+    command: celery worker --app=run_celery.app --loglevel=info --concurrency=2
+    environment:
+      - C_FORCE_ROOT=TRUE
+  redis:
+    image: "redis:alpine"
+    volumes:
+      - ./data/redis:/data
+
+  postgres:
+    image: "postgres:10-alpine"
+    volumes:
+      - ./data/posgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=pp
+      - POSTGRES_PASSWORD=pp
+      - POSTGRES_DB=pp

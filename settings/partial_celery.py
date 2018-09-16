@@ -1,5 +1,5 @@
 
-BROKER_URL = 'redis://localhost:6379/0'
+BROKER_URL = 'redis://redis:6379/0'
 
 CELERY_MAX_TASKS_PER_CHILD = 1000
 
