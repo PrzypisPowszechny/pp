@@ -20,6 +20,8 @@ services:
     environment:
       - DATABASE_URL=postgres://pp:pp@postgres:5432/pp
       - ENV_PATH=/opt/env
+      - PIP_ROOT=/opt/env/
+      - PIP_PREFIX=./
     entrypoint:
       - ./docker/virtualenv_setup_entrypoint.sh
     command: python ./manage.py runserver 0.0.0.0:8000

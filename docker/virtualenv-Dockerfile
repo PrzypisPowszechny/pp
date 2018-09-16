@@ -4,8 +4,7 @@ ARG ENV_PATH
 RUN mkdir /code
 WORKDIR /code
 
-RUN pip install --no-cache-dir virtualenv && \
-    virtualenv ${ENV_PATH} && . $ENV_PATH/bin/activate
+RUN pip install --no-cache-dir virtualenv
 VOLUME $ENV_PATH
 
 COPY ./docker/virtualenv_entrypoint.sh /virtualenv_entrypoint.sh

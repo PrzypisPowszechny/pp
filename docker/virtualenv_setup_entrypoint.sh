@@ -15,12 +15,13 @@ then
 else
     # Or create env
     echo Creating \"${ENV_PATH}\" virtualenv...
+    # We do not necessarily have to pip it, but this way this script can run with any python image
     pip install virtualenv
     virtualenv ${ENV_PATH}
     . ${ENV_PATH}/bin/activate
 
     # And install all proper requirements of our python app
-    pip install  -r /code/requirements.txt --root=${ENV_PATH} --prefix=./
+    pip install  -r /code/requirements.txt
 fi
 
 exec "$@"

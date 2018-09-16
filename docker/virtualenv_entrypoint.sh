@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-echo Activating \"${ENV_PATH}\" virtualenv...
+echo "Env path: \"${ENV_PATH}\""
 
 # Make sure all args given
 if [ -z ${ENV_PATH} ]; then
@@ -11,9 +11,12 @@ fi
 # Add here any commands that are required before starting python app
 if ! [ -f ${ENV_PATH}/bin/activate ]
 then
+    echo "Creating virtualenv..."
+    # We do not necessarily have to pip it, but this way this script can run with any python image
     pip install virtualenv
     virtualenv ${ENV_PATH}
 fi
 
+echo "Activating virtualenv..."
 . ${ENV_PATH}/bin/activate
 exec "$@"
