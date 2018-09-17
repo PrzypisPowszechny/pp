@@ -46,7 +46,9 @@ INSTALLED_APPS = [
     'corsheaders',
 
     # Main project app
+    'apps.annotation',
     'apps.pp',
+    'apps.user',
 
     'apps.origin',
 
@@ -138,17 +140,17 @@ AUTH_PASSWORD_VALIDATORS = [
 REST_FRAMEWORK = {
     # We do not use Django Rest Framework authentication backend
     # User our own authenticator that uses Django authentication instead of Django Rest Framework's
-    'DEFAULT_AUTHENTICATION_CLASSES': ['apps.pp.auth.DjangoRestUseDjangoAuthenticator'],
+    'DEFAULT_AUTHENTICATION_CLASSES': ['apps.annotation.auth.DjangoRestUseDjangoAuthenticator'],
     'PAGE_SIZE': 10,
     'ORDERING_PARAM': 'sort',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework_json_api.pagination.LimitOffsetPagination',
     'DEFAULT_PARSER_CLASSES': (
-        'apps.pp.parsers.JSONAPIParser',
+        'apps.annotation.parsers.JSONAPIParser',
         'rest_framework.parsers.FormParser',
         'rest_framework.parsers.MultiPartParser'
     ),
     'DEFAULT_RENDERER_CLASSES': (
-        'apps.pp.renderers.JSONAPIRenderer',
+        'apps.annotation.renderers.JSONAPIRenderer',
     ),
 }
 
@@ -161,9 +163,9 @@ JSON_CAMEL_CASE = {
 
 SWAGGER_SETTINGS = {
     'DEFAULT_FIELD_INSPECTORS': [
-        'apps.pp.inspectors.RootSerializerInspector',
-        'apps.pp.inspectors.IDFieldInspector',
-        'apps.pp.inspectors.ObjectFieldInspector',
+        'apps.annotation.inspectors.RootSerializerInspector',
+        'apps.annotation.inspectors.IDFieldInspector',
+        'apps.annotation.inspectors.ObjectFieldInspector',
         'drf_yasg.inspectors.CamelCaseJSONFilter',
         # ReferencingS... replaced with InlineS... which does not create serializers definitions index,
         # but does not require serializers class names to be unique across whole application

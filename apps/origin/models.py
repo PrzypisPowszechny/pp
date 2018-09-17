@@ -2,14 +2,14 @@ from django.conf import settings
 from django.db import models
 from simple_history.models import HistoricalRecords
 
-from apps.pp import consts
+from apps.annotation import consts
 
 
 class AnnotationOrigin(models.Model):
 
     create_date = models.DateTimeField(auto_now_add=True)
 
-    annotation = models.ForeignKey('pp.Annotation')
+    annotation = models.ForeignKey('annotation.Annotation')
 
     publisher = models.CharField(choices=consts.publishers, max_length=10, db_index=True)
 

@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('pp', '0025_add_annotation_category'),
+        ('annotation', '0025_add_annotation_category'),
     ]
 
     operations = [
@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
                 ('publisher', models.CharField(choices=[('PP', 'Przypis Powszechny'), ('DEMAGOG', 'Demagog')], db_index=True, max_length=10)),
                 ('external_id', models.CharField(db_index=True, max_length=255)),
                 ('original_data', models.TextField(max_length=10000)),
-                ('annotation', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='pp.Annotation')),
+                ('annotation', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='annotation.Annotation')),
             ],
         ),
         migrations.CreateModel(
@@ -40,7 +40,7 @@ class Migration(migrations.Migration):
                 ('history_date', models.DateTimeField()),
                 ('history_change_reason', models.CharField(max_length=100, null=True)),
                 ('history_type', models.CharField(choices=[('+', 'Created'), ('~', 'Changed'), ('-', 'Deleted')], max_length=1)),
-                ('annotation', models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='pp.Annotation')),
+                ('annotation', models.ForeignKey(blank=True, db_constraint=False, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='+', to='annotation.Annotation')),
                 ('history_user', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='+', to=settings.AUTH_USER_MODEL)),
             ],
             options={
