@@ -11,8 +11,8 @@ from django.db.models import F
 def insert_demagog_user(apps, schema):
     annotation_model = apps.get_model('pp.Annotation')
     historical_annotation_model = apps.get_model('pp.HistoricalAnnotation')
-    annotation_model.objects.update(category=F('priority'))
-    historical_annotation_model.objects.update(category=F('priority'))
+    annotation_model.objects.update(fact_category=F('priority'))
+    historical_annotation_model.objects.update(fact_category=F('priority'))
 
 
 class Migration(migrations.Migration):
@@ -24,13 +24,13 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='annotation',
-            name='category',
+            name='fact_category',
             field=models.CharField(choices=[('NORMAL', 'normalny'), ('WARNING', 'ostrzegawczy'), ('ALERT', 'niebezpieczny')], default='unset', max_length=10),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='historicalannotation',
-            name='category',
+            name='fact_category',
             field=models.CharField(choices=[('NORMAL', 'normalny'), ('WARNING', 'ostrzegawczy'), ('ALERT', 'niebezpieczny')], default='unset', max_length=10),
             preserve_default=False,
         ),

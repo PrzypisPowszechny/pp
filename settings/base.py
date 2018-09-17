@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     # Main project app
     'apps.pp',
 
+    'apps.origin',
+
     # Ann app that saves models' states as they change together with the user who produced the change
     'simple_history',
 

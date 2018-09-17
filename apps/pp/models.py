@@ -73,7 +73,7 @@ class Annotation(AnnotationBase):
     priority = models.CharField(choices=consts.annotation_priorities, max_length=10)
     # Deprecated, it will be replaced by category
 
-    category = models.CharField(choices=consts.annotation_priorities, max_length=10)
+    fact_category = models.CharField(choices=consts.annotation_priorities, max_length=10)
 
     comment = models.TextField(max_length=1000)
 
