@@ -45,12 +45,11 @@ INSTALLED_APPS = [
     # Adds cross-origin headers to http request in development
     'corsheaders',
 
-    # Main project app
+    # Main project apps
     'apps.annotation',
-    'apps.pp',
-    'apps.user',
-
     'apps.origin',
+    'apps.pp',
+    'apps.site_test',
 
     # Ann app that saves models' states as they change together with the user who produced the change
     'simple_history',

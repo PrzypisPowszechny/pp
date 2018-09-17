@@ -19,8 +19,7 @@ from django.http import HttpResponse
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
-from rest_framework.documentation import include_docs_urls
-from apps.annotation.views import site_test
+from apps.site_test.views import index as site_test_index
 
 
 yasg_schema_view = get_schema_view(
@@ -47,7 +46,7 @@ urlpatterns = [
         yasg_schema_view.with_ui('swagger', cache_timeout=None), name='schema_swagger'),
     url(r'^api/docs-redoc/$',
         yasg_schema_view.with_ui('redoc', cache_timeout=None), name='schema_redoc'),
-    url(r'^site_test/', site_test.index, name='site_test'),
+    url(r'^site_test/', site_test_index, name='site_test'),
     # This is the challenge from cerbot (certbot.eff.org) after running "sudo certbot certonly --manual"
     url(r'^\.well-known/acme-challenge/(?P<acme>.+)$',
         lambda request, acme: HttpResponse('%s.fP2MtOMJg03pQ5U9zfjwPdFzA-12z143KjztlvCkMqc' % acme))
