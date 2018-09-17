@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 echo "Env path: \"${ENV_PATH}\""
 
@@ -19,4 +19,5 @@ fi
 
 echo "Activating virtualenv..."
 . ${ENV_PATH}/bin/activate
+
 exec "$@"
