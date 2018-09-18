@@ -1,3 +1,4 @@
+from django.apps import apps
 from django.conf import settings
 from django.db import models
 from simple_history.models import HistoricalRecords
@@ -11,7 +12,7 @@ class AnnotationOrigin(models.Model):
 
     annotation = models.ForeignKey('annotation.Annotation')
 
-    publisher = models.CharField(choices=consts.publishers, max_length=10, db_index=True)
+    publisher = models.CharField(choices=consts.PUBLISHERS, max_length=10, db_index=True)
 
     external_id = models.CharField(max_length=255, db_index=True)
 

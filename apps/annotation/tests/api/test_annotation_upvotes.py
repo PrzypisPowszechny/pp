@@ -52,7 +52,7 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
         annotation = Annotation.objects.create(user=self.user)
         upvote = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
 
-        response = self.client.get(self.annotation_related_upvote_url.format(upvote.id),
+        response = self.client.get(self.annotation_related_upvote_url.format(annotation.id),
                                    content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(
@@ -73,7 +73,7 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
             }}
         )
 
-        response = self.client.get(self.annotation_related_upvote_url.format(upvote.id + 1),
+        response = self.client.get(self.annotation_related_upvote_url.format(annotation.id + 1),
                                    content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 404)
 

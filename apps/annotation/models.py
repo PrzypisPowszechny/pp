@@ -82,7 +82,7 @@ class Annotation(AnnotationBase):
         (UNKOWN, 'Nieweryfikowalne'),
     )
 
-    publisher = models.CharField(choices=consts.publishers, max_length=10, default=consts.PP_PUBLISHER)
+    publisher = models.CharField(choices=consts.PUBLISHERS, max_length=10, default=consts.PP_PUBLISHER)
 
     pp_category = models.CharField(choices=PP_CATERORIES, max_length=3)
     # Category for PP publisher (and other publishers' categories mapped to pp)

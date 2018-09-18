@@ -4,8 +4,6 @@ annotation_priorities = (
     ('ALERT', 'niebezpieczny'),
 )
 
-
-
 SUGGESTED_CORRECTION = 'SUGGESTED_CORRECTION'
 
 annotation_report_reasons = (
@@ -17,11 +15,10 @@ annotation_report_reasons = (
     (SUGGESTED_CORRECTION, 'sugerowana poprawka'),
 )
 
-
 PP_PUBLISHER = 'PP'
 DEMAGOG_PUBLISHER = 'DEMAGOG'
 
-publishers = (
+PUBLISHERS = (
     (PP_PUBLISHER, 'Przypis Powszechny'),
     (DEMAGOG_PUBLISHER, 'Demagog'),
 )
