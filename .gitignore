@@ -3,7 +3,8 @@
 # Local files of development databases
 db.*
 
-
+# Some data (state) files
+data
 
 ### Git python preset
 
