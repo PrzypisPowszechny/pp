@@ -3,7 +3,7 @@ Statement:
   - links: //optional
     - self: string(url)
   - attributes:
-    - source: string(url, standarized!) // url of page with annotation
+    - source: string(url, standardized!) // url of page with annotation
     - ??? url: string // is it full url of external demagog resource? it is never used
     - text: string // description or preface
     - sclass: string // what purpose?
