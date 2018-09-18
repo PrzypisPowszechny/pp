@@ -39,4 +39,4 @@ PARAMS:
   - uri: string(url, unstandardized)
   - client: "chrome_extension"
 RESPONSE:
-  - data: Statement
+  - data: list<Statement>

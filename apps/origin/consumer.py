@@ -1,13 +1,12 @@
-import logging
-
 import requests
-
-logger = logging.getLogger('pp.origin_consumer')
 
 
 class Consumer:
 
-    class ConsumingError(BaseException):
+    class ConsumingResponseError(BaseException):
+        pass
+
+    class ConsumingDataError(BaseException):
         pass
 
     api_name = None
@@ -23,16 +22,20 @@ class Consumer:
                 timeout=10.0,
             )
         except requests.exceptions.RequestException as error:
-            raise self.ConsumingError('{} request error: {}'.format(self.api_name, error.message))
+            raise self.ConsumingResponseError(self.request_error(getattr(error, 'message', error)))
 
         if not (200 <= response.status_code < 300):
-            raise self.ConsumingError('{} request to {} unexpected status {}. Response: \n {}'.format(
+            raise self.ConsumingResponseError('{} request to {} unexpected status {}. Response: \n {}'.format(
                 self.api_name, url, response.status_code, response.content)
             )
 
         try:
             json_data = response.json()
         except (TypeError, KeyError, ValueError):
-            raise self.ConsumingError('{} response is malformed'.format(self.api_name))
+            raise self.ConsumingResponseError('{} response is malformed and cannot be loaded as json'
+                                              .format(self.api_name))
 
         return json_data
+
+    def request_error(self, reason):
+        return '{} request error: {}'.format(self.api_name, reason)
