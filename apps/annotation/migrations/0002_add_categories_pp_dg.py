@@ -9,9 +9,9 @@ NORMAL = 'NORMAL'
 WARNING = 'WARNING'
 ALERT = 'ALERT'
 
-ADDITIONAL_INFO = 'ADD'
-CLARIFICATION = 'CLA'
-ERROR = 'ERR'
+ADDITIONAL_INFO = 'ADDITIONAL_INFO'
+CLARIFICATION = 'CLARIFICATION'
+ERROR = 'ERROR'
 
 
 def init_pp_category(apps, schema):
@@ -27,7 +27,7 @@ def init_pp_category(apps, schema):
     historical_annotation_model.objects.filter(priority=ALERT).update(pp_category=ERROR)
 
 
-def init_fact_category(apps, schema):
+def reverse_init_fact_category(apps, schema):
     annotation_model = apps.get_model('annotation.Annotation')
     historical_annotation_model = apps.get_model('annotation.HistoricalAnnotation')
     annotation_model.objects.update(fact_category=F('priority'))
@@ -58,7 +58,7 @@ class Migration(migrations.Migration):
             preserve_default=True,
         ),
 
-        migrations.RunPython(migrations.RunPython.noop, init_fact_category),
+        migrations.RunPython(migrations.RunPython.noop, reverse_init_fact_category),
 
         migrations.RemoveField(
             model_name='annotation',
@@ -71,23 +71,23 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='annotation',
             name='demagog_category',
-            field=models.CharField(blank=True, choices=[('T', 'Prawda'), ('PT', 'Prawda'), ('F', 'Fałsz'), ('PF', 'Fałsz'), ('M', 'Manipulacja'), ('U', 'Nieweryfikowalne')], max_length=3, null=True),
+            field=models.CharField(blank=True, choices=[('TRUE', 'Prawda'), ('PTRUE', 'Prawda'), ('FALSE', 'Fałsz'), ('PFALSE', 'Fałsz'), ('LIE', 'Manipulacja'), ('UNKNOWN', 'Nieweryfikowalne')], max_length=20, null=True),
         ),
         migrations.AddField(
             model_name='annotation',
             name='pp_category',
-            field=models.CharField(choices=[('ADD', 'Dodatkowa Informacja'), ('CLA', 'Doprecyzowanie'), ('ERR', 'Sprostowanie błędu')], default='non', max_length=3),
+            field=models.CharField(choices=[('ADDITIONAL_INFO', 'Dodatkowa Informacja'), ('CLARIFICATION', 'Doprecyzowanie'), ('ERROR', 'Sprostowanie błędu')], default='non', max_length=20),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='historicalannotation',
             name='demagog_category',
-            field=models.CharField(blank=True, choices=[('T', 'Prawda'), ('PT', 'Prawda'), ('F', 'Fałsz'), ('PF', 'Fałsz'), ('M', 'Manipulacja'), ('U', 'Nieweryfikowalne')], max_length=3, null=True),
+            field=models.CharField(blank=True, choices=[('TRUE', 'Prawda'), ('PTRUE', 'Prawda'), ('FALSE', 'Fałsz'), ('PFALSE', 'Fałsz'), ('LIE', 'Manipulacja'), ('UNKNOWN', 'Nieweryfikowalne')], max_length=20, null=True),
         ),
         migrations.AddField(
             model_name='historicalannotation',
             name='pp_category',
-            field=models.CharField(choices=[('ADD', 'Dodatkowa Informacja'), ('CLA', 'Doprecyzowanie'), ('ERR', 'Sprostowanie błędu')], default='non', max_length=3),
+            field=models.CharField(choices=[('ADDITIONAL_INFO', 'Dodatkowa Informacja'), ('CLARIFICATION', 'Doprecyzowanie'), ('ERROR', 'Sprostowanie błędu')], default='non', max_length=20),
             preserve_default=False,
         ),
 

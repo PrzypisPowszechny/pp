@@ -6,16 +6,16 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import migrations
 
-ADDITIONAL_INFO = 'ADD'
-CLARIFICATION = 'CLA'
-ERROR = 'ERR'
+ADDITIONAL_INFO = 'ADDITIONAL_INFO'
+CLARIFICATION = 'CLARIFICATION'
+ERROR = 'ERROR'
 
-TRUE = 'T'
-PTRUE = 'PT'
-FALSE = 'F'
-PFALSE = 'PF'
-LIE = 'M'
-UNKOWN = 'U'
+TRUE = 'TRUE'
+PTRUE = 'PTRUE'
+FALSE = 'FALSE'
+PFALSE = 'PFALSE'
+LIE = 'LIE'
+UNKOWN = 'UNKNOWN'
 
 PP_PUBLISHER = 'PP'
 DEMAGOG_PUBLISHER = 'DEMAGOG'
