@@ -13,7 +13,7 @@ class LazySignupAnnotationAPITest(TestCase):
     def test_client_can_access_annotation(self):
         self.user, self.password = create_test_user()
 
-        annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
+        annotation = Annotation.objects.create(user=self.user, comment="good job",
                                                annotation_link="www.przypispowszechny.com",
                                                annotation_link_title="very nice")
         response = self.client.get(self.GET_base_url.format(annotation.id))
@@ -30,7 +30,6 @@ class LazySignupAnnotationAPITest(TestCase):
                         'url': "https://www.przypis.pl",
                         'range': "Od tad do tad",
                         'quote': 'very nice',
-                        'priority': 'NORMAL',
                         'ppCategory': Annotation.ADDITIONAL_INFO,
                         'comment': "komentarz",
                         'annotationLink': 'www.przypispowszechny.com',
@@ -52,7 +51,6 @@ class LazySignupAnnotationAPITest(TestCase):
                     'url': "http://www.przypis.pl",
                     'range': "Od tad do tad",
                     'quote': 'very nice',
-                    'priority': 'NORMAL',
                     'ppCategory': Annotation.ADDITIONAL_INFO,
                     'comment': "komentarz",
                     'annotationLink': 'www.przypispowszechny.com',

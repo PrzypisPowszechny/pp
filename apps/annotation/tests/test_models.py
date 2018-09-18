@@ -22,7 +22,7 @@ class AnnotationUpvoteModelTest(TestCase):
     def setUpTestData(cls):
         cls.user = get_user_model().objects.create_user(username="Alibaba")
         cls.user2 = get_user_model().objects.create_user(username="Rozbójnik")
-        cls.annotation = Annotation.objects.create(user=cls.user, priority='NORMAL', comment="good job",
+        cls.annotation = Annotation.objects.create(user=cls.user, comment="good job",
                                                    annotation_link="www.przypispowszechny.com",
                                                    annotation_link_title="very nice")
 

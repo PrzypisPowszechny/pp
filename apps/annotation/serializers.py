@@ -138,7 +138,7 @@ class AnnotationDeserializer(ResourceTypeSerializer):
         class Meta:
             model = Annotation
             fields = ('url', 'range', 'quote', 'quote_context',
-                      'pp_category', 'demagog_category', 'priority', 'comment',
+                      'pp_category', 'demagog_category', 'comment',
                       'annotation_link', 'annotation_link_title')
 
     attributes = Attributes()
@@ -200,7 +200,7 @@ class AnnotationListSerializer(ResourceSerializer):
         class Meta:
             model = Annotation
             fields = ('url', 'range', 'quote', 'quote_context', 'publisher',
-                      'pp_category', 'demagog_category', 'priority', 'comment',
+                      'pp_category', 'demagog_category', 'comment',
                       'annotation_link', 'annotation_link_title',
                       'create_date', 'upvote_count_except_user', 'does_belong_to_user',
                       )
@@ -235,7 +235,7 @@ class AnnotationPatchDeserializer(ResourceSerializer):
 
         class Meta:
             model = Annotation
-            fields = ('pp_category', 'priority', 'comment',
+            fields = ('pp_category', 'comment',
                       'annotation_link', 'annotation_link_title')
 
     attributes = Attributes()

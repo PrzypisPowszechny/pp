@@ -84,9 +84,6 @@ class Annotation(AnnotationBase):
 
     publisher = models.CharField(choices=consts.publishers, max_length=10, default=consts.PP_PUBLISHER)
 
-    priority = models.CharField(choices=consts.annotation_priorities, max_length=10)
-    # Deprecated, it will be replaced by category
-
     pp_category = models.CharField(choices=PP_CATERORIES, max_length=3)
     # Category for PP publisher (and other publishers' categories mapped to pp)
 
