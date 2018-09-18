@@ -31,6 +31,7 @@ class LazySignupAnnotationAPITest(TestCase):
                         'range': "Od tad do tad",
                         'quote': 'very nice',
                         'priority': 'NORMAL',
+                        'ppCategory': Annotation.ADDITIONAL_INFO,
                         'comment': "komentarz",
                         'annotationLink': 'www.przypispowszechny.com',
                         'annotationLinkTitle': 'very nice too'
@@ -38,7 +39,7 @@ class LazySignupAnnotationAPITest(TestCase):
                 }
             }),
             content_type='application/vnd.api+json')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200, 'Full Response: \n%s' % response.content.decode('utf8'))
 
     # Even if the user doesn't log, two annotations posted by the same client should have
     # Within the first one, a User is created
@@ -52,6 +53,7 @@ class LazySignupAnnotationAPITest(TestCase):
                     'range': "Od tad do tad",
                     'quote': 'very nice',
                     'priority': 'NORMAL',
+                    'ppCategory': Annotation.ADDITIONAL_INFO,
                     'comment': "komentarz",
                     'annotationLink': 'www.przypispowszechny.com',
                     'annotationLinkTitle': 'very nice too'
@@ -65,7 +67,7 @@ class LazySignupAnnotationAPITest(TestCase):
             annotation_json,
             content_type='application/vnd.api+json'
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200, 'Full Response: \n%s' % response.content.decode('utf8'))
         annotation_id = json.loads(response.content.decode('utf8'))['data']['id']
 
         response = self.client.post(

@@ -25,8 +25,10 @@ class AnnotationAPITest(TestCase):
         self.client.login(username=self.user, password=self.password)
 
     def test_get_returns_json_200(self):
-        annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
-                                               range='{}',
+        annotation = Annotation.objects.create(user=self.user, priority='NORMAL',
+                                               pp_category=Annotation.ADDITIONAL_INFO,
+                                               comment="good job",
+                                               range='{}', url='http://localhost/',
                                                annotation_link="www.przypispowszechny.com",
                                                annotation_link_title="very nice")
         AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
@@ -35,7 +37,9 @@ class AnnotationAPITest(TestCase):
         self.assertEqual(response['content-type'], 'application/vnd.api+json')
 
     def test_get_returns_annotation(self):
-        annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
+        annotation = Annotation.objects.create(user=self.user, priority='NORMAL',
+                                               pp_category=Annotation.ADDITIONAL_INFO,
+                                               comment="good job",
                                                range='{}', url='http://localhost/',
                                                annotation_link="www.przypispowszechny.com",
                                                annotation_link_title="very nice")
@@ -57,6 +61,8 @@ class AnnotationAPITest(TestCase):
                         'quoteContext': annotation.quote_context,
                         'publisher': annotation.publisher,
                         'priority': annotation.priority,
+                        'ppCategory': annotation.pp_category,
+                        'demagogCategory': None,
                         'comment': annotation.comment,
                         'annotationLink': annotation.annotation_link,
                         'annotationLinkTitle': annotation.annotation_link_title,
@@ -92,7 +98,9 @@ class AnnotationAPITest(TestCase):
         )
 
     def test_get_returns_annotation__upvote_count(self):
-        annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
+        annotation = Annotation.objects.create(user=self.user, priority='NORMAL',
+                                               pp_category=Annotation.ADDITIONAL_INFO,
+                                               comment="good job",
                                                range='{}', url='http://localhost/',
                                                annotation_link="www.przypispowszechny.com",
                                                annotation_link_title="very nice")
@@ -166,7 +174,9 @@ class AnnotationAPITest(TestCase):
         })
 
     def test_get_annotation_report_related_annotation(self):
-        annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
+        annotation = Annotation.objects.create(user=self.user, priority='NORMAL',
+                                               pp_category=Annotation.ADDITIONAL_INFO,
+                                               comment="good job",
                                                range='{}', url='http://localhost/',
                                                annotation_link="www.przypispowszechny.com",
                                                annotation_link_title="very nice")
@@ -189,6 +199,8 @@ class AnnotationAPITest(TestCase):
                         'quoteContext': annotation.quote_context,
                         'publisher': annotation.publisher,
                         'priority': annotation.priority,
+                        'ppCategory': annotation.pp_category,
+                        'demagogCategory': None,
                         'comment': annotation.comment,
                         'annotationLink': annotation.annotation_link,
                         'annotationLinkTitle': annotation.annotation_link_title,
@@ -226,7 +238,9 @@ class AnnotationAPITest(TestCase):
         )
 
     def test_get_annotation_upvote_related_annotation(self):
-        annotation = Annotation.objects.create(user=self.user, priority='NORMAL', comment="good job",
+        annotation = Annotation.objects.create(user=self.user, priority='NORMAL',
+                                               pp_category=Annotation.ADDITIONAL_INFO,
+                                               comment="good job",
                                                range='{}', url='http://localhost/',
                                                annotation_link="www.przypispowszechny.com",
                                                annotation_link_title="very nice")
@@ -249,6 +263,8 @@ class AnnotationAPITest(TestCase):
                         'quoteContext': annotation.quote_context,
                         'publisher': annotation.publisher,
                         'priority': annotation.priority,
+                        'ppCategory': annotation.pp_category,
+                        'demagogCategory': None,
                         'comment': annotation.comment,
                         'annotationLink': annotation.annotation_link,
                         'annotationLinkTitle': annotation.annotation_link_title,
@@ -416,6 +432,8 @@ class AnnotationAPITest(TestCase):
                  'quoteContext': annotation.quote_context,
                  'publisher': annotation.publisher,
                  'priority': annotation.priority,
+                 'ppCategory': annotation.pp_category,
+                 'demagogCategory': None,
                  'comment': annotation.comment,
                  'annotationLink': annotation.annotation_link,
                  'annotationLinkTitle': annotation.annotation_link_title,
@@ -462,6 +480,8 @@ class AnnotationAPITest(TestCase):
                  'quoteContext': annotation.quote_context,
                  'publisher': annotation.publisher,
                  'priority': annotation2.priority,
+                 'ppCategory': annotation.pp_category,
+                 'demagogCategory': None,
                  'comment': annotation2.comment,
                  'annotationLink': annotation2.annotation_link,
                  'annotationLinkTitle': annotation2.annotation_link_title,
@@ -580,6 +600,7 @@ class AnnotationAPITest(TestCase):
             'quoteContext': 'it is indeed very nice and smooth',
             'publisher': 'PP',
             'priority': 'NORMAL',
+            'ppCategory': Annotation.ADDITIONAL_INFO,
             'comment': "komentarz",
             'annotationLink': 'www.przypispowszechny.com',
             'annotationLinkTitle': 'very nice too',
@@ -592,7 +613,6 @@ class AnnotationAPITest(TestCase):
                 'attributes': self.get_valid_annotation_attrs()
             }
         }
-
 
     def test_post_new_annotation__exact(self):
         base_url = "/api/annotations"
@@ -621,6 +641,8 @@ class AnnotationAPITest(TestCase):
                         'quoteContext': annotation.quote_context,
                         'publisher': annotation.publisher,
                         'priority': annotation.priority,
+                        'ppCategory': annotation.pp_category,
+                        'demagogCategory': None,
                         'comment': annotation.comment,
                         'annotationLink': annotation.annotation_link,
                         'annotationLinkTitle': annotation.annotation_link_title,
@@ -876,9 +898,10 @@ class AnnotationAPITest(TestCase):
         )
 
     def test_patch_annotation(self):
-        annotation = Annotation.objects.create(user=self.user, priority='NORMAL', url='www.przypis.pl',
+        annotation = Annotation.objects.create(user=self.user, priority='NORMAL',
+                                               pp_category=Annotation.ADDITIONAL_INFO,
                                                comment="good job",
-                                               range='{}',
+                                               range='{}', url='www.przypis.pl',
                                                annotation_link="www.przypispowszechny.com",
                                                annotation_link_title="very nice",
                                                quote='not this time')
@@ -913,6 +936,8 @@ class AnnotationAPITest(TestCase):
                     'quoteContext': annotation.quote_context,
                     'publisher': annotation.publisher,
                     'priority': annotation.priority,
+                    'ppCategory': annotation.pp_category,
+                    'demagogCategory': None,
                     'comment': annotation.comment,
                     'annotationLink': annotation.annotation_link,
                     'annotationLinkTitle': annotation.annotation_link_title,
