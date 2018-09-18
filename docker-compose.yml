@@ -1,0 +1,58 @@
+version: '3.5'
+
+services:
+  web:
+    depends_on:
+      - postgres
+      - redis
+    image: virtualenv
+    build:
+      context: .
+      dockerfile: ./docker/virtualenv-Dockerfile
+      args:
+        - ENV_PATH=/opt/env
+    ports:
+      - "8000:8000"
+    working_dir: /code
+    volumes:
+      - .:/code
+      - ./docker-env:/opt/env
+    environment:
+      - DATABASE_URL=postgres://pp:pp@postgres:5432/pp
+      - ENV_PATH=/opt/env
+      - PIP_ROOT=/opt/env/
+      - PIP_PREFIX=./
+    entrypoint:
+      - ./docker/virtualenv_setup_entrypoint.sh
+    command: python ./manage.py runserver 0.0.0.0:8000
+
+  worker:
+    depends_on:
+      - postgres
+      - redis
+      - web
+    image: virtualenv
+    working_dir: /code
+    volumes:
+      - .:/code
+      - ./docker-env:/opt/env
+    environment:
+      - C_FORCE_ROOT=TRUE
+      - ENV_PATH=/opt/env
+    entrypoint:
+      - ./docker/virtualenv_setup_entrypoint.sh
+    command: celery worker --app=worker.celery_app --loglevel=info --concurrency=2
+
+  redis:
+    image: "redis:alpine"
+    volumes:
+      - ./data/redis:/data
+
+  postgres:
+    image: "postgres:10-alpine"
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=pp
+      - POSTGRES_PASSWORD=pp
+      - POSTGRES_DB=pp

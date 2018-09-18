@@ -11,9 +11,12 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 # noinspection PyUnresolvedReferences
-from .custom import *
+from .partial_custom import *
+from .partial_celery import *
 
 import os
+import dj_database_url
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -80,7 +83,7 @@ MIDDLEWARE = [
 ]
 
 APPEND_SLASH = False
-ROOT_URLCONF = 'apps.urls'
+ROOT_URLCONF = 'urls'
 
 STATIC_ROOT = 'static'
 STATIC_URL = '/static/'
@@ -101,20 +104,14 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'apps.wsgi.application'
+WSGI_APPLICATION = 'wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'pp_dev',
-        'USER': 'pp_dev',
-        'PASSWORD': '',
-        'HOST': 'localhost',  # Or an IP Address that your DB is hosted on
-        'PORT': '3306',
-    }
+    # Get whole conf from DATABASE_URL in the form of db_engine://user:pass@host:port/db_name
+    'default': dj_database_url.config(conn_max_age=500)
 }
 
 # Password validation
@@ -210,7 +207,7 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['console', 'file'],
-            'level': 'ERROR',
+            'level': 'INFO',
         },
     },
 }

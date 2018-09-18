@@ -71,6 +71,10 @@ class Annotation(AnnotationBase):
     publisher = models.CharField(choices=consts.publishers, max_length=10, default=consts.PP_PUBLISHER)
 
     priority = models.CharField(choices=consts.annotation_priorities, max_length=10)
+    # Deprecated, it will be replaced by category
+
+    category = models.CharField(choices=consts.annotation_priorities, max_length=10)
+
     comment = models.TextField(max_length=1000)
 
     annotation_link = models.CharField(max_length=URL_SUPPORTED_LENGTH)
@@ -97,6 +101,18 @@ class Annotation(AnnotationBase):
     def count_upvote(self):
         self.upvote_count = AnnotationUpvote.objects.filter(annotation=self).count()
         return self.upvote_count
+
+
+class ExternalAnnotationOrigin(UserInput):
+
+    annotation = models.ForeignKey('Annotation')
+
+    publisher = models.CharField(choices=consts.publishers, max_length=10, db_index=True)
+
+    external_id = models.CharField(max_length=255, db_index=True)
+
+    original_data = models.TextField(max_length=10000)
+    # ALL original data stored as JSON
 
 
 class AnnotationReport(UserInput):

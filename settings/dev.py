@@ -1,11 +1,15 @@
-from settings.base import *
+from .base import *
 
 DEBUG = True
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'pp',
+        'USER': 'pp',
+        'PASSWORD': 'pp',
+        'HOST': 'postgres',
+        'PORT': '5432',
     }
 }
 

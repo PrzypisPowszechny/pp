@@ -1,0 +1,15 @@
+
+BROKER_URL = 'redis://redis:6379/0'
+
+CELERY_MAX_TASKS_PER_CHILD = 1000
+
+CELERY_ACCEPT_CONTENT = ['pickle', 'json', 'msgpack', 'yaml']
+
+CELERY_TIMEZONE = 'Europe/Warsaw'
+CELERY_ENABLE_UTC = True
+CELERY_IGNORE_RESULT = True
+
+CELERY_DEFAULT_QUEUE = 'general'
+CELERY_DEFAULT_EXCHANGE = 'general'
+CELERY_DEFAULT_EXCHANGE_TYPE = 'direct'
+CELERY_DEFAULT_ROUTING_KEY = 'general'

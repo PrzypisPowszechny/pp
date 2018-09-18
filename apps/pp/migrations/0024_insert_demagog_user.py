@@ -15,7 +15,7 @@ def insert_demagog_user(apps, schema):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('pp', '0022_add_publisher_quotecontext'),
+        ('pp', '0023_add_publisher_quotecontext'),
     ]
 
     operations = [

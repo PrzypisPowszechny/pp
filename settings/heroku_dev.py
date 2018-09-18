@@ -1,8 +1,5 @@
 from settings.base import *
-import dj_database_url
 import os
-
-DEBUG = False
 
 SECRET_KEY = os.environ.get('PP_SECRET_KEY')
 
@@ -10,9 +7,6 @@ ALLOWED_HOSTS = [
     'devdeploy1.przypispowszechny.pl', 'www.devdeploy1.przypispowszechny.pl',
     'devdeploy2.przypispowszechny.pl', 'www.devdeploy2.przypispowszechny.pl',
 ]
-
-# Update database configuration with $DATABASE_URL.
-DATABASES['default'].update(dj_database_url.config(conn_max_age=500))
 
 # Honor the X-Forwarded-Host header to know real domain (one from ALLOWED_HOSTS)
 USE_X_FORWARDED_HOST = True

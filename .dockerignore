@@ -1,0 +1,20 @@
+# Temporary files
+*.pyc
+*.pyo
+*.sqlite3
+*.old
+*.o
+*.a
+*.swp
+*.log
+.idea/
+*~
+*.db
+*.out
+
+# Environment
+.idea/
+.git
+env/
+htmlcov/
+node_modules/
