@@ -13,11 +13,6 @@ TEST_URL = 'http://i-test-you-all.org'
 OTHER_URL = 'http://i-dont-test-anything.org'
 
 
-class TestConsumer(Consumer):
-    api_name = 'Test API'
-    base_url = TEST_URL
-
-
 class AnnotationAPITest(TestCase):
     maxDiff = None
 
