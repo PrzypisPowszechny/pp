@@ -4,6 +4,8 @@ annotation_priorities = (
     ('ALERT', 'niebezpieczny'),
 )
 
+
+
 SUGGESTED_CORRECTION = 'SUGGESTED_CORRECTION'
 
 annotation_report_reasons = (
