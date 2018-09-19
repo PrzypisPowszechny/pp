@@ -37,7 +37,7 @@ class DemagogConsumer(Consumer):
         deserializer = StatementDeserializer(many=True, data=response.get('data'))
         if not deserializer.is_valid():
             raise DemagogConsumer.ConsumingDataError(self.request_error(deserializer.errors))
-        return [statement['attributes']['sources'] for statement in deserializer.validated_data]
+        return deserializer.validated_data
 
     def get_sources_list(self):
         response = self.get('/sources_list', params={
@@ -62,8 +62,8 @@ def consume_all_statements():
         logger.info('Consuming page {} of {}'.format(current_page, total_pages or 'unknown'))
         try:
             total_pages, current_page_ignored, statements = consumer.get_all_statements()
-        except Consumer.ConsumingResponseError as e:
-            logger.error(e.message)
+        except Consumer.ConsumingError as e:
+            logger.error(str(e))
         else:
             for statement_data in statements:
                 update_or_create_annotation(statement_data, demagog_user)
@@ -75,15 +75,16 @@ def consume_statements_from_sources_list():
     consumer = DemagogConsumer()
 
     try:
-        sources_list = consumer.get_all_statements()
-    except Consumer.ConsumingResponseError as e:
-        logger.error(e.message)
+        sources_list = consumer.get_sources_list()
+    except Consumer.ConsumingError as e:
+        logger.error(str(e))
         return
 
     demagog_user = get_user_model().objects.get(username=settings.DEMAGOG_USERNAME)
     for source_url in sources_list:
         statements = consumer.get_statements(source_url)
         for statement_data in statements:
+
             update_or_create_annotation(statement_data, demagog_user)
 
 

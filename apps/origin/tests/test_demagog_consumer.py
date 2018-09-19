@@ -6,14 +6,13 @@ from django.conf import settings
 from django.test import TestCase
 from parameterized import parameterized
 
-from apps.origin.consumer import Consumer
 from apps.origin.demagog_consumer import DemagogConsumer
 
 TEST_URL = 'http://i-test-you-all.org'
 OTHER_URL = 'http://i-dont-test-anything.org'
 
 
-class AnnotationAPITest(TestCase):
+class DemagogAPITest(TestCase):
     maxDiff = None
 
     def setUp(self):
@@ -25,25 +24,25 @@ class AnnotationAPITest(TestCase):
 
     @parameterized.expand([
         # Expected response - none error
-        (1, {'page': 1},  json.dumps({'total_pages': 1, 'current_page': 1, 'data': []}),
+        (1, {'page': 1}, json.dumps({'total_pages': 1, 'current_page': 1, 'data': []}),
          None),
         # Default page - none error
-        (None, {'page': 1},  json.dumps({'total_pages': 1, 'current_page': 1, 'data': []}),
+        (None, {'page': 1}, json.dumps({'total_pages': 1, 'current_page': 1, 'data': []}),
          None),
         # Malformed data
-        (1, {'page': 1},  "xyz",
+        (1, {'page': 1}, "xyz",
          DemagogConsumer.ConsumingResponseError),
         # Non existing page
-        (2, {'page': 1},  json.dumps({'total_pages': 1, 'current_page': 1, 'data': []}),
+        (2, {'page': 1}, json.dumps({'total_pages': 1, 'current_page': 1, 'data': []}),
          DemagogConsumer.ConsumingResponseError),
         # Data detailed validation failed
-        (1, {'page': 1},  json.dumps({'total_pages': 1, 'current_page': 1, 'data': 'xyz'}),
+        (1, {'page': 1}, json.dumps({'total_pages': 1, 'current_page': 1, 'data': 'xyz'}),
          DemagogConsumer.ConsumingDataError),
         # Missing total_pages
-        (1, {'page': 1},  json.dumps({'current_page': 1, 'data': []}),
+        (1, {'page': 1}, json.dumps({'current_page': 1, 'data': []}),
          DemagogConsumer.ConsumingDataError),
         # Missing current
-        (1, {'page': 1}, json.dumps({'total_pages': 1,  'data': []}),
+        (1, {'page': 1}, json.dumps({'total_pages': 1, 'data': []}),
          DemagogConsumer.ConsumingDataError),
         # Missing data
         (1, {'page': 1}, json.dumps({'total_pages': 1, 'current_page': 1}),
@@ -128,7 +127,7 @@ class AnnotationAPITest(TestCase):
          DemagogConsumer.ConsumingDataError),
     ])
     @responses.activate
-    def test_get_statements(self, *args):
+    def test_get_sources(self, *args):
         body, expected_error = args
 
         params = {'client': 'pp', }

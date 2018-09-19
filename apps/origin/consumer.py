@@ -9,10 +9,13 @@ class Consumer:
         self.api_name = api_name or self.api_name
         self.base_url = base_url or self.base_url
 
-    class ConsumingResponseError(BaseException):
+    class ConsumingError(BaseException):
         pass
 
-    class ConsumingDataError(BaseException):
+    class ConsumingResponseError(ConsumingError):
+        pass
+
+    class ConsumingDataError(ConsumingError):
         pass
 
     def get(self, endpoint_path, params=None):
