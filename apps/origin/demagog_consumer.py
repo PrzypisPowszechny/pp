@@ -105,7 +105,7 @@ def update_or_create_annotation(statement_data, demagog_user=None):
 
     if not created:
         changed = False
-        for key, val in annotation_fields:
+        for key, val in annotation_fields.items():
             if getattr(annotation, key) != val:
                 setattr(annotation, key, val)
                 changed = True
