@@ -9,7 +9,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from apps.annotation.models import Annotation
-from apps.origin.demagog_consumer import consume_statements_from_sources_list, demagog_to_pp_category
+from apps.origin.demagog import sync_using_sources_list, demagog_to_pp_category
 
 TEST_URL = 'http://i-test-you-all.org'
 OTHER_URL = 'http://i-dont-test-anything.org'
@@ -46,7 +46,7 @@ class DemagogAPITest(TestCase):
         }
 
     @responses.activate
-    def test_consume_statements_from_sources_list__one(self):
+    def test_sync_using_sources_list__one(self):
         statement_data = self.get_statement_valid_data()
         statement_attrs = statement_data['attributes']
 
@@ -67,10 +67,10 @@ class DemagogAPITest(TestCase):
         ))
 
         annotation_count = Annotation.objects.count()
-        consume_statements_from_sources_list()
+        sync_using_sources_list()
         self.assertEqual(Annotation.objects.count(), annotation_count + 1)
         # Do no re-add
-        consume_statements_from_sources_list()
+        sync_using_sources_list()
         self.assertEqual(Annotation.objects.count(), annotation_count + 1)
 
         annotation = Annotation.objects.last()
@@ -86,7 +86,7 @@ class DemagogAPITest(TestCase):
 
     # TODO: this should be unit test of function responsible of comparing records, not whole functional test
     @responses.activate
-    def test_consume_statements_from_sources_list__two(self):
+    def test_sync_using_sources_list__two(self):
         statement_data = self.get_statement_valid_data()
         statement_attrs = statement_data['attributes']
         statement_data2 = self.get_statement_valid_data()
@@ -119,5 +119,5 @@ class DemagogAPITest(TestCase):
         ))
 
         annotation_count = Annotation.objects.count()
-        consume_statements_from_sources_list()
+        sync_using_sources_list()
         self.assertEqual(Annotation.objects.count(), annotation_count + 2)

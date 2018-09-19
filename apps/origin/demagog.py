@@ -3,53 +3,15 @@ import logging
 from django.conf import settings
 from django.contrib.auth import get_user_model
 
+from worker import celery_app
 from apps.annotation.models import Annotation
-from .consumer import Consumer
-from .serializers import StatementDeserializer, SourcesDeserializer
+from .consumers import Consumer, DemagogConsumer
 
-logger = logging.getLogger('pp.demagog_consumer')
-
-
-# TODO: Establish convention: some request params omitted as they make no sense in our case,also 'client' val improvised
-class DemagogConsumer(Consumer):
-
-    api_name = 'Demagog API'
-    base_url = settings.DEMAGOG_API_URL
-
-    def get_all_statements(self, page=1):
-        response = self.get('/', params={
-            'page': page,
-            'q': 'all',
-            'client': 'pp'
-        })
-        if 'total_pages' not in response or 'current_page' not in response:
-            raise DemagogConsumer.ConsumingDataError(self.request_error('no total_pages/current_page'))
-        deserializer = StatementDeserializer(many=True, data=response.get('data'))
-        if not deserializer.is_valid():
-            raise DemagogConsumer.ConsumingDataError(self.request_error(deserializer.errors))
-        return response['total_pages'], response['current_page'], deserializer.validated_data
-
-    def get_statements(self, source_url):
-        response = self.get('/statements', params={
-            'uri': source_url,
-            'client': 'pp'
-        })
-        deserializer = StatementDeserializer(many=True, data=response.get('data'))
-        if not deserializer.is_valid():
-            raise DemagogConsumer.ConsumingDataError(self.request_error(deserializer.errors))
-        return deserializer.validated_data
-
-    def get_sources_list(self):
-        response = self.get('/sources_list', params={
-            'client': 'pp'
-        })
-        deserializer = SourcesDeserializer(data=response.get('data'))
-        if not deserializer.is_valid():
-            raise DemagogConsumer.ConsumingDataError(self.request_error(deserializer.errors))
-        return deserializer.validated_data['attributes']['sources']
+logger = logging.getLogger('pp.publisher')
 
 
-def consume_all_statements():
+@celery_app.task
+def sync_using_all_statements():
     consumer = DemagogConsumer()
 
     demagog_user = get_user_model().objects.get(username=settings.DEMAGOG_USERNAME)
@@ -71,7 +33,8 @@ def consume_all_statements():
             break
 
 
-def consume_statements_from_sources_list():
+@celery_app.task
+def sync_using_sources_list():
     consumer = DemagogConsumer()
 
     try:

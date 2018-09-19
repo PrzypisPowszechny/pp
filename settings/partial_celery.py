@@ -20,10 +20,9 @@ CELERY_DEFAULT_ROUTING_KEY = 'general'
 
 
 CELERYBEAT_SCHEDULE = {
-    # BUSINESS
     'sync_with_demagog': {
         'task':
-            'apps.origin.tasks.sync_with_demagog',
+            'apps.origin.tasks.sync_using_sources_list',
         'schedule': crontab(minute='*/15'),
     },
 }

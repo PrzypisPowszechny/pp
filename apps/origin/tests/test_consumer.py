@@ -4,7 +4,7 @@ import responses
 from django.test import TestCase
 from parameterized import parameterized
 
-from apps.origin.consumer import Consumer
+from apps.origin.consumers import Consumer
 
 TEST_URL = 'http://i-test-you-all.org'
 OTHER_URL = 'http://i-dont-test-anything.org'
