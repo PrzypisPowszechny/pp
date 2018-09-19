@@ -2,15 +2,18 @@ import requests
 
 
 class Consumer:
+    api_name = None
+    base_url = None
+
+    def __init__(self, api_name=None, base_url=None):
+        self.api_name = api_name or self.api_name
+        self.base_url = base_url or self.base_url
 
     class ConsumingResponseError(BaseException):
         pass
 
     class ConsumingDataError(BaseException):
         pass
-
-    api_name = None
-    base_url = None
 
     def get(self, endpoint_path, params=None):
         url = '%s%s' % (self.base_url, endpoint_path)

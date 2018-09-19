@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('annotation', '0025_add_annotation_category'),
+        ('pp', '0025_add_annotation_category'),
     ]
 
     operations = [

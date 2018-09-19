@@ -8,7 +8,7 @@ class StatementDeserializer(serializers.Serializer):
         source = serializers.URLField()
         text = serializers.CharField()
         date = serializers.DateTimeField()
-        rating = serializers.ChoiceField(choices=[(val.lower(), label) for val, label in Annotation.DG_CATEGORIES])
+        rating = serializers.ChoiceField(choices=[(val.lower(), label) for val, label in Annotation.DEMAGOG_CATEGORIES])
         rating_text = serializers.CharField()
         factchecker_uri = serializers.URLField()
         # Actually we do not use this field

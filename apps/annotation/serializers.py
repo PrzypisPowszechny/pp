@@ -25,6 +25,7 @@ class ObjectField(serializers.Field):
         'invalid': _('Value must be a valid object that can be JSON serialized')
     }
     initial = {}
+
     def __init__(self, *args, **kwargs):
         self.json_internal_type = kwargs.pop('json_internal_type', False)
         super().__init__(*args, **kwargs)
