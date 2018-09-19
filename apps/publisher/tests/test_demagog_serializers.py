@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.utils import timezone
 from parameterized import parameterized
 
-from apps.origin.serializers import StatementDeserializer, SourcesDeserializer
+from apps.publisher.serializers import StatementDeserializer, SourcesDeserializer
 
 SOURCE_URL = 'http://i-am-article-you-check.org'
 FACT_URL = 'http://i-check-you-all.org'

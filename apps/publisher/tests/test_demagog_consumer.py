@@ -6,7 +6,7 @@ from django.conf import settings
 from django.test import TestCase
 from parameterized import parameterized
 
-from apps.origin.consumers import DemagogConsumer
+from apps.publisher.consumers import DemagogConsumer
 
 TEST_URL = 'http://i-test-you-all.org'
 OTHER_URL = 'http://i-dont-test-anything.org'

@@ -9,7 +9,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from apps.annotation.models import Annotation
-from apps.origin.demagog import sync_using_sources_list, demagog_to_pp_category
+from apps.publisher.demagog import sync_using_sources_list, demagog_to_pp_category
 
 TEST_URL = 'http://i-test-you-all.org'
 OTHER_URL = 'http://i-dont-test-anything.org'
