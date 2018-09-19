@@ -13,3 +13,5 @@ celery_app.config_from_object('django.conf:settings')
 
 # NOTE: lambda makes it lazy here, so importing recursion is avoided
 celery_app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
+
+print ('-----inited-----')
