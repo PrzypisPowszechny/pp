@@ -9,4 +9,4 @@ VOLUME $ENV_PATH
 
 COPY ./docker/virtualenv_entrypoint.sh /virtualenv_entrypoint.sh
 ENTRYPOINT ["/virtualenv_entrypoint.sh"]
-CMD ["sh"]
+CMD ["bash"]

@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 # Make sure all args given
 if [ -z ${ENV_PATH} ]; then
