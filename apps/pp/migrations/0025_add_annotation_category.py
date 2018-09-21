@@ -8,7 +8,7 @@ import django.db.models.deletion
 from django.db.models import F
 
 
-def insert_demagog_user(apps, schema):
+def migrate_priority_to_category(apps, schema):
     annotation_model = apps.get_model('pp.Annotation')
     historical_annotation_model = apps.get_model('pp.HistoricalAnnotation')
     annotation_model.objects.update(fact_category=F('priority'))
@@ -34,5 +34,6 @@ class Migration(migrations.Migration):
             field=models.CharField(choices=[('NORMAL', 'normalny'), ('WARNING', 'ostrzegawczy'), ('ALERT', 'niebezpieczny')], default='unset', max_length=10),
             preserve_default=False,
         ),
-        migrations.RunPython(insert_demagog_user, lambda apps, schema: None),
+
+        migrations.RunPython(migrate_priority_to_category, migrations.RunPython.noop),
     ]

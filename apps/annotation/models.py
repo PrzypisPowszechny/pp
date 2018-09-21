@@ -56,12 +56,39 @@ class Annotation(AnnotationBase):
     class JSONAPIMeta:
         resource_name = 'annotations'
 
-    publisher = models.CharField(choices=consts.publishers, max_length=10, default=consts.PP_PUBLISHER)
+    ADDITIONAL_INFO = 'ADDITIONAL_INFO'
+    CLARIFICATION = 'CLARIFICATION'
+    ERROR = 'ERROR'
 
-    priority = models.CharField(choices=consts.annotation_priorities, max_length=10)
-    # Deprecated, it will be replaced by category
+    PP_CATERORIES = (
+        (ADDITIONAL_INFO, 'Dodatkowa Informacja'),
+        (CLARIFICATION, 'Doprecyzowanie'),
+        (ERROR, 'Sprostowanie błędu'),
+    )
 
-    fact_category = models.CharField(choices=consts.annotation_priorities, max_length=10)
+    TRUE = 'TRUE'
+    PTRUE = 'PTRUE'
+    FALSE = 'FALSE'
+    PFALSE = 'PFALSE'
+    LIE = 'LIE'
+    UNKOWN = 'UNKNOWN'
+
+    DG_CATEGORIES = (
+        (TRUE, 'Prawda'),
+        (PTRUE, 'Prawda'),
+        (FALSE, 'Fałsz'),
+        (PFALSE, 'Fałsz'),
+        (LIE, 'Manipulacja'),
+        (UNKOWN, 'Nieweryfikowalne'),
+    )
+
+    publisher = models.CharField(choices=consts.PUBLISHERS, max_length=10, default=consts.PP_PUBLISHER)
+
+    pp_category = models.CharField(choices=PP_CATERORIES, max_length=20)
+    # Category for PP publisher (and other publishers' categories mapped to pp)
+
+    demagog_category = models.CharField(choices=DG_CATEGORIES, max_length=20, null=True, blank=True)
+    # Category for Demagog publisher
 
     comment = models.TextField(max_length=1000)
 
