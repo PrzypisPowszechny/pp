@@ -1,0 +1,42 @@
+Statement:
+  - id: string(int) // this is just assumption, what type really is it ?
+  - links: //optional
+    - self: string(url)
+  - attributes:
+    - source: string(url, standardized!) // url of page with annotation
+    - ??? url: string // is it full url of external demagog resource? it is never used
+    - text: string // description or preface
+    - sclass: string // what purpose?
+    - date: string (date)
+    - rating: string(true/ptrue/false/pfalse/lie/unknown)
+    - rating_text: string // label for rating
+    - factchecker_uri: string (url) //full url of external demagog resource, used for linking
+
+
+URL: /sources_list
+PARAMS:
+  - uid: string (hex, 64 chars)
+  - client: "chrome_extension"
+RESPONSE:
+  - data:
+     - attributes:
+         - ??? sources: list<string(url, unstandardized)> // is it really unstandardized or just standardized in code again as a double check?
+
+URL: /
+PARAMS:
+  - page: string(int)
+  - q: "all"
+  - uid: string // (64chars,hex)
+  - client: "chrome_extension"
+  - origin: "site"
+RESPONSE:
+  - ??? total_pages: int // is it pure int or string (int) - string in int format?
+  - ??? current_page: int // is it pure int or string (int) - string in int format?
+  - data: list<Statement>
+
+URL: /statements
+PARAMS:
+  - uri: string(url, unstandardized)
+  - client: "chrome_extension"
+RESPONSE:
+  - data: list<Statement>

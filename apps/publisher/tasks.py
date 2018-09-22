@@ -1,0 +1,1 @@
+from .demagog import sync_using_all_statements, sync_using_sources_list

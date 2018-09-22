@@ -1,6 +1,8 @@
+
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils import timezone
 from simple_history.models import HistoricalRecords
 
 from apps.annotation import consts
@@ -10,7 +12,7 @@ URL_SUPPORTED_LENGTH = 2048
 
 class UserInput(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    create_date = models.DateTimeField(auto_now_add=True)
+    create_date = models.DateTimeField(default=timezone.now)
 
     class Meta:
         abstract = True
@@ -56,6 +58,14 @@ class Annotation(AnnotationBase):
     class JSONAPIMeta:
         resource_name = 'annotations'
 
+    PP_PUBLISHER = 'PP'
+    DEMAGOG_PUBLISHER = 'DEMAGOG'
+
+    PUBLISHERS = (
+        (PP_PUBLISHER, 'Przypis Powszechny'),
+        (DEMAGOG_PUBLISHER, 'Demagog'),
+    )
+
     ADDITIONAL_INFO = 'ADDITIONAL_INFO'
     CLARIFICATION = 'CLARIFICATION'
     ERROR = 'ERROR'
@@ -73,7 +83,7 @@ class Annotation(AnnotationBase):
     LIE = 'LIE'
     UNKOWN = 'UNKNOWN'
 
-    DG_CATEGORIES = (
+    DEMAGOG_CATEGORIES = (
         (TRUE, 'Prawda'),
         (PTRUE, 'Prawda'),
         (FALSE, 'Fałsz'),
@@ -82,12 +92,14 @@ class Annotation(AnnotationBase):
         (UNKOWN, 'Nieweryfikowalne'),
     )
 
-    publisher = models.CharField(choices=consts.PUBLISHERS, max_length=10, default=consts.PP_PUBLISHER)
+    publisher = models.CharField(choices=PUBLISHERS, max_length=10, default=PP_PUBLISHER)
+
+    publisher_annotation_id = models.IntegerField(db_index=True, blank=True, null=True)
 
     pp_category = models.CharField(choices=PP_CATERORIES, max_length=20)
     # Category for PP publisher (and other publishers' categories mapped to pp)
 
-    demagog_category = models.CharField(choices=DG_CATEGORIES, max_length=20, null=True, blank=True)
+    demagog_category = models.CharField(choices=DEMAGOG_CATEGORIES, max_length=20, null=True, blank=True)
     # Category for Demagog publisher
 
     comment = models.TextField(max_length=1000)

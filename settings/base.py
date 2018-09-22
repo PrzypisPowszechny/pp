@@ -47,7 +47,7 @@ INSTALLED_APPS = [
 
     # Main project apps
     'apps.annotation',
-    'apps.origin',
+    'apps.publisher',
     'apps.pp',
     'apps.site_test',
 
