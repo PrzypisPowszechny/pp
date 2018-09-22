@@ -25,6 +25,9 @@ SECRET_KEY = '_96(y+)c++%-5m6i*4i-4md6o1@zc(5a9fjpoop#%+q=fg3ig9'
 
 DEBUG = False
 
+CORS_ORIGIN_ALLOW_ALL = False
+CORS_ALLOW_CREDENTIALS = False
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -34,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    # Currently serving
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     # an application that creates account for all anonymous users' requests and associates it with user session
