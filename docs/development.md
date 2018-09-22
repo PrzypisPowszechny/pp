@@ -32,6 +32,8 @@ Running tests: `$ sudo docker-compose run web python manage.py test`
 
 Migrating database: `$ sudo docker-compose run web python manage.py migrate`
 
+Opening database cmdline: `sudo docker-compose run web python manage.py dbshell`
+
 Installing new python packages:
 `$ sudo docker-compose run web pip install ...`
 
