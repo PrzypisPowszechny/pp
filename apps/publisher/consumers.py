@@ -11,10 +11,12 @@ logger = logging.getLogger('pp.publisher')
 class Consumer:
     api_name = None
     base_url = None
+    content_type = 'text/plain'
 
-    def __init__(self, api_name=None, base_url=None):
+    def __init__(self, api_name=None, base_url=None, content_type=None):
         self.api_name = api_name or self.api_name
         self.base_url = base_url or self.base_url
+        self.content_type = content_type or self.content_type
 
     class ConsumingError(BaseException):
         pass
@@ -25,13 +27,20 @@ class Consumer:
     class ConsumingDataError(ConsumingError):
         pass
 
-    def get(self, endpoint_path, params=None):
+    def _make_request(self, method, endpoint_path, params=None):
         url = '%s%s' % (self.base_url, endpoint_path)
+
+        if method == 'get':
+            method_func = requests.get
+        elif method == 'post':
+            method_func = requests.post
+        else:
+            raise ValueError('Non supported method')
         try:
-            response = requests.get(
+            response = method_func(
                 url=url,
                 params=params,
-                headers={"Content-Type": "application/json"},
+                headers={"Content-Type": self.content_type},
                 timeout=10.0,
             )
         except requests.exceptions.RequestException as error:
@@ -42,6 +51,25 @@ class Consumer:
                 self.api_name, url, response.status_code, response.content)
             )
 
+        return response
+
+    def get(self, endpoint_path, params=None):
+        return self._make_request('get', endpoint_path, params)
+
+    def post(self, endpoint_path, params=None):
+        return self._make_request('get', endpoint_path, params)
+
+    def request_error(self, reason):
+        return '{} request error: {}'.format(self.api_name, reason)
+
+
+class JSONConsumer(Consumer):
+    content_type = 'application/json'
+
+    def get(self, endpoint_path, params=None):
+
+        response = super().get(endpoint_path, params)
+
         try:
             json_data = response.json()
         except (TypeError, KeyError, ValueError):
@@ -49,9 +77,6 @@ class Consumer:
                                               .format(self.api_name))
 
         return json_data
-
-    def request_error(self, reason):
-        return '{} request error: {}'.format(self.api_name, reason)
 
 
 # TODO: Establish convention: some request params omitted as they make no sense in our case,also 'client' val improvised

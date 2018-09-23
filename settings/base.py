@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'apps.publisher',
     'apps.pp',
     'apps.site_test',
+    'apps.analytics',
 
     # Ann app that saves models' states as they change together with the user who produced the change
     'simple_history',
