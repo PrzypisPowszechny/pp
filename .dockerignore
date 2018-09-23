@@ -18,3 +18,5 @@
 env/
 htmlcov/
 node_modules/
+data/
+docker-env/
