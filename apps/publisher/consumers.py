@@ -1,11 +1,7 @@
-import logging
-
 import requests
 from django.conf import settings
 
 from .serializers import StatementDeserializer, SourcesDeserializer
-
-logger = logging.getLogger('pp.publisher')
 
 
 class Consumer:

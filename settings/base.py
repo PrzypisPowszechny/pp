@@ -217,5 +217,9 @@ LOGGING = {
             'handlers': ['console', 'file'],
             'level': 'INFO',
         },
+        'pp': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+        },
     },
 }
