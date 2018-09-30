@@ -4,18 +4,18 @@ import responses
 from django.test import TestCase
 from parameterized import parameterized
 
-from apps.publisher.consumers import Consumer
+from apps.publisher.consumers import JSONConsumer
 
 TEST_URL = 'http://i-test-you-all.org'
 OTHER_URL = 'http://i-dont-test-anything.org'
 
 
-class TestConsumer(Consumer):
+class TestConsumer(JSONConsumer):
     api_name = 'Test API'
     base_url = TEST_URL
 
 
-class AnnotationAPITest(TestCase):
+class JSONConsumerTest(TestCase):
     maxDiff = None
 
     def setUp(self):
@@ -54,5 +54,5 @@ class AnnotationAPITest(TestCase):
             json_data = run_get()
             self.assertEqual(json.loads(body), json_data, msg='Error for args: {}'.format(json.dumps(args)))
         else:
-            with self.assertRaises(Consumer.ConsumingResponseError, msg='Error for args: {}'.format(json.dumps(args))):
+            with self.assertRaises(JSONConsumer.ConsumingResponseError, msg='Error for args: {}'.format(json.dumps(args))):
                 run_get()

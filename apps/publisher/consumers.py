@@ -76,7 +76,7 @@ class JSONConsumer(Consumer):
 
 
 # TODO: Establish convention: some request params omitted as they make no sense in our case,also 'client' val improvised
-class DemagogConsumer(Consumer):
+class DemagogConsumer(JSONConsumer):
     api_name = 'Demagog API'
     base_url = settings.DEMAGOG_API_URL
 

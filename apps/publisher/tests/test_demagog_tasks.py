@@ -19,7 +19,7 @@ SOURCE_URL2 = 'http://i-am-article-you-check-n2.org'
 FACT_URL = 'http://i-check-you-all.org'
 
 
-class DemagogAPITest(TestCase):
+class DemagogTasksTest(TestCase):
     maxDiff = None
 
     def setUp(self):
