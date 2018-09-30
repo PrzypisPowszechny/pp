@@ -1,3 +1,5 @@
+from functools import partial
+
 import requests
 
 
@@ -20,7 +22,7 @@ class Consumer:
     class ConsumingDataError(ConsumingError):
         pass
 
-    def _make_request(self, method, endpoint_path, params=None):
+    def _make_request(self, method, endpoint_path, params=None, data=None):
         url = '%s%s' % (self.base_url, endpoint_path)
 
         if method == 'get':
@@ -33,6 +35,7 @@ class Consumer:
             response = method_func(
                 url=url,
                 params=params,
+                data=data,
                 headers={"Content-Type": self.content_type},
                 timeout=10.0,
             )
@@ -47,10 +50,10 @@ class Consumer:
         return response
 
     def get(self, endpoint_path, params=None):
-        return self._make_request('get', endpoint_path, params)
+        return self._make_request('get', endpoint_path, params=params)
 
-    def post(self, endpoint_path, params=None):
-        return self._make_request('get', endpoint_path, params)
+    def post(self, endpoint_path, data=None):
+        return self._make_request('post', endpoint_path, data=data)
 
     def request_error(self, reason):
         return '{} request error: {}'.format(self.api_name, reason)

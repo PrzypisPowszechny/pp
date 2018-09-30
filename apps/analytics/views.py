@@ -4,7 +4,8 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render_to_response
 from django.views.decorators.csrf import csrf_exempt
 
-from . import ga
+from .consumers import GAConsumer
+from . import ga_cookies
 
 logger = getLogger('pp.analytics')
 
@@ -20,7 +21,7 @@ def init_ping(request):
     response = HttpResponse()
 
     # Set GA cookies, based on send data
-    cookies = ga.set_cookies(request.POST)
+    cookies = ga_cookies.set_cookies(request.POST)
     if not cookies:
         logger.info('No cookie data extracted from POST in init_ping')
     for cookie in cookies:
@@ -28,10 +29,14 @@ def init_ping(request):
     return response
 
 
-def extension_uninstalled_event(request):
-    cid_value = ga.read_cid_from_cookie(request)
+def extension_uninstalled_hook(request):
+    cid_value = ga_cookies.read_cid_from_cookie(request)
     if cid_value is None:
         logger.error('Cid cookie not set or malformed.')
     else:
-        ga.send_event_extension_uninstalled(cid_value)
+        try:
+            GAConsumer(cid_value).send_event_extension_uninstalled()
+        except GAConsumer.ConsumingError as e:
+            logger.error(str(e))
+
     return render_to_response('analytics.html')

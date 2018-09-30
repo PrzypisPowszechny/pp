@@ -2,10 +2,7 @@ import re
 from datetime import timedelta
 from logging import getLogger
 
-from django.conf import settings
 from django.utils import timezone
-
-from apps.consumers import Consumer
 
 CID_PARAM = 'ga_cookie'
 GID_PARAM = 'gid_cookie'
@@ -38,25 +35,3 @@ def read_cid_from_cookie(request):
     if not match:
         return None
     return match.group('cid')
-
-
-GA_API_BASE = 'https://www.google-analytics.com'
-GA_API_ENDPOINT = '/collect'
-
-GA_REQUEST_VERSION = {'v': '1'}
-GA_REQUEST_EVENT_TYPE = {'t': 'event'}
-GA_REQUEST_CID_PARAM = 'cid'
-# Category, action, label
-GA_EXTENSION_UNINSTALLED_EVENT = {'ec': 'Extension', 'ea': 'Uninstall', 'el': 'ExtensionUninstalled'}
-GA_TRACKING_ID = {'tid': settings.GA_TRACKING_ID_PROD if not settings.DEBUG else settings.GA_TRACKING_ID_DEV}
-
-ga_consumer = Consumer('Google Analytics', base_url=GA_API_BASE, content_type='text/html')
-
-
-def send_event_extension_uninstalled(cid_value):
-    try:
-        ga_consumer.post(endpoint_path=GA_API_ENDPOINT, params=dict(**GA_REQUEST_VERSION, **GA_REQUEST_EVENT_TYPE,
-                                                                    **GA_EXTENSION_UNINSTALLED_EVENT, **GA_TRACKING_ID,
-                                                                    **{GA_REQUEST_CID_PARAM: cid_value}))
-    except ga_consumer.ConsumingError as e:
-        logger.error(str(e))
