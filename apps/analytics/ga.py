@@ -5,7 +5,7 @@ from logging import getLogger
 from django.conf import settings
 from django.utils import timezone
 
-from apps.publisher.consumers import Consumer
+from apps.consumers import Consumer
 
 CID_PARAM = 'ga_cookie'
 GID_PARAM = 'gid_cookie'
