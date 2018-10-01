@@ -56,7 +56,7 @@ Opening database cmdline: `sudo docker-compose run web python manage.py dbshell`
 Installing new python packages:
 `$ sudo docker-compose run web pip install ...`
 
-Moving around _inside/- the container: `$ sudo docker-compose run web bach`  
+Moving around _inside/- the container: `$ sudo docker-compose run web bash`  
 From _inside_ you can of course also run migrations, pip install or do anything... 
 
 All other operation can be run in similar manner: `$ sudo docker-compose run web COMMAND...`
