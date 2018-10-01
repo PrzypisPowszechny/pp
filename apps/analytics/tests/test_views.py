@@ -37,7 +37,7 @@ class AnalyticsViewsTEST(TestCase):
 
         response = self.client.post(self.init_ping_url, data={ga_cookies.CID_PARAM: cid, ga_cookies.GID_PARAM: gid})
         self.assertEqual(response.status_code, 200)
-        
+
         cid_cookie = response.client.cookies.get(ga_cookies.CID_COOKIE)
         gid_cookie = response.client.cookies.get(ga_cookies.GID_COOKIE)
         self.assertIsNotNone(cid_cookie)
