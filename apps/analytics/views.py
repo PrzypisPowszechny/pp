@@ -1,3 +1,4 @@
+import json
 from logging import getLogger
 
 from django.http import HttpResponse, HttpResponseBadRequest
@@ -19,7 +20,7 @@ def init_ping(request):
     if request.method != 'POST':
         return HttpResponseBadRequest('Only POST method accepted')
 
-    response = HttpResponse()
+    response = HttpResponse(content_type='application/json', content=json.dumps({'iamstaff': is_iamstaff(request)}))
 
     # Set GA cookies, based on send data
     cookies = ga_cookies.set_cookies(request.POST)
@@ -35,7 +36,7 @@ def extension_uninstalled_hook(request):
     if cid_value is None:
         logger.error('Cid cookie not set or malformed.')
     else:
-        if is_iamstaff(request):
+        if not is_iamstaff(request):
             try:
                 GAConsumer(cid_value).send_event_extension_uninstalled()
             except GAConsumer.ConsumingError as e:
