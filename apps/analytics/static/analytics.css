@@ -1,0 +1,52 @@
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: url('./Open_Sans/OpenSans-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 500;
+  src: url('./Open_Sans/OpenSans-SemiBold.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 600;
+  src: url('./Open_Sans/OpenSans-Bold.ttf') format('truetype');
+}
+
+body {
+  background-color: rgb(247, 247, 247);
+  margin: 0;
+  font-family: 'Open Sans';
+  font-size: 17px;
+  color: #424241;
+}
+
+.main-text-container {
+  text-align: center;
+  margin-top: 50px;
+}
+
+.main-text {
+  font-size: 26px;
+  font-weight: 400;
+  display: inline-block
+}
+
+.sub-text {
+  font-size: 22px;
+  font-weight: 400;
+  display: inline-block
+}
+
+img.pp-logo {
+  width: 50px;
+  display: inline-block;
+  margin:20px 0 0 20px;
+}

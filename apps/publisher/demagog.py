@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 
 from worker import celery_app
 from apps.annotation.models import Annotation
-from .consumers import Consumer, DemagogConsumer
+from .consumers import DemagogConsumer
 
 logger = logging.getLogger('pp.publisher')
 
@@ -24,7 +24,7 @@ def sync_using_all_statements():
         logger.info('Consuming page {} of {}'.format(current_page, total_pages or 'unknown'))
         try:
             total_pages, current_page_ignored, statements = consumer.get_all_statements()
-        except Consumer.ConsumingError as e:
+        except DemagogConsumer.ConsumingError as e:
             logger.error(str(e))
         else:
             for statement_data in statements:
@@ -39,7 +39,7 @@ def sync_using_sources_list():
 
     try:
         sources_list = consumer.get_sources_list()
-    except Consumer.ConsumingError as e:
+    except DemagogConsumer.ConsumingError as e:
         logger.error(str(e))
         return
 

@@ -8,7 +8,7 @@ SOURCE_URL = 'http://i-am-article-you-check.org'
 FACT_URL = 'http://i-check-you-all.org'
 
 
-class AnnotationAPITest(TestCase):
+class SerializersTest(TestCase):
     maxDiff = None
 
     def setUp(self):
