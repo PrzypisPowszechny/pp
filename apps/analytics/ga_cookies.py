@@ -4,6 +4,7 @@ from logging import getLogger
 
 from django.utils import timezone
 
+
 CID_PARAM = 'ga_cookie'
 GID_PARAM = 'gid_cookie'
 CID_COOKIE = '_ga'

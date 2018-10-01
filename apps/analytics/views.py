@@ -4,8 +4,9 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render_to_response
 from django.views.decorators.csrf import csrf_exempt
 
-from .consumers import GAConsumer
 from . import ga_cookies
+from .consumers import GAConsumer
+from .cookies import is_iamstaff, iamstaff_set_cookie
 
 logger = getLogger('pp.analytics')
 
@@ -34,9 +35,16 @@ def extension_uninstalled_hook(request):
     if cid_value is None:
         logger.error('Cid cookie not set or malformed.')
     else:
-        try:
-            GAConsumer(cid_value).send_event_extension_uninstalled()
-        except GAConsumer.ConsumingError as e:
-            logger.error(str(e))
+        if is_iamstaff(request):
+            try:
+                GAConsumer(cid_value).send_event_extension_uninstalled()
+            except GAConsumer.ConsumingError as e:
+                logger.error(str(e))
 
     return render_to_response('analytics.html')
+
+
+def set_iamstaff(request):
+    response = HttpResponse("You've already been." if is_iamstaff(request) else 'Now you are.')
+    response.set_cookie(**iamstaff_set_cookie())
+    return response

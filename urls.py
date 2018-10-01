@@ -54,6 +54,7 @@ urlpatterns = [
     # Analytics
     url(r'^site/extension-uninstalled/$', analytics_views.extension_uninstalled_hook),
     url(r'^site/pings/init/$', analytics_views.init_ping),
+    url(r'^site/iamstaff/$', analytics_views.set_iamstaff),
 
     # This is the challenge from cerbot (certbot.eff.org) after running "sudo certbot certonly --manual"
     url(r'^\.well-known/acme-challenge/(?P<acme>.+)$',
