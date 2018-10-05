@@ -39,7 +39,7 @@ class ObjectField(serializers.Field):
 
     def to_representation(self, value):
         if value is None or value == "":
-            return {}
+            return None
         if self.json_internal_type:
             return json.loads(value)
         return value
