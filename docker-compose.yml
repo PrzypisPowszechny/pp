@@ -25,7 +25,15 @@ services:
       - PIP_PREFIX=./
     entrypoint:
       - ./docker/virtualenv_setup_entrypoint.sh
-    command: python ./manage.py runserver 0.0.0.0:8000
+    # The access-logfile and error-logfile settings to make sure gunicorn does not silence any of them
+    command: gunicorn
+      --reload
+      --bind=0.0.0.0:8000
+      --log-level=info
+      --access-logfile=-
+      --error-logfile=-
+      --config=python:wsgi
+      wsgi
 
   worker:
     depends_on:

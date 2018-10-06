@@ -197,17 +197,51 @@ USE_TZ = True
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{asctime}: {levelname}/{processName}] [{process:d}] {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '[{levelname}] {message}',
+            'style': '{',
+        },
+    },
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        }
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
         },
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
+            'filters': ['require_debug_true'],
             'filename': 'django.log',
+            'formatter': 'verbose',
         },
     },
     'loggers': {
+        # Override gunicorn definitions - for the time of running http applicaton, not for the gunicorn host-app itself
+        "gunicorn": {
+            "level": "INFO",
+            "handlers": ["console"],
+        },
+        "gunicorn.error": {
+            "level": "INFO",
+            "handlers": ["console"],
+            "qualname": "gunicorn.error"
+
+        },
+        "gunicorn.access": {
+            "level": "INFO",
+            "handlers": ["console"],
+            "qualname": "gunicorn.access"
+        },
         'django': {
             'handlers': ['console', 'file'],
             'level': 'INFO',
