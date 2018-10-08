@@ -58,6 +58,9 @@ class Consumer:
     def request_error(self, reason):
         return '{} request error: {}'.format(self.api_name, reason)
 
+    def request_deserialize_error(self, reason):
+        return '{} request deserialize error: {}'.format(self.api_name, reason)
+
 
 class JSONConsumer(Consumer):
     content_type = 'application/json'

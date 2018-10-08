@@ -25,7 +25,7 @@ def sync_using_all_statements():
         try:
             total_pages, current_page_ignored, statements = consumer.get_all_statements()
         except DemagogConsumer.ConsumingError as e:
-            logger.error(str(e))
+            logger.warning(str(e))
         else:
             for statement_data in statements:
                 update_or_create_annotation(statement_data, demagog_user)
@@ -40,8 +40,13 @@ def sync_using_sources_list():
     try:
         sources_list = consumer.get_sources_list()
     except DemagogConsumer.ConsumingError as e:
-        logger.error(str(e))
+        logger.warning(str(e))
         return
+
+    if not sources_list:
+        logger.warning('Sources list is empty')
+    else:
+        logger.info('Starting iteration over %s sources' % len(sources_list))
 
     demagog_user = get_user_model().objects.get(username=settings.DEMAGOG_USERNAME)
     for source_url in sources_list:
@@ -66,15 +71,22 @@ def update_or_create_annotation(statement_data, demagog_user=None):
         )
     )
 
-    if not created:
+    if created:
+        action = 'created'
+    else:
         changed = False
         for key, val in annotation_fields.items():
             if getattr(annotation, key) != val:
                 setattr(annotation, key, val)
                 changed = True
         if changed:
+            action = 'changed'
             annotation._history_user = demagog_user
             annotation.save()
+        else:
+            action = 'ignored'
+
+    logger.info('Annotation with demagog id=%s was: %s' % (statement_data['id'], action))
 
 
 def statement_attrs_to_annotation_fields(attrs):

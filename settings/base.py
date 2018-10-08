@@ -250,5 +250,11 @@ LOGGING = {
             'handlers': ['console', 'file'],
             'level': 'INFO',
         },
+        'pp.publisher': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            # Avoid duplicating by celery
+            'propagate': False,
+        },
     },
 }

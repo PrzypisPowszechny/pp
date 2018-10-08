@@ -8,7 +8,7 @@ if 'test' in sys.argv:
         'NAME': 'test-db'
     }
 
-LOGGING['loggers']['django'].update({
-    'handlers': ['console', 'file'],
-    'level': 'ERROR',
-})
+# Switch off logs for tests
+LOGGING['loggers']['django']['level'] = 'CRITICAL'
+LOGGING['loggers']['pp']['level'] = 'CRITICAL'
+LOGGING['loggers']['pp.publisher']['level'] = 'CRITICAL'
