@@ -115,5 +115,5 @@ demagog_to_pp_category = {
     Annotation.FALSE: Annotation.ERROR,
     Annotation.PFALSE: Annotation.ERROR,
     Annotation.LIE: Annotation.CLARIFICATION,
-    Annotation.UNKOWN: Annotation.CLARIFICATION,
+    Annotation.UNKOWN: Annotation.ADDITIONAL_INFO,
 }
