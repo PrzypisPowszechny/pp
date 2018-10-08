@@ -16,7 +16,7 @@ def sync_using_all_statements():
 
     demagog_user = get_user_model().objects.get(username=settings.DEMAGOG_USERNAME)
     current_page = 0
-    total_pages = None
+    total_pages = 0
 
     while True:
         current_page += 1

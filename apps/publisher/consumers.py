@@ -10,13 +10,15 @@ class DemagogConsumer(JSONConsumer):
     base_url = settings.DEMAGOG_API_URL
 
     def get_all_statements(self, page=1):
-        response = self.get('/', params={
+        response = self.get('/statements', params={
             'page': page,
             'q': 'all',
             'client': 'pp'
         })
         if 'total_pages' not in response or 'current_page' not in response:
-            raise DemagogConsumer.ConsumingDataError(self.request_error('no total_pages/current_page'))
+            raise DemagogConsumer.ConsumingDataError(
+                self.request_error('response does not contain total_pages or, current_page field')
+            )
         deserializer = StatementDeserializer(many=True, data=response.get('data'))
         if not deserializer.is_valid():
             raise DemagogConsumer.ConsumingDataError(self.request_error(deserializer.errors))

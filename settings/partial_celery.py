@@ -19,6 +19,11 @@ CELERY_DEFAULT_EXCHANGE_TYPE = 'direct'
 CELERY_DEFAULT_ROUTING_KEY = 'general'
 
 
+CELERYD_LOG_FORMAT = "[%(asctime)s: %(levelname)s/%(processName)s][%(process)s][%(name)s] %(message)s"
+CELERYD_TASK_LOG_FORMAT = "[%(asctime)s: %(levelname)s/%(processName)s][%(process)s][%(name)s] " \
+                          "[%(task_name)s(%(task_id)s)] %(message)s"
+
+
 CELERYBEAT_SCHEDULE = {
     'sync_with_demagog': {
         'task':

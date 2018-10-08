@@ -18,7 +18,7 @@ class DemagogAPITest(TestCase):
     def setUp(self):
         pass
 
-    get_all_statements_path = '/'
+    get_all_statements_path = '/statements'
     get_statements_path = '/statements'
     get_sources_list_path = '/sources_list'
 

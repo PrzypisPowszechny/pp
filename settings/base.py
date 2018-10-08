@@ -199,7 +199,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '[{asctime}: {levelname}/{processName}] [{process:d}] {message}',
+            'format': '[{asctime}: {levelname}/{processName}][{process:d}][{name}] {message}',
             'style': '{',
         },
         'simple': {
