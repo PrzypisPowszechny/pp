@@ -1,34 +1,10 @@
-from django.test import TestCase
-from django.utils import timezone
 from parameterized import parameterized
 
 from apps.publisher.serializers import StatementDeserializer, SourcesDeserializer
-
-SOURCE_URL = 'http://i-am-article-you-check.org'
-FACT_URL = 'http://i-check-you-all.org'
+from apps.publisher.tests.demagog_test_case import DemagogTestCase
 
 
-class SerializersTest(TestCase):
-    maxDiff = None
-
-    def setUp(self):
-        pass
-
-    def get_statement_valid_attrs(self):
-        return {
-            'source': SOURCE_URL,
-            'text': "it's an interesting article",
-            'date':  timezone.now(),
-            'rating': 'true',
-            'rating_text': 'true statement',
-            'factchecker_uri': FACT_URL
-        }
-
-    def get_statement_valid_data(self):
-        return {
-            'id': 'hash-1fa43de44',
-            'attributes': self.get_statement_valid_attrs()
-        }
+class SerializersTest(DemagogTestCase):
 
     @parameterized.expand([
         # 1_1 is actual demagog id format, but are flexible and can accept other strings and ints as well
@@ -75,7 +51,7 @@ class SerializersTest(TestCase):
 
     @parameterized.expand([
         [True, {'attributes': {'sources': []}}],
-        [True, {'attributes': {'sources': [FACT_URL, SOURCE_URL]}}],
+        [True, {'attributes': {'sources': [DemagogTestCase.FACT_URL, DemagogTestCase.SOURCE_URL]}}],
         [False, {'attributes': {'sources': ['not-an-url']}}],
         [False, {'attributes': {'sources': None}}],
         [False, {'attributes': None}],

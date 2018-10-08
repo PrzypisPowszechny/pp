@@ -2,6 +2,7 @@ import logging
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.utils.text import Truncator
 
 from worker import celery_app
 from apps.annotation.models import Annotation
@@ -96,10 +97,16 @@ def statement_attrs_to_annotation_fields(attrs):
         'demagog_category': attrs['rating'].upper(),
         'quote': attrs['text'],
         'annotation_link': attrs['factchecker_uri'],
+        'comment': get_first_paragraph(attrs['explanation']),
         # TODO: what should be the title?
         'annotation_link_title': 'Demagog.org.pl',
         'create_date': attrs['date'],
     }
+
+
+def get_first_paragraph(explanation):
+    # TODO: when format of explanation is known implement this function as needed by finding \n or <br/> or </div> etc
+    return Truncator(explanation).chars(200)
 
 
 demagog_to_pp_category = {

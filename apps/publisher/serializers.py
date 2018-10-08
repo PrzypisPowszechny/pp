@@ -11,6 +11,7 @@ class StatementDeserializer(serializers.Serializer):
         rating = serializers.ChoiceField(choices=[(val.lower(), label) for val, label in Annotation.DEMAGOG_CATEGORIES])
         rating_text = serializers.CharField()
         factchecker_uri = serializers.URLField()
+        explanation = serializers.CharField()
         # Actually we do not use this field
         sclass = serializers.CharField(required=False)
 
