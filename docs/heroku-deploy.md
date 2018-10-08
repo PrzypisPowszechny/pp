@@ -38,7 +38,19 @@ Push changes to heroku from you local prod-heroku branch to master on heroku
 Migrate database if necessary  
 `$ heroku run --app pp-[prod|dev1] python manage.py migrate`
 
+#### Maintenance 
 
+To see running processes in the heroku app:
+`$ heroku ps --app pp-[prod|dev1]`
+
+If you added new process in Procfile or want to scale up/down existing services use
+`$ heroku ps:scale --app pp-[prod|dev1] [web|worker|etc]=1`
+
+Logs
+`$ heroku logs --app pp-[prod|dev1] --tail`
+
+Logs for one service
+`$ heroku logs --app pp-[prod|dev1] --tail -p [web|worker|etc]`
 
 ## Advanced
 
@@ -54,3 +66,8 @@ Move/copy deployment with all add-ons (eg. databases) and settings (excluding do
 
 Use `--region` arg to move between data centers  
 `$ heroku fork --from pp-deploy --to pp-deploy-copy1 --region eu`
+
+
+### Resources
+
+CLI commands reference: https://devcenter.heroku.com/articles/heroku-cli-commands
