@@ -20,23 +20,40 @@ class SerializersTest(TestCase):
             'text': "it's an interesting article",
             'date':  timezone.now(),
             'rating': 'true',
-            'rating_text':'true statement',
+            'rating_text': 'true statement',
             'factchecker_uri': FACT_URL
         }
 
     def get_statement_valid_data(self):
         return {
-            'id': 1,
+            'id': 'hash-1fa43de44',
             'attributes': self.get_statement_valid_attrs()
         }
 
-    def test_statement_deserializer__accept_valid(self):
-        deserializer = StatementDeserializer(data=self.get_statement_valid_data())
+    @parameterized.expand([
+        # 1_1 is actual demagog id format, but are flexible and can accept other strings and ints as well
+        [{'id': '1_1'}, {}],
+        [{'id': 1}, {}],
+        [{'id': '1'}, {}],
+        [{'id': '1fa43de44'}, {}],
+        [{'id': 'a'}, {}],
+    ])
+    def test_statement_deserializer__accept_valid(self, override_data, override_attributes):
+        data = self.get_statement_valid_data()
+        data.update(override_data)
+        data['attributes'].update(override_attributes)
+
+        deserializer = StatementDeserializer(data=data)
         self.assertTrue(deserializer.is_valid())
 
     @parameterized.expand([
         [{'id': None}, {}],
-        [{'id': 'string-id'}, {}],
+        [{'id': 0}, {}],
+        [{'id': '0'}, {}],
+        [{'id': ''}, {}],
+        [{'id': ' '}, {}],
+        [{'id': '1 '}, {}],
+        [{'id': '1 1'}, {}],
         [{}, {'source': ''}],
         [{}, {'source': 'not-valid-url'}],
         [{}, {'text': ''}],

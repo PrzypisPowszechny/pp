@@ -41,7 +41,7 @@ class DemagogTasksTest(TestCase):
 
     def get_statement_valid_data(self):
         return {
-            'id': 1,
+            'id': '1',
             'attributes': self.get_statement_valid_attrs()
         }
 
@@ -91,7 +91,7 @@ class DemagogTasksTest(TestCase):
         statement_attrs = statement_data['attributes']
         statement_data2 = self.get_statement_valid_data()
         statement_attrs2 = statement_data2['attributes']
-        statement_data2['id'] = statement_data['id'] + 1
+        statement_data2['id'] = statement_data['id'] + '_anything_different'
         statement_attrs2['source'] = SOURCE_URL2
 
         responses.add(responses.Response(

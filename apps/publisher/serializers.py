@@ -14,7 +14,8 @@ class StatementDeserializer(serializers.Serializer):
         # Actually we do not use this field
         sclass = serializers.CharField(required=False)
 
-    id = serializers.IntegerField()
+    # Accept valid integer int (not 0) or alphanumeric id (numbers, chars, underscores, without spaces)
+    id = serializers.RegexField('^(?:[1-9a-zA-Z]|\d{2,}|[a-zA-Z0-9_]{2,})$', trim_whitespace=False)
     attributes = Attributes()
 
 
