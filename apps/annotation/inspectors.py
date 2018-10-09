@@ -4,7 +4,7 @@ from drf_yasg import openapi
 from drf_yasg.inspectors import SimpleFieldInspector, NotHandled, FieldInspector
 from rest_framework import serializers
 
-from .serializers import IDField, ObjectField
+from .serializers import IDField, ObjectField, SchemaGeneratorSerializer
 
 
 class IDFieldInspector(SimpleFieldInspector):
@@ -33,6 +33,7 @@ class RootSerializerInspector(FieldInspector):
     def process_result(self, result, method_name, obj, **kwargs):
         if (
                 isinstance(obj, serializers.BaseSerializer) and
+                not isinstance(obj, SchemaGeneratorSerializer) and
                 obj.parent is None and
                 method_name == 'field_to_swagger_object'
         ):

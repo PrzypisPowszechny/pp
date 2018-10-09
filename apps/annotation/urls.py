@@ -19,6 +19,10 @@ urlpatterns = [
         url(r'^/(?P<annotation_id>[0-9]+)/reports$', annotation_reports.AnnotationRelatedAnnotationReportList.as_view(),
             name='annotation_related_reports'),
     ])),
+    url(r'^annotations-sensitive', include([
+        url(r'^$', annotations.AnnotationListSensitive.as_view(),
+            name='annotation'),
+    ])),
     url(r'^annotationUpvotes', include([
         url(r'^/(?P<feedback_id>[0-9]+)$', annotation_upvotes.AnnotationUpvoteSingle.as_view(),
             name='annotation_upvote'),

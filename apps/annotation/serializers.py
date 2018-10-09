@@ -58,6 +58,11 @@ class StandardizedRepresentationURLField(serializers.URLField):
         return standardize_url(value)
 
 
+# Serializer used purely for schema generation
+# When inherited from no additional 'data' root is added form more control over the generated schema
+class SchemaGeneratorSerializer(serializers.Serializer):
+    pass
+
 class ResourceIdSerializer(serializers.Serializer):
     id = IDField(required=True)
 
