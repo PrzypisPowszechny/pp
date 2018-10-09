@@ -2,6 +2,7 @@ import logging
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.utils.text import Truncator
 
 from worker import celery_app
 from apps.annotation.models import Annotation
@@ -66,7 +67,7 @@ def update_or_create_annotation(statement_data, demagog_user=None):
         publisher_annotation_id=statement_data['id'],
         defaults=dict(
             user=demagog_user,
-            _history_user= demagog_user,
+            _history_user=demagog_user,
             **annotation_fields
         )
     )
@@ -87,6 +88,7 @@ def update_or_create_annotation(statement_data, demagog_user=None):
             action = 'ignored'
 
     logger.info('Annotation with demagog id=%s was: %s' % (statement_data['id'], action))
+    return annotation
 
 
 def statement_attrs_to_annotation_fields(attrs):
@@ -96,10 +98,16 @@ def statement_attrs_to_annotation_fields(attrs):
         'demagog_category': attrs['rating'].upper(),
         'quote': attrs['text'],
         'annotation_link': attrs['factchecker_uri'],
+        'comment': get_first_paragraph(attrs['explanation']),
         # TODO: what should be the title?
         'annotation_link_title': 'Demagog.org.pl',
         'create_date': attrs['date'],
     }
+
+
+def get_first_paragraph(explanation):
+    # TODO: when format of explanation is known implement this function as needed by finding \n or <br/> or </div> etc
+    return Truncator(explanation).chars(200)
 
 
 demagog_to_pp_category = {
@@ -108,5 +116,5 @@ demagog_to_pp_category = {
     Annotation.FALSE: Annotation.ERROR,
     Annotation.PFALSE: Annotation.ERROR,
     Annotation.LIE: Annotation.CLARIFICATION,
-    Annotation.UNKOWN: Annotation.CLARIFICATION,
+    Annotation.UNKOWN: Annotation.ADDITIONAL_INFO,
 }

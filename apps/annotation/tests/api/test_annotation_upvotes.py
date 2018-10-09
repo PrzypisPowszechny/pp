@@ -19,6 +19,7 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
         self.user, self.password = create_test_user()
         self.client.login(username=self.user, password=self.password)
 
+    # TODO: split this obsolete test to make it MORE UNIT
     def test_get_upvote(self):
         annotation = Annotation.objects.create(user=self.user)
         upvote = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
@@ -48,6 +49,7 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
                                    content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 404)
 
+    # TODO: split this obsolete test to make it MORE UNIT
     def test_get_annotation_related_upvote(self):
         annotation = Annotation.objects.create(user=self.user)
         upvote = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
@@ -77,6 +79,8 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
                                    content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 404)
 
+    # TODO: split this obsolete test to make it MORE UNIT
+    # TODO: do not hardcode data all the time, use helper to create valid annotation
     def test_post_upvote(self):
         annotation = Annotation.objects.create(user=self.user)
         post_payload = {
@@ -123,6 +127,8 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
             data=json.dumps(post_payload))
         self.assertEqual(response.status_code, 400)
 
+    # TODO: split this obsolete test to make it MORE UNIT
+    # TODO: do not hardcode data all the time, use helper to create valid annotation
     def test_post_upvote_fail__no_relation(self):
         post_payload = {
             'data': {
@@ -183,6 +189,8 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
             '/relationships'
         )
 
+    # TODO: split this obsolete test to make it MORE UNIT
+    # TODO: do not hardcode data all the time, use helper to create valid annotation
     def test_post_upvote_fail__malformed_relation(self):
         post_payload = {
             'data': {
@@ -206,6 +214,7 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
             '/relationships/annotation/data'
         )
 
+    # TODO: split this obsolete test to make it MORE UNIT
     def test_delete_upvote(self):
         annotation = Annotation.objects.create(user=self.user)
         upvote = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)

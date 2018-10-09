@@ -94,7 +94,7 @@ class Annotation(AnnotationBase):
 
     publisher = models.CharField(choices=PUBLISHERS, max_length=10, default=PP_PUBLISHER)
 
-    publisher_annotation_id = models.IntegerField(db_index=True, blank=True, null=True)
+    publisher_annotation_id = models.CharField(db_index=True, blank=True, null=True, max_length=64)
 
     pp_category = models.CharField(choices=PP_CATERORIES, max_length=20)
     # Category for PP publisher (and other publishers' categories mapped to pp)

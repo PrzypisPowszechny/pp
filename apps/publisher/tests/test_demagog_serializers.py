@@ -1,48 +1,42 @@
-from django.test import TestCase
-from django.utils import timezone
 from parameterized import parameterized
 
 from apps.publisher.serializers import StatementDeserializer, SourcesDeserializer
-
-SOURCE_URL = 'http://i-am-article-you-check.org'
-FACT_URL = 'http://i-check-you-all.org'
+from apps.publisher.tests.demagog_test_case import DemagogTestCase
 
 
-class SerializersTest(TestCase):
-    maxDiff = None
+class SerializersTest(DemagogTestCase):
 
-    def setUp(self):
-        pass
+    @parameterized.expand([
+        # 1_1 is actual demagog id format, but are flexible and can accept other strings and ints as well
+        [{'id': '1_1'}, {}],
+        [{'id': 1}, {}],
+        [{'id': '1'}, {}],
+        [{'id': '1fa43de44'}, {}],
+        [{'id': 'a'}, {}],
+    ])
+    def test_statement_deserializer__accept_valid(self, override_data, override_attributes):
+        data = self.get_statement_valid_data()
+        data.update(override_data)
+        data['attributes'].update(override_attributes)
 
-    def get_statement_valid_attrs(self):
-        return {
-            'source': SOURCE_URL,
-            'text': "it's an interesting article",
-            'date':  timezone.now(),
-            'rating': 'true',
-            'rating_text':'true statement',
-            'factchecker_uri': FACT_URL
-        }
-
-    def get_statement_valid_data(self):
-        return {
-            'id': 1,
-            'attributes': self.get_statement_valid_attrs()
-        }
-
-    def test_statement_deserializer__accept_valid(self):
-        deserializer = StatementDeserializer(data=self.get_statement_valid_data())
+        deserializer = StatementDeserializer(data=data)
         self.assertTrue(deserializer.is_valid())
 
     @parameterized.expand([
         [{'id': None}, {}],
-        [{'id': 'string-id'}, {}],
+        [{'id': 0}, {}],
+        [{'id': '0'}, {}],
+        [{'id': ''}, {}],
+        [{'id': ' '}, {}],
+        [{'id': '1 '}, {}],
+        [{'id': '1 1'}, {}],
         [{}, {'source': ''}],
         [{}, {'source': 'not-valid-url'}],
         [{}, {'text': ''}],
         [{}, {'rating': ''}],
         [{}, {'rating': 'not-in-choices'}],
         [{}, {'rating_text': ''}],
+        [{}, {'explanation': ''}],
         [{}, {'factchecker_uri': ''}],
         [{}, {'factchecker_uri': 'not-valid-url'}],
         [{}, {'date': ''}],
@@ -58,7 +52,7 @@ class SerializersTest(TestCase):
 
     @parameterized.expand([
         [True, {'attributes': {'sources': []}}],
-        [True, {'attributes': {'sources': [FACT_URL, SOURCE_URL]}}],
+        [True, {'attributes': {'sources': [DemagogTestCase.FACT_URL, DemagogTestCase.SOURCE_URL]}}],
         [False, {'attributes': {'sources': ['not-an-url']}}],
         [False, {'attributes': {'sources': None}}],
         [False, {'attributes': None}],
