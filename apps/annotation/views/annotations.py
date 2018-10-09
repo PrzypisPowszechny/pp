@@ -105,7 +105,6 @@ class AnnotationListBase(AnnotationBase, GenericAPIView):
     ordering_fields = ('create_date', 'id')
     ordering = "-create_date"
 
-
     def get_queryset(self):
         queryset = Annotation.objects.filter(active=True).annotate(
             total_upvote_count=Count('feedbacks__id')
@@ -161,6 +160,7 @@ class AnnotationListSensitive(AnnotationListBase):
     # implemented as GET since it does not modify anything.
     #
     # We implement is also as POST for even more secure reads (since URL browsing history is sensitive)
+    # We have set up necessary filtering but pagination in POST is very problematic so it is omitted for now
 
     filter_backends = (OrderingFilter, DjangoFilterBackend, StandardizedURLBodyFilterBackend)
     filter_fields = ()

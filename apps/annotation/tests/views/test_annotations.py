@@ -1,4 +1,5 @@
 from django.test import TestCase
+from mock import patch
 from model_mommy import mommy
 from parameterized import parameterized
 from rest_framework.test import APIRequestFactory
@@ -33,9 +34,7 @@ class AnnotationViewTest(TestCase):
         self.assertIsNotNone(results)
 
     def test_list_post_no_filtering_returns_all(self):
-        annotation = mommy.make('annotation.Annotation')
-        annotation.save()
-
+        mommy.make('annotation.Annotation')
         expected_count = Annotation.objects.count()
 
         response, results = self.request_to_class_view(AnnotationListSensitive, 'post')
@@ -69,3 +68,15 @@ class AnnotationViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(results)
         self.assertEqual(len(results), expected_count)
+
+    def test_list_post_returns_limited(self):
+        mommy.make('annotation.Annotation', 10)
+        all_count = Annotation.objects.count()
+
+        # patch PAGE_SIZE so as not to have to create > 100 Annotations...
+        with patch('rest_framework.pagination.LimitOffsetPagination.default_limit', 5):
+            response, results = self.request_to_class_view(AnnotationListSensitive, 'post')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNotNone(results)
+        self.assertLess(len(results), all_count)
