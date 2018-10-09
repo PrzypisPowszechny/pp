@@ -1,3 +1,4 @@
+import rest_framework
 from django.db.models import Case, Prefetch, Count
 from django.db.models import IntegerField
 from django.db.models import Sum
@@ -7,6 +8,7 @@ from django.utils.decorators import method_decorator
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from lazysignup.decorators import allow_lazy_user
+from rest_framework import serializers
 from rest_framework.filters import OrderingFilter
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
@@ -18,7 +20,7 @@ from apps.annotation.filters import StandardizedURLFilterBackend, BodyFilterBack
 from apps.annotation.models import Annotation, AnnotationUpvote, AnnotationReport
 from apps.annotation.responses import PermissionDenied, ValidationErrorResponse, ErrorResponse, NotFoundResponse, Forbidden
 from apps.annotation.serializers import AnnotationPatchDeserializer, AnnotationListSerializer, AnnotationDeserializer, \
-    AnnotationSerializer
+    AnnotationSerializer, SchemaGeneratorSerializer
 from apps.annotation.utils import get_resource_name, DataPreSerializer
 
 
@@ -150,6 +152,10 @@ class AnnotationListBase(AnnotationBase, GenericAPIView):
         )
 
 
+class AnnotationSensitiveSchemaGeneratorDeserializer(SchemaGeneratorSerializer):
+    url = serializers.CharField(required=False)
+
+
 class AnnotationListSensitive(AnnotationListBase):
     # A very specific view for reading annotations with a POST request while by REST standards it would normally be
     # implemented as GET since it does not modify anything.
@@ -159,7 +165,7 @@ class AnnotationListSensitive(AnnotationListBase):
     filter_backends = (OrderingFilter, DjangoFilterBackend, StandardizedURLBodyFilterBackend)
     filter_fields = ()
 
-    @swagger_auto_schema(request_body=AnnotationDeserializer,
+    @swagger_auto_schema(request_body=AnnotationSensitiveSchemaGeneratorDeserializer,
                          responses={200: AnnotationSerializer})
     @method_decorator(allow_lazy_user)
     def post(self, request, *args, **kwargs):
