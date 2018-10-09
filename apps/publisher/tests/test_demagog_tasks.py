@@ -1,12 +1,15 @@
 import json
+from datetime import timedelta
 from urllib.parse import urlencode
 
 import responses
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
+from django.utils import timezone
+from parameterized import parameterized
 
 from apps.annotation.models import Annotation
-from apps.publisher.demagog import sync_using_sources_list, demagog_to_pp_category
+from apps.publisher.demagog import sync_using_sources_list, demagog_to_pp_category, update_or_create_annotation
 from apps.publisher.tests.demagog_test_case import DemagogTestCase
 
 
@@ -94,3 +97,25 @@ class DemagogTasksTest(DemagogTestCase):
         annotation_count = Annotation.objects.count()
         sync_using_sources_list()
         self.assertEqual(Annotation.objects.count(), annotation_count + 2)
+
+    # TODO: create specialized tests for less standard cases, this is basic test of mapping and should remain simple
+    @parameterized.expand([
+        [{}],
+        # Test that create_date is demagog create_date, not out insert date
+        [{'date': timezone.now() - timedelta(days=2)}],
+    ])
+    def test_update_or_create_annotation__general_fields_mapping(self, override_attrs):
+        statement_data = self.get_statement_valid_data()
+        statement_data['attributes'].update(override_attrs)
+        attrs = statement_data['attributes']
+        annotation = update_or_create_annotation(statement_data=statement_data)
+
+        self.assertTrue(annotation)
+        self.assertEqual(annotation.publisher, annotation.DEMAGOG_PUBLISHER)
+        self.assertEqual(annotation.publisher_annotation_id, statement_data['id'])
+        self.assertEqual(annotation.url, attrs['source'])
+        self.assertEqual(annotation.pp_category, demagog_to_pp_category[attrs['rating'].upper()])
+        self.assertEqual(annotation.demagog_category, attrs['rating'].upper())
+        self.assertEqual(annotation.annotation_link, attrs['factchecker_uri'])
+        self.assertEqual(annotation.comment, attrs['explanation'])
+        self.assertEqual(annotation.create_date, attrs['date'])

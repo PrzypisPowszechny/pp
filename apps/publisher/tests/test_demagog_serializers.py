@@ -36,6 +36,7 @@ class SerializersTest(DemagogTestCase):
         [{}, {'rating': ''}],
         [{}, {'rating': 'not-in-choices'}],
         [{}, {'rating_text': ''}],
+        [{}, {'explanation': ''}],
         [{}, {'factchecker_uri': ''}],
         [{}, {'factchecker_uri': 'not-valid-url'}],
         [{}, {'date': ''}],

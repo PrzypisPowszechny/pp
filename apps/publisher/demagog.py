@@ -67,7 +67,7 @@ def update_or_create_annotation(statement_data, demagog_user=None):
         publisher_annotation_id=statement_data['id'],
         defaults=dict(
             user=demagog_user,
-            _history_user= demagog_user,
+            _history_user=demagog_user,
             **annotation_fields
         )
     )
@@ -88,6 +88,7 @@ def update_or_create_annotation(statement_data, demagog_user=None):
             action = 'ignored'
 
     logger.info('Annotation with demagog id=%s was: %s' % (statement_data['id'], action))
+    return annotation
 
 
 def statement_attrs_to_annotation_fields(attrs):
