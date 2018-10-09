@@ -24,6 +24,7 @@ class AnnotationAPITest(TestCase):
         self.user, self.password = create_test_user()
         self.client.login(username=self.user, password=self.password)
 
+    # TODO: do not hardcode data all the time, use helper to create valid annotation
     def test_get_returns_json_200(self):
         annotation = Annotation.objects.create(user=self.user,
                                                pp_category=Annotation.ADDITIONAL_INFO,
@@ -36,6 +37,8 @@ class AnnotationAPITest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/vnd.api+json')
 
+    # TODO: split this obsolete test to make it MORE UNIT
+    # TODO: do not hardcode data all the time, use helper to create valid annotation
     def test_get_returns_annotation(self):
         annotation = Annotation.objects.create(user=self.user,
                                                pp_category=Annotation.ADDITIONAL_INFO,
@@ -96,6 +99,8 @@ class AnnotationAPITest(TestCase):
             }
         )
 
+    # TODO: split this obsolete test to make it MORE UNIT
+    # TODO: do not hardcode data all the time, use helper to create valid annotation
     def test_get_returns_annotation__upvote_count(self):
         annotation = Annotation.objects.create(user=self.user,
                                                pp_category=Annotation.ADDITIONAL_INFO,
@@ -172,6 +177,8 @@ class AnnotationAPITest(TestCase):
             'data': {'id': str(urf.id), 'type': 'annotationUpvotes'}
         })
 
+    # TODO: split this obsolete test to make it MORE UNIT
+    # TODO: do not hardcode data all the time, use helper to create valid annotation
     def test_get_annotation_report_related_annotation(self):
         annotation = Annotation.objects.create(user=self.user,
                                                pp_category=Annotation.ADDITIONAL_INFO,
@@ -235,6 +242,8 @@ class AnnotationAPITest(TestCase):
             }
         )
 
+    # TODO: split this obsolete test to make it MORE UNIT
+    # TODO: do not hardcode data all the time, use helper to create valid annotation
     def test_get_annotation_upvote_related_annotation(self):
         annotation = Annotation.objects.create(user=self.user,
                                                pp_category=Annotation.ADDITIONAL_INFO,
@@ -310,6 +319,7 @@ class AnnotationAPITest(TestCase):
             test_answer
         )
 
+    # TODO: do not hardcode data all the time, use helper to create valid annotation
     def test_list_annotations__nonempty_return_json_200(self):
         annotation_url = 'http://example.com/subpage.html'
         search_base_url = "/api/annotations?url={}"
@@ -389,6 +399,8 @@ class AnnotationAPITest(TestCase):
         # For some cases when the filtering is too broad we must use not == but >=
         self.assertTrue(len(response_content_data) >= expected_count)
 
+    # TODO: split this obsolete test to make it MORE UNIT
+    # TODO: do not hardcode data all the time, use helper to create valid annotation
     def test_list_annotations__exact_records(self):
         search_base_url = "/api/annotations?url={}"
         # First annotation
@@ -514,6 +526,8 @@ class AnnotationAPITest(TestCase):
              },
              })
 
+    # TODO: split this obsolete test to make it MORE UNIT
+    # TODO: do not hardcode data all the time, use helper to create valid annotation
     def test_list_annotations__upvote_count(self):
         list_url = '/api/annotations'
         annotation = Annotation.objects.create(user=self.user, comment="good job",
@@ -672,6 +686,7 @@ class AnnotationAPITest(TestCase):
             }
         )
 
+    # TODO: split post and patch cases
     @parameterized.expand([
         [{'start': "Od tad", 'end': "do tad"}],
         [{}],
@@ -717,6 +732,7 @@ class AnnotationAPITest(TestCase):
             response_data['data']['attributes']['range'], initial_range
         )
 
+    # TODO: split post and patch cases
     # TODO: more valid cases + some invalid as well
     @parameterized.expand([
         ['xxxx quote'],
@@ -758,6 +774,7 @@ class AnnotationAPITest(TestCase):
             response_data['data']['attributes']['quote'], initial_quote
         )
 
+    # TODO: split post and patch cases
     # TODO: more valid cases + some invalid as well
     @parameterized.expand([
         ['xxxx quote context'],
@@ -797,6 +814,7 @@ class AnnotationAPITest(TestCase):
             response_data['data']['attributes']['quoteContext'], initial_quote_context
         )
 
+    # TODO: split post and patch cases
     @parameterized.expand([
         (True, 'www.przypispowszechny.com'),
         # Length: 2048 > len > 2000
@@ -849,6 +867,7 @@ class AnnotationAPITest(TestCase):
                 response_data['data']['attributes']['annotationLink'], annotation_link
             )
 
+    # TODO: split post and patch cases
     @parameterized.expand([
         ['komentarz'],
         [''],
@@ -892,6 +911,8 @@ class AnnotationAPITest(TestCase):
             response_data['data']['attributes']['comment'], comment or ""
         )
 
+    # TODO: split this obsolete test to make it MORE UNIT
+    # TODO: do not hardcode data all the time, use helper to create valid annotation
     def test_patch_annotation(self):
         annotation = Annotation.objects.create(user=self.user,
                                                pp_category=Annotation.ADDITIONAL_INFO,
@@ -966,6 +987,7 @@ class AnnotationAPITest(TestCase):
 
         )
 
+    # TODO: do not hardcode data all the time, use helper to create valid annotation
     def test_patch_annotation__deny__attribute_quote(self):
         annotation = Annotation.objects.create(
             user=self.user, url='www.przypis.pl', comment="good job",
@@ -989,6 +1011,7 @@ class AnnotationAPITest(TestCase):
                                      content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 400)
 
+    # TODO: do not hardcode data all the time, use helper to create valid annotation
     def test_patch_annotation__deny__relationship_annotation(self):
         annotation = Annotation.objects.create(
             user=self.user, url='www.przypis.pl', comment="good job",
@@ -1015,6 +1038,7 @@ class AnnotationAPITest(TestCase):
         self.assertEqual(response.status_code, 403)
         self.assertNotEqual(annotation.comment, put_string)
 
+    # TODO: do not hardcode data all the time, use helper to create valid annotation
     def test_patch_annotation__deny__non_owner(self):
         owner_user, owner_user_pass = create_test_user(unique=True)
         annotation = Annotation.objects.create(
@@ -1038,6 +1062,7 @@ class AnnotationAPITest(TestCase):
         self.assertEqual(response.status_code, 403)
         self.assertNotEqual(annotation.comment, put_string)
 
+    # TODO: do not hardcode data all the time, use helper to create valid annotation
     def test_delete_annotation(self):
         annotation = Annotation.objects.create(
             user=self.user, url='www.przypis.pl', comment="good job",

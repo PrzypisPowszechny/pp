@@ -21,6 +21,7 @@ class AnnotationReportAPITest(TestCase):
         self.user, self.password = create_test_user()
         self.client.login(username=self.user, password=self.password)
 
+    # TODO: split this obsolete test to make it MORE UNIT
     def test_get_annotation_report(self):
         annotation = Annotation.objects.create(user=self.user)
         report = mommy.make(AnnotationReport, annotation=annotation, user=self.user)
@@ -58,6 +59,7 @@ class AnnotationReportAPITest(TestCase):
         response = self.client.get(self.report_single_url.format(report.id), content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 404)
 
+    # TODO: split this obsolete test to make it MORE UNIT
     def test_get_annotation_related_annotation_report(self):
         annotation = Annotation.objects.create(user=self.user)
         report = mommy.make(AnnotationReport, annotation=annotation, user=self.user)
@@ -98,6 +100,7 @@ class AnnotationReportAPITest(TestCase):
         (SUGGESTED_CORRECTION, '', 400),
 
     ])
+    # TODO: split this obsolete test to make it MORE UNIT
     def test_post_new_annotation_report(self, reason, comment, response_code):
         annotation = Annotation.objects.create(user=self.user)
 

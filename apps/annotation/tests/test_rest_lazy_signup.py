@@ -10,6 +10,7 @@ class LazySignupAnnotationAPITest(TestCase):
     GET_base_url = "/api/annotations/{}"
     POST_url = "/api/annotations"
 
+    # TODO: do not hardcode data all the time, use helper to create valid annotation
     def test_client_can_access_annotation(self):
         self.user, self.password = create_test_user()
 
@@ -20,6 +21,7 @@ class LazySignupAnnotationAPITest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/vnd.api+json')
 
+    # TODO: do not hardcode data all the time, use helper to create valid annotation
     def test_client_can_post_annotation(self):
         response = self.client.post(
             self.POST_url,
@@ -40,6 +42,7 @@ class LazySignupAnnotationAPITest(TestCase):
             content_type='application/vnd.api+json')
         self.assertEqual(response.status_code, 200, 'Full Response: \n%s' % response.content.decode('utf8'))
 
+    # TODO: do not hardcode data all the time, use helper to create valid annotation
     # Even if the user doesn't log, two annotations posted by the same client should have
     # Within the first one, a User is created
     # Within the second one, it is recognised based on session cookies
