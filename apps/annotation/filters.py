@@ -21,12 +21,6 @@ class GenericFilterBackend(DjangoFilterBackend):
 
         return queryset
 
-    def get_schema_fields(self, view):
-        fields = super().get_schema_fields(view)
-        for field in fields:
-            field.location = self.get_filter_schema_location()
-        return fields
-
 
 class StandardizedURLFilterBackend(GenericFilterBackend):
     url_data_field = 'url'
@@ -40,13 +34,26 @@ class StandardizedURLFilterBackend(GenericFilterBackend):
             })
         return queryset
 
+    def get_schema_fields(self, view):
+        return [
+            coreapi.Field(
+                name=self.url_data_field,
+                required=False,
+                location=self.get_filter_schema_location(),
+                schema=coreschema.String(
+                    title='Annotation URL',
+                    description='URL where annotations are to be displayed'
+                )
+            )
+        ]
+
 
 class StandardizedURLBodyFilterBackend(StandardizedURLFilterBackend):
     def get_filter_params(self, request):
         return request.data
 
     def get_filter_schema_location(self):
-        return 'body'
+        return 'form'
 
 
 class StandardizedURLQueryFilterBackend(StandardizedURLFilterBackend):
