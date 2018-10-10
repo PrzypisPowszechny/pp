@@ -2,6 +2,7 @@
 
 
 1. [About](#about)
+2. [REST API Documentation](#rest-api-documentation)
 2. [Development](#development)
    - [Starting from the scratch](#starting-from-the-scratch) 
    - [Special directories](#special-directories) 
@@ -15,8 +16,13 @@
 This is server application for [PrzypisPowszechny client](https://github.com/PrzypisPowszechny/pp-client) - the browser extension for enhancing websites with annotations 
 available to the visitors at the very moment of reading.
 
-**To see how the extension works see 
-[_about_ section in the client repository](https://github.com/PrzypisPowszechny/pp-client#about).**
+To see how the extension works go to 
+**[_about_ section in the client repository](https://github.com/PrzypisPowszechny/pp-client#about)**.
+
+
+# REST API Documentation 
+
+Check **[swagger documentation of the latest release](https://przypispowszechny.pl/api/docs/)**.
 
 # Development
 
