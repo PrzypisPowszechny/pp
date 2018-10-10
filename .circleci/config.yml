@@ -4,12 +4,26 @@ jobs:
     docker:
       - image: python:3.6
 
+    working_directory: ~/project
+
     steps:
       - checkout
       - run:
-          name: install dependencies
+          name: create venv
           command: |
             python -m venv venv
+            . venv/bin/activate
+
+      - restore_cache:
+          keys:
+          # when lock file changes, use increasingly general patterns to restore cache
+          - pip-packages-v2-{{ .Branch }}-{{ checksum "requirements.txt" }}
+          - pip-packages-v2-{{ .Branch }}-
+          - pip-packages-v2-
+
+      - run:
+          name: install dependencies
+          command: |
             . venv/bin/activate
             pip install -r requirements.txt
 
@@ -19,13 +33,7 @@ jobs:
             . venv/bin/activate
             python manage.py test -v 2
 
-      - restore_cache:
-          keys:
-          # when lock file changes, use increasingly general patterns to restore cache
-            - pip-packages-v1-{{ .Branch }}-{{ checksum "requirements.txt" }}
-            - pip-packages-v1-{{ .Branch }}-
-            - pip-packages-v1-
       - save_cache:
           paths:
-            - ~/.local/share/virtualenvs/venv  # this path depends on where pipenv creates a virtualenv
-          key: pip-packages-v1-{{ .Branch }}-{{ checksum "requirements.txt" }}
+            - ~/project/venv  # this path depends on where pipenv creates a virtualenv
+          key: pip-packages-v2-{{ .Branch }}-{{ checksum "requirements.txt" }}
