@@ -1,3 +1,6 @@
+[![CircleCI master](https://circleci.com/gh/PrzypisPowszechny/pp/tree/master.svg?style=shield)](https://circleci.com/gh/PrzypisPowszechny/pp/tree/master)
+
+
 1. [About](#about)
 2. [Development](#development)
    - [Starting from the scratch](#starting-from-the-scratch) 
