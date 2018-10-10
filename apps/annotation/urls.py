@@ -46,3 +46,5 @@ urlpatterns = [
             name='user'),
     ])),
 ]
+
+app_name = 'annotation'
