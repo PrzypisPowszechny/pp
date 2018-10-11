@@ -11,6 +11,8 @@ from lazysignup.decorators import allow_lazy_user
 from rest_framework import serializers
 from rest_framework.filters import OrderingFilter
 from rest_framework.generics import GenericAPIView
+from rest_framework.parsers import JSONParser
+from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_json_api.pagination import LimitOffsetPagination
@@ -18,6 +20,8 @@ from rest_framework_json_api.pagination import LimitOffsetPagination
 from apps.annotation.filters import StandardizedURLFilterBackend, BodyFilterBackend, StandardizedURLBodyFilterBackend, \
     StandardizedURLQueryFilterBackend
 from apps.annotation.models import Annotation, AnnotationUpvote, AnnotationReport
+from apps.annotation.pagination import ConstantLimitPagination
+from apps.annotation.renderers import JSONAPIRenderer
 from apps.annotation.responses import PermissionDenied, ValidationErrorResponse, ErrorResponse, NotFoundResponse, Forbidden
 from apps.annotation.serializers import AnnotationPatchDeserializer, AnnotationListSerializer, AnnotationDeserializer, \
     AnnotationSerializer, SchemaGeneratorSerializer
@@ -101,7 +105,6 @@ class AnnotationSingle(AnnotationBase, APIView):
 class AnnotationListBase(AnnotationBase, GenericAPIView):
     # A base class for use by the "normal" view (in REST and JSON-API standards) as well as the confidential one
     resource_name = 'annotations'
-    pagination_class = LimitOffsetPagination
     ordering_fields = ('create_date', 'id')
     ordering = "-create_date"
 
@@ -146,9 +149,7 @@ class AnnotationListBase(AnnotationBase, GenericAPIView):
 
         data_list = self.pre_serialize_queryset(queryset)
 
-        return self.get_paginated_response(
-            AnnotationListSerializer(data_list, many=True, context={'request': request}).data
-        )
+        return data_list
 
 
 class AnnotationSensitiveSchemaGeneratorDeserializer(SchemaGeneratorSerializer):
@@ -162,17 +163,26 @@ class AnnotationListSensitive(AnnotationListBase):
     # We implement is also as POST for even more secure reads (since URL browsing history is sensitive)
     # We have set up necessary filtering but pagination in POST is very problematic so it is omitted for now
 
+    pagination_class = ConstantLimitPagination
     filter_backends = (OrderingFilter, DjangoFilterBackend, StandardizedURLBodyFilterBackend)
     filter_fields = ()
+
+    parser_classes = (JSONParser,)
+    renderer_classes = (JSONAPIRenderer,)
 
     @swagger_auto_schema(request_body=AnnotationSensitiveSchemaGeneratorDeserializer,
                          responses={200: AnnotationSerializer})
     @method_decorator(allow_lazy_user)
     def post(self, request, *args, **kwargs):
-        return super().get_list(request, *args, **kwargs)
+        data_list = super().get_list(request, *args, **kwargs)
+
+        return Response(
+            AnnotationListSerializer(data_list, many=True, context={'request': request}).data
+        )
 
 
 class AnnotationList(AnnotationListBase):
+    pagination_class = LimitOffsetPagination
     filter_backends = (OrderingFilter, DjangoFilterBackend, StandardizedURLQueryFilterBackend)
     filter_fields = ()
 
@@ -193,7 +203,10 @@ class AnnotationList(AnnotationListBase):
     @swagger_auto_schema(responses={200: AnnotationListSerializer(many=True)})
     @method_decorator(allow_lazy_user)
     def get(self, request, *args, **kwargs):
-        return super().get_list(request, *args, **kwargs)
+        data_list = super().get_list(request, *args, **kwargs)
+        return self.get_paginated_response(
+            AnnotationListSerializer(data_list, many=True, context={'request': request}).data
+        )
 
 
 class AnnotationFeedbackRelatedAnnotationSingle(AnnotationBase, APIView):
