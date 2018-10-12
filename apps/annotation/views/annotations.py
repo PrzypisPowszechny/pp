@@ -104,7 +104,9 @@ class AnnotationListBase(AnnotationBase, GenericAPIView):
     def get_queryset(self):
         queryset = Annotation.objects.filter(active=True).annotate(
             total_upvote_count=Count('feedbacks__id')
-        ).prefetch_related(
+        ).select_related(
+            'user'
+         ).prefetch_related(
             Prefetch('annotation_reports', queryset=AnnotationReport.objects.filter(user=self.request.user),
                      to_attr='user_annotation_reports')
         )
