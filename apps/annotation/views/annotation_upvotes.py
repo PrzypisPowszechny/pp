@@ -9,6 +9,7 @@ from apps.annotation.models import AnnotationUpvote
 from apps.annotation.responses import ErrorResponse, NotFoundResponse, ValidationErrorResponse
 from apps.annotation.serializers import AnnotationUpvoteSerializer, AnnotationUpvoteDeserializer
 from apps.annotation.utils import DataPreSerializer, get_resource_name, get_relationship_id
+from apps.annotation.views.decorators import allow_lazy_user_smart
 
 
 class AnnotationUpvoteSingle(APIView):
@@ -29,7 +30,7 @@ class AnnotationUpvoteSingle(APIView):
                                     resource_id=feedback.annotation_id)
         return Response(self.serializer_class(pre_serializer.data, context={'request': request}).data)
 
-    @method_decorator(allow_lazy_user)
+    @method_decorator(allow_lazy_user_smart)
     def delete(self, request, feedback_id):
         try:
             feedback = AnnotationUpvote.objects.get(id=feedback_id, user=request.user,
@@ -48,7 +49,7 @@ class AnnotationUpvoteList(APIView):
 
     @swagger_auto_schema(request_body=AnnotationUpvoteDeserializer,
                          responses={200: AnnotationUpvoteSerializer})
-    @method_decorator(allow_lazy_user)
+    @method_decorator(allow_lazy_user_smart)
     def post(self, request):
         deserializer = self.deserializer_class(data=request.data)
         if not deserializer.is_valid():
