@@ -27,14 +27,17 @@ services:
     entrypoint:
       - ./docker/virtualenv_setup_entrypoint.sh
     # The access-logfile and error-logfile settings to make sure gunicorn does not silence any of them
-    command: gunicorn
-      --reload
-      --bind=0.0.0.0:8000
-      --log-level=info
-      --access-logfile=-
-      --error-logfile=-
-      --config=python:wsgi
-      wsgi
+    command: python manage.py runserver 0.0.0.0:8000
+
+    # Alternative gunicorn configuration - failing to reload properly, but useful to simulate prod environment
+    #command: gunicorn
+    #  --reload
+    #  --bind=0.0.0.0:8000
+    #  --log-level=info
+    #  --access-logfile=-
+    #  --error-logfile=-
+    #  --config=python:wsgi
+    #  wsgi
 
   worker:
     depends_on:
