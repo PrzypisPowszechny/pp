@@ -1,3 +1,5 @@
+import json
+
 from django.test import TestCase
 from mock import patch
 from model_mommy import mommy
@@ -18,18 +20,18 @@ class AnnotationViewTest(TestCase):
     def setUp(self):
         self.user, password = create_test_user()
 
-    def request_to_class_view(self, view_class, method, data=None):
+    def request_to_class_view(self, view_class, method, data=None, *args, **kwargs):
         factory = APIRequestFactory()
         # factory.post(...) / .get(...)
-        request = getattr(factory, method)(self.mock_url, data)
+        request = getattr(factory, method)(self.mock_url, data, *args, **kwargs)
         # mock session since it is expected by some processors
         request.session = self.client.session
         response = view_class.as_view()(request)
-        results = response.data['results']
+        results = response.data
         return response, results
 
     def test_list_post_returns_200(self):
-        response, results = self.request_to_class_view(AnnotationListSensitive, 'post')
+        response, results = self.request_to_class_view(AnnotationListSensitive, 'post', content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(results)
 
@@ -37,7 +39,7 @@ class AnnotationViewTest(TestCase):
         mommy.make('annotation.Annotation')
         expected_count = Annotation.objects.count()
 
-        response, results = self.request_to_class_view(AnnotationListSensitive, 'post')
+        response, results = self.request_to_class_view(AnnotationListSensitive, 'post', content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(results)
         self.assertEqual(len(results), expected_count)
@@ -64,7 +66,12 @@ class AnnotationViewTest(TestCase):
         if expected_count == 'all':
             expected_count = Annotation.objects.count()
 
-        response, results = self.request_to_class_view(AnnotationListSensitive, 'post', {'url': query_url})
+        response, results = self.request_to_class_view(
+            AnnotationListSensitive,
+            'post',
+            json.dumps({'url': query_url}),
+            content_type='application/json'
+        )
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(results)
         self.assertEqual(len(results), expected_count)
@@ -73,9 +80,13 @@ class AnnotationViewTest(TestCase):
         mommy.make('annotation.Annotation', 10)
         all_count = Annotation.objects.count()
 
-        # patch PAGE_SIZE so as not to have to create > 100 Annotations...
-        with patch('rest_framework.pagination.LimitOffsetPagination.default_limit', 5):
-            response, results = self.request_to_class_view(AnnotationListSensitive, 'post')
+        # patch to a small limit so as not to have to create > 100 Annotations...
+        with patch('apps.annotation.pagination.ConstantLimitPagination.constant_limit', 5):
+            response, results = self.request_to_class_view(
+                AnnotationListSensitive,
+                'post',
+                content_type='application/json'
+            )
 
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(results)

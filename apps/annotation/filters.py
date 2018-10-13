@@ -1,7 +1,6 @@
 import coreapi
 import coreschema
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import BaseFilterBackend
 
 from apps.annotation.utils import standardize_url_id
 
@@ -47,10 +46,9 @@ class StandardizedURLFilterBackend(GenericFilterBackend):
             )
         ]
 
-
 class StandardizedURLBodyFilterBackend(StandardizedURLFilterBackend):
     def get_filter_params(self, request):
-        return request.data
+        return request.data or {}
 
     def get_filter_schema_location(self):
         return 'form'
