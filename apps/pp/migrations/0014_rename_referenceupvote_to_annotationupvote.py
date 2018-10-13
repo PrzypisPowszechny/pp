@@ -3,9 +3,11 @@
 from __future__ import unicode_literals
 
 from django.db import migrations
+from django.db import connection
 
 
 class Migration(migrations.Migration):
+    atomic = connection.vendor is not 'sqlite'
 
     dependencies = [
         ('pp', '0013_rename_referencereport_to_annotationreport'),

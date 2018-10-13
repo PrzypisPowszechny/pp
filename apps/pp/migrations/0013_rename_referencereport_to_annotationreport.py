@@ -6,8 +6,11 @@ from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
 
+from django.db import connection
+
 
 class Migration(migrations.Migration):
+    atomic = connection.vendor is not 'sqlite'
 
     dependencies = [
         ('pp', '0012_rename_referencerequest_to_annotationrequest'),

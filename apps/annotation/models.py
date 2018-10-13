@@ -11,7 +11,7 @@ URL_SUPPORTED_LENGTH = 2048
 
 
 class UserInput(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     create_date = models.DateTimeField(default=timezone.now)
 
     class Meta:
@@ -110,7 +110,7 @@ class Annotation(AnnotationBase):
     annotation_link_title = models.CharField(max_length=110)
     # Short summary of the page referred to
 
-    annotation_request = models.ForeignKey('AnnotationRequest', null=True)
+    annotation_request = models.ForeignKey('AnnotationRequest', on_delete=models.CASCADE, null=True)
     # Null when the annotation has not been created on request
 
     history = HistoricalRecords()
@@ -147,7 +147,7 @@ class AnnotationUpvote(UserInput):
     class JSONAPIMeta:
         resource_name = 'annotation_upvotes'
 
-    annotation = models.ForeignKey(Annotation, related_name='feedbacks')
+    annotation = models.ForeignKey(Annotation, on_delete=models.CASCADE, related_name='feedbacks')
 
 
 class AnnotationRequestFeedback(models.Model):
@@ -157,5 +157,5 @@ class AnnotationRequestFeedback(models.Model):
     class JSONAPIMeta:
         resource_name = 'annotation_request_feedbacks'
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    annotation_request = models.ForeignKey(AnnotationRequest)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    annotation_request = models.ForeignKey(AnnotationRequest, on_delete=models.CASCADE)
