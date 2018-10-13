@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_json_api.pagination import LimitOffsetPagination
 
-from apps.annotation.filters import StandardizedURLFilterBackend
+from apps.annotation.filters import StandardizedURLFilterBackend, ConflictingFilterValueError
 from apps.annotation.models import Annotation, AnnotationUpvote, AnnotationReport
 from apps.annotation.responses import PermissionDenied, ValidationErrorResponse, ErrorResponse, NotFoundResponse, \
     Forbidden
@@ -148,10 +148,15 @@ class AnnotationList(AnnotationBase, GenericAPIView):
             self.get_pre_serialized_annotation(annotation, annotation.user_feedback, annotation.user_annotation_reports)
             for annotation in queryset]
 
-    @swagger_auto_schema(responses={200: AnnotationListSerializer(many=True)})
+    # Header parameters need to be provided explicitly
+    @swagger_auto_schema(responses={200: AnnotationListSerializer(many=True)},
+                         manual_parameters=StandardizedURLFilterBackend.get_manual_parameters())
     @method_decorator(allow_lazy_user_smart)
     def get(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
+        try:
+            queryset = self.filter_queryset(self.get_queryset())
+        except ConflictingFilterValueError as e:
+            return ValidationErrorResponse(e.errors)
 
         queryset = self.paginator.paginate_queryset(queryset, request)
 
