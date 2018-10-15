@@ -71,6 +71,7 @@ AUTHENTICATION_BACKENDS = (
     'lazysignup.backends.LazySignupBackend',
 )
 
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -82,7 +83,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
-    'apps.log_middleware.ExceptionLoggingMiddleware'
 ]
 
 APPEND_SLASH = False
@@ -137,9 +137,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 REST_FRAMEWORK = {
-    # We do not use Django Rest Framework authentication backend
-    # User our own authenticator that uses Django authentication instead of Django Rest Framework's
-    'DEFAULT_AUTHENTICATION_CLASSES': ['apps.annotation.auth.DjangoRestUseDjangoAuthenticator'],
+    # SessionAuthentication is thin integration of rest_framework authentication hooks with django auth middleware
+    'DEFAULT_AUTHENTICATION_CLASSES': ['rest_framework.authentication.SessionAuthentication'],
     'PAGE_SIZE': 10,
     'ORDERING_PARAM': 'sort',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework_json_api.pagination.LimitOffsetPagination',
@@ -194,6 +193,7 @@ USE_L10N = True
 USE_TZ = True
 
 
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -245,10 +245,12 @@ LOGGING = {
         'django': {
             'handlers': ['console', 'file'],
             'level': 'INFO',
+            'propagate': False
         },
         'pp': {
             'handlers': ['console', 'file'],
             'level': 'INFO',
+            'propagate': False
         },
         'pp.publisher': {
             'handlers': ['console', 'file'],

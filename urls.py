@@ -19,18 +19,26 @@ from django.http import HttpResponse
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
+
+from apps.pp import version
 from apps.site_test import views as site_test_views
 from apps.analytics import views as analytics_views
 
 
 yasg_schema_view = get_schema_view(
     openapi.Info(
-        title="Snippets API",
-        default_version='v0.1',
-        description="Przypis Powszechny",
+        title="PP API",
+        default_version=version,
+        description="This is REST API for Przypis Powszechny browser-extension\n"
+                    "\n"
+                    "Repository of this API: https://github.com/PrzypisPowszechny/pp\n"
+                    "Repository of the extension: https://github.com/PrzypisPowszechny/pp-client",
+        # TODO: create our terms of service
         terms_of_service=None,
+        # TODO: set official contact
         contact=None,
-        license=openapi.License(name="BSD License"),
+        # TODO: what's our license??
+        # license=openapi.License(name="BSD License"),
     ),
     validators=['flex', 'ssv'],
     public=True,
