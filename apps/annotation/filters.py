@@ -1,74 +1,62 @@
 import coreapi
 import coreschema
-from django_filters.rest_framework import DjangoFilterBackend
+from drf_yasg import openapi
 from rest_framework.filters import BaseFilterBackend
 
 from apps.annotation.utils import standardize_url_id
 
 
-class GenericFilterBackend(DjangoFilterBackend):
-    def get_filter_params(self, request):
-        raise NotImplementedError
-
-    def get_filter_schema_location(self):
-        raise NotImplementedError
-
-    def filter_queryset(self, request, queryset, view):
-        filter_class = self.get_filter_class(view, queryset)
-
-        if filter_class:
-            return filter_class(self.get_filter_params(request), queryset=queryset, request=request).qs
-
-        return queryset
+class ConflictingFilterValueError(Exception):
+    def __init__(self, errors, *args, **kwargs):
+        self.errors = errors
+        super(*args, **kwargs)
 
 
-class StandardizedURLFilterBackend(GenericFilterBackend):
-    url_data_field = 'url'
+class StandardizedURLFilterBackend(BaseFilterBackend):
+
+    secret_url_header = 'PP-SITE-URL' # the actual HTTP key
+    secret_url_meta_key = 'HTTP_PP_SITE_URL' # the key after Django middleware processing
+
+    url_data_query_param = 'url'
+
     url_model_field = 'url_id'
 
     def filter_queryset(self, request, queryset, view):
-        query_val = self.get_filter_params(request).get(self.url_data_field)
-        if query_val:
-            queryset = queryset.filter(**{
-                "{field}__exact".format(field=self.url_model_field): standardize_url_id(query_val)
+        header_value = request.META.get(self.secret_url_meta_key)
+        param_value = request.query_params.get(self.url_data_query_param)
+        if header_value and param_value and header_value != param_value:
+            raise ConflictingFilterValueError({'url': 'Different URLs specified via header and via params; '
+                                              'please use only one of these'})
+
+        filter_value = header_value or param_value
+        if filter_value:
+            return queryset.filter(**{
+                "{field}__exact".format(field=self.url_model_field): standardize_url_id(filter_value)
             })
         return queryset
+
+    # This non-standard header filter requires header param definiton to be injected manually into auto_swagger_schema;
+    # It is provided by this method
+    @classmethod
+    def get_manual_parameters(cls):
+        return [
+            openapi.Parameter(
+                name=cls.secret_url_header,
+                in_=openapi.IN_HEADER,
+                description='A header field for secretly passing URL (since browsing history is sensitive data)',
+                type=openapi.TYPE_STRING
+            )
+        ]
 
     def get_schema_fields(self, view):
         return [
             coreapi.Field(
-                name=self.url_data_field,
+                name=self.url_data_query_param,
                 required=False,
-                location=self.get_filter_schema_location(),
+                location='query',
                 schema=coreschema.String(
-                    title='Annotation URL',
-                    description='URL where annotations are to be displayed'
+                    title='',
+                    description=''
                 )
             )
         ]
-
-
-class StandardizedURLBodyFilterBackend(StandardizedURLFilterBackend):
-    def get_filter_params(self, request):
-        return request.data
-
-    def get_filter_schema_location(self):
-        return 'form'
-
-
-class StandardizedURLQueryFilterBackend(StandardizedURLFilterBackend):
-    def get_filter_params(self, request):
-        return request.query_params
-
-    def get_filter_schema_location(self):
-        return 'query'
-
-
-class BodyFilterBackend(DjangoFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        filter_class = self.get_filter_class(view, queryset)
-
-        if filter_class:
-            return filter_class(request.data, queryset=queryset, request=request).qs
-
-        return queryset

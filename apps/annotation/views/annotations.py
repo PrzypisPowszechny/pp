@@ -2,20 +2,18 @@ from django.db.models import Prefetch, Count
 from django.utils.decorators import method_decorator
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import serializers
 from rest_framework.filters import OrderingFilter
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_json_api.pagination import LimitOffsetPagination
 
-from apps.annotation.filters import StandardizedURLBodyFilterBackend, \
-    StandardizedURLQueryFilterBackend
+from apps.annotation.filters import StandardizedURLFilterBackend, ConflictingFilterValueError
 from apps.annotation.models import Annotation, AnnotationUpvote, AnnotationReport
 from apps.annotation.responses import PermissionDenied, ValidationErrorResponse, ErrorResponse, NotFoundResponse, \
     Forbidden
 from apps.annotation.serializers import AnnotationPatchDeserializer, AnnotationListSerializer, AnnotationDeserializer, \
-    AnnotationSerializer, SchemaGeneratorSerializer
+    AnnotationSerializer
 from apps.annotation.utils import get_resource_name, DataPreSerializer
 from apps.annotation.views.decorators import allow_lazy_user_smart
 
@@ -94,12 +92,27 @@ class AnnotationSingle(AnnotationBase, APIView):
         return Response()
 
 
-class AnnotationListBase(AnnotationBase, GenericAPIView):
-    # A base class for use by the "normal" view (in REST and JSON-API standards) as well as the confidential one
+class AnnotationList(AnnotationBase, GenericAPIView):
     resource_name = 'annotations'
     pagination_class = LimitOffsetPagination
+    filter_backends = (OrderingFilter, DjangoFilterBackend, StandardizedURLFilterBackend)
     ordering_fields = ('create_date', 'id')
     ordering = "-create_date"
+    filter_fields = ()
+
+    @swagger_auto_schema(request_body=AnnotationDeserializer,
+                         responses={200: AnnotationSerializer})
+    @method_decorator(allow_lazy_user_smart)
+    def post(self, request):
+        deserializer = AnnotationDeserializer(data=request.data)
+        if not deserializer.is_valid():
+            return ValidationErrorResponse(deserializer.errors)
+        annotation = Annotation(**deserializer.validated_data['attributes'])
+        annotation.user_id = request.user.pk
+        annotation.save()
+
+        return Response(AnnotationSerializer(instance=self.get_pre_serialized_annotation(annotation),
+                                             context={'request': request}).data)
 
     def get_queryset(self):
         queryset = Annotation.objects.filter(active=True).annotate(
@@ -135,8 +148,15 @@ class AnnotationListBase(AnnotationBase, GenericAPIView):
             self.get_pre_serialized_annotation(annotation, annotation.user_feedback, annotation.user_annotation_reports)
             for annotation in queryset]
 
-    def get_list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
+    # Header parameters need to be provided explicitly
+    @swagger_auto_schema(responses={200: AnnotationListSerializer(many=True)},
+                         manual_parameters=StandardizedURLFilterBackend.get_manual_parameters())
+    @method_decorator(allow_lazy_user_smart)
+    def get(self, request, *args, **kwargs):
+        try:
+            queryset = self.filter_queryset(self.get_queryset())
+        except ConflictingFilterValueError as e:
+            return ValidationErrorResponse(e.errors)
 
         queryset = self.paginator.paginate_queryset(queryset, request)
 
@@ -147,51 +167,6 @@ class AnnotationListBase(AnnotationBase, GenericAPIView):
         return self.get_paginated_response(
             AnnotationListSerializer(data_list, many=True, context={'request': request}).data
         )
-
-
-class AnnotationSensitiveSchemaGeneratorDeserializer(SchemaGeneratorSerializer):
-    url = serializers.CharField(required=False)
-
-
-class AnnotationListSensitive(AnnotationListBase):
-    # A very specific view for reading annotations with a POST request while by REST standards it would normally be
-    # implemented as GET since it does not modify anything.
-    #
-    # We implement is also as POST for even more secure reads (since URL browsing history is sensitive)
-    # We have set up necessary filtering but pagination in POST is very problematic so it is omitted for now
-
-    filter_backends = (OrderingFilter, DjangoFilterBackend, StandardizedURLBodyFilterBackend)
-    filter_fields = ()
-
-    @swagger_auto_schema(request_body=AnnotationSensitiveSchemaGeneratorDeserializer,
-                         responses={200: AnnotationSerializer})
-    @method_decorator(allow_lazy_user_smart)
-    def post(self, request, *args, **kwargs):
-        return super().get_list(request, *args, **kwargs)
-
-
-class AnnotationList(AnnotationListBase):
-    filter_backends = (OrderingFilter, DjangoFilterBackend, StandardizedURLQueryFilterBackend)
-    filter_fields = ()
-
-    @swagger_auto_schema(request_body=AnnotationDeserializer,
-                         responses={200: AnnotationSerializer})
-    @method_decorator(allow_lazy_user_smart)
-    def post(self, request):
-        deserializer = AnnotationDeserializer(data=request.data)
-        if not deserializer.is_valid():
-            return ValidationErrorResponse(deserializer.errors)
-        annotation = Annotation(**deserializer.validated_data['attributes'])
-        annotation.user_id = request.user.pk
-        annotation.save()
-
-        return Response(AnnotationSerializer(instance=self.get_pre_serialized_annotation(annotation),
-                                             context={'request': request}).data)
-
-    @swagger_auto_schema(responses={200: AnnotationListSerializer(many=True)})
-    @method_decorator(allow_lazy_user_smart)
-    def get(self, request, *args, **kwargs):
-        return super().get_list(request, *args, **kwargs)
 
 
 class AnnotationFeedbackRelatedAnnotationSingle(AnnotationBase, APIView):

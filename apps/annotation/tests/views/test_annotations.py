@@ -6,7 +6,7 @@ from rest_framework.test import APIRequestFactory
 
 from apps.annotation.models import Annotation
 from apps.annotation.tests.utils import create_test_user
-from apps.annotation.views.annotations import AnnotationListSensitive
+from apps.annotation.views.annotations import AnnotationList
 
 
 class AnnotationViewTest(TestCase):
@@ -18,31 +18,34 @@ class AnnotationViewTest(TestCase):
     def setUp(self):
         self.user, password = create_test_user()
 
-    def request_to_class_view(self, view_class, method, data=None):
+    def request_to_class_view(self, view_class, method, data=None, headers=None):
         factory = APIRequestFactory()
         # factory.post(...) / .get(...)
         request = getattr(factory, method)(self.mock_url, data)
         # mock session since it is expected by some processors
         request.session = self.client.session
+        headers = headers or {}
+        for key, val in headers.items():
+            request.META[key] = val
         response = view_class.as_view()(request)
         results = response.data['results']
         return response, results
 
-    def test_list_post_returns_200(self):
-        response, results = self.request_to_class_view(AnnotationListSensitive, 'post')
+    def test_list_returns_200(self):
+        response, results = self.request_to_class_view(AnnotationList, 'get')
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(results)
 
-    def test_list_post_no_filtering_returns_all(self):
+    def test_list_no_filtering_returns_all(self):
         mommy.make('annotation.Annotation')
         expected_count = Annotation.objects.count()
 
-        response, results = self.request_to_class_view(AnnotationListSensitive, 'post')
+        response, results = self.request_to_class_view(AnnotationList, 'get')
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(results)
         self.assertEqual(len(results), expected_count)
 
-    @parameterized.expand([
+    filtering_test_params = [
         # No filtering - include
         ("https://docs.python.org/",
          "",
@@ -55,8 +58,10 @@ class AnnotationViewTest(TestCase):
         ("https://docs.python.org/",
          "https://github.com",
          0),
-    ])
-    def test_list_post_filtering(self, actual_url, query_url, expected_count):
+    ]
+
+    @parameterized.expand(filtering_test_params)
+    def test_list_header_url_filtering(self, actual_url, query_url, expected_count):
         annotation = mommy.make('annotation.Annotation')
         annotation.url = actual_url
         annotation.save()
@@ -64,18 +69,35 @@ class AnnotationViewTest(TestCase):
         if expected_count == 'all':
             expected_count = Annotation.objects.count()
 
-        response, results = self.request_to_class_view(AnnotationListSensitive, 'post', {'url': query_url})
+        response, results = self.request_to_class_view(AnnotationList, 'get', headers={
+            'HTTP_PP_SITE_URL': query_url,
+        })
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(results)
         self.assertEqual(len(results), expected_count)
 
-    def test_list_post_returns_limited(self):
+    @parameterized.expand(filtering_test_params)
+    def test_list_param_url_filtering(self, actual_url, query_url, expected_count):
+        annotation = mommy.make('annotation.Annotation')
+        annotation.url = actual_url
+        annotation.save()
+
+        if expected_count == 'all':
+            expected_count = Annotation.objects.count()
+
+        response, results = self.request_to_class_view(AnnotationList, 'get', data={'url': query_url})
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNotNone(results)
+        self.assertEqual(len(results), expected_count)
+
+    # Pagination is out of the box with DRF, but it is actually something important...
+    def test_list_returns_limited(self):
         mommy.make('annotation.Annotation', 10)
         all_count = Annotation.objects.count()
 
         # patch PAGE_SIZE so as not to have to create > 100 Annotations...
         with patch('rest_framework.pagination.LimitOffsetPagination.default_limit', 5):
-            response, results = self.request_to_class_view(AnnotationListSensitive, 'post')
+            response, results = self.request_to_class_view(AnnotationList, 'get')
 
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(results)
