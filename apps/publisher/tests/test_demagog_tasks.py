@@ -49,7 +49,7 @@ class DemagogTasksTest(DemagogTestCase):
 
         annotation = Annotation.objects.last()
         self.assertEqual(annotation.publisher_annotation_id, statement_data['id'])
-        self.assertEqual(annotation.url, statement_attrs['source'])
+        self.assertEqual(annotation.url, statement_attrs['sources'][0])
         self.assertEqual(annotation.pp_category, demagog_to_pp_category[statement_attrs['rating'].upper()])
         self.assertEqual(annotation.demagog_category, statement_attrs['rating'].upper())
         self.assertEqual(annotation.quote, statement_attrs['text'])
@@ -113,7 +113,7 @@ class DemagogTasksTest(DemagogTestCase):
         self.assertTrue(annotation)
         self.assertEqual(annotation.publisher, annotation.DEMAGOG_PUBLISHER)
         self.assertEqual(annotation.publisher_annotation_id, statement_data['id'])
-        self.assertEqual(annotation.url, attrs['source'])
+        self.assertEqual(annotation.url, attrs['sources'][0])
         self.assertEqual(annotation.pp_category, demagog_to_pp_category[attrs['rating'].upper()])
         self.assertEqual(annotation.demagog_category, attrs['rating'].upper())
         self.assertEqual(annotation.annotation_link, attrs['factchecker_uri'])
