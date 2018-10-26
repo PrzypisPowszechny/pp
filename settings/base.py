@@ -25,9 +25,6 @@ SECRET_KEY = '_96(y+)c++%-5m6i*4i-4md6o1@zc(5a9fjpoop#%+q=fg3ig9'
 
 DEBUG = False
 
-CORS_ORIGIN_ALLOW_ALL = False
-CORS_ALLOW_CREDENTIALS = False
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -72,13 +69,16 @@ AUTHENTICATION_BACKENDS = (
 )
 
 
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
+
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -138,7 +138,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 REST_FRAMEWORK = {
     # SessionAuthentication is thin integration of rest_framework authentication hooks with django auth middleware
-    'DEFAULT_AUTHENTICATION_CLASSES': ['rest_framework.authentication.SessionAuthentication'],
+    'DEFAULT_AUTHENTICATION_CLASSES': ['apps.annotation.authentication.IgnoreRefererSessionAuthentication'],
     'PAGE_SIZE': 10,
     'ORDERING_PARAM': 'sort',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework_json_api.pagination.LimitOffsetPagination',
@@ -257,6 +257,12 @@ LOGGING = {
             'level': 'INFO',
             # Avoid duplicating by celery
             'propagate': False,
+        },
+        # Catch all for any other undefined
+        '': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False
         },
     },
 }
