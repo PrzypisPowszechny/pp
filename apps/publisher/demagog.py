@@ -1,5 +1,6 @@
 import logging
 
+import bleach
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils.text import Truncator
@@ -111,7 +112,8 @@ def statement_attrs_to_annotation_fields(attrs):
 
 def get_first_paragraph(explanation):
     # TODO: when format of explanation is known implement this function as needed by finding \n or <br/> or </div> etc
-    return Truncator(explanation).chars(200)
+    # Use bleach to get rid of html tags 100% safely
+    return Truncator(bleach.clean(explanation, tags=[], strip=True)).chars(200)
 
 
 demagog_to_pp_category = {
