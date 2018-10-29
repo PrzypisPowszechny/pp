@@ -1,5 +1,6 @@
 import logging
 
+import bleach
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils.text import Truncator
@@ -51,10 +52,13 @@ def sync_using_sources_list():
 
     demagog_user = get_user_model().objects.get(username=settings.DEMAGOG_USERNAME)
     for source_url in sources_list:
-        statements = consumer.get_statements(source_url)
-        for statement_data in statements:
-
-            update_or_create_annotation(statement_data, demagog_user)
+        try:
+            statements = consumer.get_statements(source_url)
+        except DemagogConsumer.ConsumingError as e:
+            logger.warning(str(e))
+        else:
+            for statement_data in statements:
+                update_or_create_annotation(statement_data, demagog_user)
 
 
 def update_or_create_annotation(statement_data, demagog_user=None):
@@ -85,15 +89,15 @@ def update_or_create_annotation(statement_data, demagog_user=None):
             annotation._history_user = demagog_user
             annotation.save()
         else:
-            action = 'ignored'
+            action = 'ignored (unchanged)'
 
     logger.info('Annotation with demagog id=%s was: %s' % (statement_data['id'], action))
     return annotation
 
 
 def statement_attrs_to_annotation_fields(attrs):
-    return {
-        'url': attrs['source'],
+    vals = {
+        'url': attrs['sources'][0],
         'pp_category': demagog_to_pp_category[attrs['rating'].upper()],
         'demagog_category': attrs['rating'].upper(),
         'quote': attrs['text'],
@@ -101,13 +105,15 @@ def statement_attrs_to_annotation_fields(attrs):
         'comment': get_first_paragraph(attrs['explanation']),
         # TODO: what should be the title?
         'annotation_link_title': 'Demagog.org.pl',
-        'create_date': attrs['date'],
+        'create_date': attrs.get('date'),
     }
+    return {key: val for key, val in vals.items() if val is not None}
 
 
 def get_first_paragraph(explanation):
     # TODO: when format of explanation is known implement this function as needed by finding \n or <br/> or </div> etc
-    return Truncator(explanation).chars(200)
+    # Use bleach to get rid of html tags 100% safely
+    return Truncator(bleach.clean(explanation, tags=[], strip=True)).chars(200)
 
 
 demagog_to_pp_category = {

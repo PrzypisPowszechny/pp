@@ -3,7 +3,7 @@ import logging
 from django.conf import settings
 
 from apps.consumers import JSONConsumer
-from .serializers import StatementDeserializer, SourcesDeserializer
+from .serializers import StatementDeserializer, SourcesDeserializer, split_valid_urls
 
 logger = logging.getLogger('pp.publisher')
 
@@ -51,4 +51,12 @@ class DemagogConsumer(JSONConsumer):
         deserializer = SourcesDeserializer(data=response.get('data'))
         if not deserializer.is_valid():
             raise DemagogConsumer.ConsumingDataError(self.request_deserialize_error(deserializer.errors))
-        return deserializer.validated_data['attributes']['sources']
+
+        valid_sources, invalid_sources = split_valid_urls(deserializer.validated_data['attributes']['sources'])
+        if invalid_sources:
+            logging.warning(self.request_deserialize_error(
+                '{invalid}/{all} of loaded sources are not valid urls: \n {sources}'.format(
+                    invalid=len(invalid_sources), all=len(invalid_sources)+len(valid_sources), sources=invalid_sources
+                )
+            ))
+        return valid_sources

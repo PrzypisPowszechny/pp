@@ -14,7 +14,7 @@ class DemagogTestCase(TestCase):
 
     def get_statement_valid_attrs(self):
         return {
-            'source': self.SOURCE_URL,
+            'sources': [self.SOURCE_URL],
             'text': "it's an interesting article",
             'date':  timezone.now(),
             'rating': 'true',
