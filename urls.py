@@ -28,7 +28,7 @@ from apps.analytics import views as analytics_views
 yasg_schema_view = get_schema_view(
     openapi.Info(
         title="PP API",
-        default_version=version,
+        default_version='v{version}'.format(version=version),
         description="This is REST API for Przypis Powszechny browser-extension\n"
                     "\n"
                     "Repository of this API: https://github.com/PrzypisPowszechny/pp\n"
