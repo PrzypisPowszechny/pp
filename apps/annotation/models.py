@@ -110,7 +110,7 @@ class Annotation(AnnotationBase):
     annotation_link_title = models.CharField(max_length=110)
     # Short summary of the page referred to
 
-    annotation_request = models.ForeignKey('AnnotationRequest', on_delete=models.CASCADE, null=True)
+    annotation_request = models.ForeignKey('AnnotationRequest', on_delete=models.CASCADE, null=True, blank=True)
     # Null when the annotation has not been created on request
 
     history = HistoricalRecords()
