@@ -103,8 +103,7 @@ def statement_attrs_to_annotation_fields(attrs):
         'quote': attrs['text'],
         'annotation_link': attrs['factchecker_uri'],
         'comment': get_first_paragraph(attrs['explanation']),
-        # TODO: what should be the title?
-        'annotation_link_title': 'Demagog.org.pl',
+        'annotation_link_title': 'Weryfikacja opracowana przez zespół Demagoga',
         'create_date': attrs.get('date'),
     }
     return {key: val for key, val in vals.items() if val is not None}
