@@ -29,6 +29,8 @@ class AnnotationAdmin(SimpleHistoryAdmin):
     date_hierarchy = 'create_date'
     list_display = ('short_url', 'publisher', 'short_quote', 'active', 'annotation_link_title', 'create_date', 'short_annotation_link', 'short_comment', 'count_upvote')
     list_filter = ('active',)
+    fields = ('user', 'url', 'publisher', 'quote', 'active', 'annotation_link_title', 'create_date', 'annotation_link', 'comment', 'count_upvote')
+    readonly_fields = ('user', 'create_date', 'count_upvote')
 
     url_path_max_chars = 20
     def short_url(self, obj):
@@ -45,7 +47,6 @@ class AnnotationAdmin(SimpleHistoryAdmin):
     comment_max_chars = 15
     def short_comment(self, obj):
         return truncate(obj.quote, self.comment_max_chars)
-
 
 
 admin.site.register(Annotation, AnnotationAdmin)
