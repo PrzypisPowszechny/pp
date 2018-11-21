@@ -9,6 +9,13 @@ ALLOWED_HOSTS = [
     'devdeploy2.przypispowszechny.pl', 'www.devdeploy2.przypispowszechny.pl',
 ]
 
+# Allow localhost applications to use dev API
+CORS_ORIGIN_WHITELIST = ()
+CORS_ORIGIN_REGEX_WHITELIST = (
+    r'https?://localhost:.*',
+)
+
+
 # Honor the X-Forwarded-Host header to know real domain (one from ALLOWED_HOSTS)
 USE_X_FORWARDED_HOST = True
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
