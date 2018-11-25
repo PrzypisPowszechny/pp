@@ -1,5 +1,7 @@
+from django.apps import apps
 from django.db.models import Prefetch, Count
 from django.utils.decorators import method_decorator
+import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.filters import OrderingFilter
@@ -8,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_json_api.pagination import LimitOffsetPagination
 
-from apps.annotation.filters import StandardizedURLFilterBackend, ConflictingFilterValueError
+from apps.annotation.filters import StandardizedURLFilterBackend, ConflictingFilterValueError, ListORFilter
 from apps.annotation.models import Annotation, AnnotationUpvote, AnnotationReport
 from apps.annotation.responses import PermissionDenied, ValidationErrorResponse, ErrorResponse, NotFoundResponse, \
     Forbidden
@@ -92,13 +94,21 @@ class AnnotationSingle(AnnotationBase, APIView):
         return Response()
 
 
+class AnnotationListFilter(django_filters.FilterSet):
+    validity_status = ListORFilter(field_name='validity_status')
+
+    class Meta:
+        model = apps.get_model('annotation.Annotation')
+        fields = ['validity_status']
+
+
 class AnnotationList(AnnotationBase, GenericAPIView):
     resource_name = 'annotations'
     pagination_class = LimitOffsetPagination
     filter_backends = (OrderingFilter, DjangoFilterBackend, StandardizedURLFilterBackend)
     ordering_fields = ('create_date', 'id')
     ordering = "-create_date"
-    filter_fields = ()
+    filter_class = AnnotationListFilter
 
     @swagger_auto_schema(request_body=AnnotationDeserializer,
                          responses={200: AnnotationSerializer})

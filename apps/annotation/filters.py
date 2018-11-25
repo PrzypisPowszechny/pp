@@ -1,5 +1,6 @@
 import coreapi
 import coreschema
+import django_filters.fields
 from drf_yasg import openapi
 from rest_framework.filters import BaseFilterBackend
 
@@ -60,3 +61,17 @@ class StandardizedURLFilterBackend(BaseFilterBackend):
                 )
             )
         ]
+
+
+class ListORFilter(django_filters.Filter):
+    # A filter where multiple comma-separated values can be provided: ?some_param=small,big
+    # Based on https://github.com/carltongibson/django-filter/issues/137#issuecomment-77697870
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(lookup_expr='in', *args, **kwargs)
+
+    def filter(self, qs, value):
+        value_list = None
+        if value:
+            value_list = value.split(',')
+        return super(ListORFilter, self).filter(qs, value_list)
