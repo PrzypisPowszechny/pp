@@ -92,6 +92,24 @@ class Annotation(AnnotationBase):
         (UNKOWN, 'Nieweryfikowalne'),
     )
 
+    UNVERIFIED = 'UNVERIFIED'
+    CONFIRMED = 'CONFIRMED'
+    UNLOCATED = 'UNLOCATED'
+    UNLOCATABLE = 'UNLOCATABLE'
+    ARTICLE_DOES_NOT_EXIST = 'ARTICLE_DOES_NOT_EXIST'
+    PAGE_404 = 'PAGE_404'
+    OTHER_FATAL = 'OTHER_FATAL'
+
+    VALIDITY_STATUSES = (
+        (UNVERIFIED, 'niesprawdzony (wyświetlany)'),
+        (CONFIRMED, 'potwierdzony'),
+        (UNLOCATED, 'nie lokalizuje się (a mógłby)'),
+        (UNLOCATABLE, 'nielokalizowalny (video/audio/...)'),
+        (ARTICLE_DOES_NOT_EXIST, 'artykuł nie istnieje'),
+        (PAGE_404, 'strona nie istnieje'),
+        (OTHER_FATAL, 'inne -- nie można wyświetlić'),
+    )
+
     publisher = models.CharField(choices=PUBLISHERS, max_length=10, default=PP_PUBLISHER)
 
     publisher_annotation_id = models.CharField(db_index=True, blank=True, null=True, max_length=64)
@@ -106,6 +124,8 @@ class Annotation(AnnotationBase):
 
     annotation_link = models.CharField(max_length=URL_SUPPORTED_LENGTH)
     # A hyperlink
+
+    validity_status = models.CharField(choices=VALIDITY_STATUSES, max_length=30, null=True, default=UNVERIFIED)
 
     annotation_link_title = models.CharField(max_length=110)
     # Short summary of the page referred to
