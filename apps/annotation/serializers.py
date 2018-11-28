@@ -312,3 +312,12 @@ class UserSerializer(ResourceSerializer):
         pass
 
     attributes = Attributes()
+
+# Annotation request
+
+class AnnotationRequestDeserializer(serializers.Serializer):
+    class Attributes(serializers.Serializer):
+        url = StandardizedRepresentationURLField()
+        quote = serializers.CharField(required=False, allow_blank=True)
+
+    attributes = Attributes()

@@ -2,6 +2,8 @@ import sys
 
 from settings.base import *
 
+TEST = True
+
 if 'test' in sys.argv:
     DATABASES['default'] = {
         'ENGINE': 'django.db.backends.sqlite3',

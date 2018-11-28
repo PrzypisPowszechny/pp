@@ -18,7 +18,7 @@ class AnnotationViewTest(TestCase):
     def setUp(self):
         self.user, password = create_test_user()
 
-    def request_to_class_view(self, view_class, method, data=None, headers=None):
+    def request_to_generic_class_view(self, view_class, method, data=None, headers=None):
         factory = APIRequestFactory()
         # factory.post(...) / .get(...)
         request = getattr(factory, method)(self.mock_url, data)
@@ -32,7 +32,7 @@ class AnnotationViewTest(TestCase):
         return response, results
 
     def test_list_returns_200(self):
-        response, results = self.request_to_class_view(AnnotationList, 'get')
+        response, results = self.request_to_generic_class_view(AnnotationList, 'get')
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(results)
 
@@ -40,7 +40,7 @@ class AnnotationViewTest(TestCase):
         mommy.make('annotation.Annotation')
         expected_count = Annotation.objects.count()
 
-        response, results = self.request_to_class_view(AnnotationList, 'get')
+        response, results = self.request_to_generic_class_view(AnnotationList, 'get')
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(results)
         self.assertEqual(len(results), expected_count)
@@ -69,7 +69,7 @@ class AnnotationViewTest(TestCase):
         if expected_count == 'all':
             expected_count = Annotation.objects.count()
 
-        response, results = self.request_to_class_view(AnnotationList, 'get', headers={
+        response, results = self.request_to_generic_class_view(AnnotationList, 'get', headers={
             'HTTP_PP_SITE_URL': query_url,
         })
         self.assertEqual(response.status_code, 200)
@@ -85,7 +85,7 @@ class AnnotationViewTest(TestCase):
         if expected_count == 'all':
             expected_count = Annotation.objects.count()
 
-        response, results = self.request_to_class_view(AnnotationList, 'get', data={'url': query_url})
+        response, results = self.request_to_generic_class_view(AnnotationList, 'get', data={'url': query_url})
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(results)
         self.assertEqual(len(results), expected_count)
@@ -97,7 +97,7 @@ class AnnotationViewTest(TestCase):
 
         # patch PAGE_SIZE so as not to have to create > 100 Annotations...
         with patch('rest_framework.pagination.LimitOffsetPagination.default_limit', 5):
-            response, results = self.request_to_class_view(AnnotationList, 'get')
+            response, results = self.request_to_generic_class_view(AnnotationList, 'get')
 
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(results)

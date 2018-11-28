@@ -1,6 +1,6 @@
 from django.conf.urls import url, include
 
-from apps.annotation.views import users
+from apps.annotation.views import users, annotation_requests
 from .views import annotations, annotation_reports, annotation_upvotes
 
 
@@ -36,6 +36,10 @@ urlpatterns = [
         # Related
         url(r'^/(?P<report_id>[0-9]+)/annotation$', annotations.AnnotationReportRelatedAnnotationSingle.as_view(),
             name='annotation_report_related_annotation'),
+    ])),
+    url(r'^annotationRequests', include([
+        url(r'^$', annotation_requests.AnnotationRequests.as_view(),
+            name='annotation_requests'),
     ])),
     url(r'^users/', include([
         url(r'^(?P<user_id>[0-9]+)$', users.UserSingle.as_view(),
