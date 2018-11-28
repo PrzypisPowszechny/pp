@@ -13,6 +13,7 @@ ALLOWED_HOSTS = [
 CORS_ORIGIN_WHITELIST = ()
 CORS_ORIGIN_REGEX_WHITELIST = (
     r'https?://localhost:.*',
+    r'https?://panel.przypispowszechny.pl(/.*)?'
 )
 
 
