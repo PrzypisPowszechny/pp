@@ -10,7 +10,10 @@ class SchemaViewsTest(TestCase):
         self.user, self.password = create_test_user()
         self.client.login(username=self.user, password=self.password)
 
-    def test_get_site_test(self):
+    def test_site_test(self):
         response = self.client.get(reverse('site_test'))
         self.assertEqual(response.status_code, 200)
 
+    def test_report(self):
+        response = self.client.get('/site/report/')
+        self.assertEqual(response.status_code, 200)

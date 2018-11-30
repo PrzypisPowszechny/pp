@@ -3,5 +3,9 @@ from .http_basicauth import logged_in_or_basicauth
 
 
 @logged_in_or_basicauth()
-def index(request):
-    return render(request, 'site_test_index.html')
+def site_test_index(request):
+    return render(request, 'site/site_test_index.html')
+
+
+def report_form(request):
+    return render(request, 'site/report_form.html')
