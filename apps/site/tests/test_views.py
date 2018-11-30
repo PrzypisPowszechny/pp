@@ -17,3 +17,8 @@ class SchemaViewsTest(TestCase):
     def test_report(self):
         response = self.client.get('/site/report/')
         self.assertEqual(response.status_code, 200)
+
+    def test_about(self):
+        response = self.client.get('/site/about/', follow=False)
+        self.assertRedirects(response, status_code=301, expected_url='https://facebook.com/przypis.powszechny/',
+                             fetch_redirect_response=False)

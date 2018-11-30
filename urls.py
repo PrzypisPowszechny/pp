@@ -64,6 +64,7 @@ urlpatterns = [
     # Other site pages
     url(r'^site_test/', site_views.site_test_index, name='site_test'),
     url(r'^site/report/$', site_views.report_form),
+    url(r'^site/about/$', site_views.about),
 
     # This is the challenge from cerbot (certbot.eff.org) after running "sudo certbot certonly --manual"
     url(r'^\.well-known/acme-challenge/(?P<acme>.+)$',
