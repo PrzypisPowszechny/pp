@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     'apps.annotation',
     'apps.publisher',
     'apps.pp',
-    'apps.site_test',
+    'apps.site',
     'apps.analytics',
 
     # Ann app that saves models' states as they change together with the user who produced the change
