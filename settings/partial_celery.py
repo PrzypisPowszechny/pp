@@ -28,6 +28,7 @@ CELERYBEAT_SCHEDULE = {
     'sync_with_demagog': {
         'task':
             'apps.publisher.demagog.sync_using_sources_list',
-        'schedule': crontab(minute='*/15'),
+        # 15 minutes past every hour
+        'schedule': crontab(minute=15),
     },
 }

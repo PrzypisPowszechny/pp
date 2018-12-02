@@ -9,7 +9,7 @@ from django.utils import timezone
 from parameterized import parameterized
 
 from apps.annotation.models import Annotation
-from apps.publisher.demagog import sync_using_sources_list, demagog_to_pp_category, update_or_create_annotation
+from apps.publisher.demagog import sync_using_sources_list, demagog_to_pp_category, update_or_create_annotation, CREATED
 from apps.publisher.tests.demagog_test_case import DemagogTestCase
 
 
@@ -108,9 +108,10 @@ class DemagogTasksTest(DemagogTestCase):
         statement_data = self.get_statement_valid_data()
         statement_data['attributes'].update(override_attrs)
         attrs = statement_data['attributes']
-        annotation = update_or_create_annotation(statement_data=statement_data)
+        annotation, status = update_or_create_annotation(statement_data=statement_data)
 
         self.assertTrue(annotation)
+        self.assertEqual(status, CREATED)
         self.assertEqual(annotation.publisher, annotation.DEMAGOG_PUBLISHER)
         self.assertEqual(annotation.publisher_annotation_id, statement_data['id'])
         self.assertEqual(annotation.url, attrs['sources'][0])
