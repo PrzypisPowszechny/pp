@@ -6,6 +6,8 @@ class JSONAPIRenderer(CamelCaseJSONRenderer):
     format = 'vnd.api+json'
 
     def render(self, data, accepted_media_type=None, renderer_context=None):
+        # In test environment renderer_context is not provided
+        renderer_context = renderer_context or {}
         response = renderer_context.get('response', None)
         if response is not None and response.status_code == 204:
             data = None

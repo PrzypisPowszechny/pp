@@ -25,6 +25,7 @@ SECRET_KEY = '_96(y+)c++%-5m6i*4i-4md6o1@zc(5a9fjpoop#%+q=fg3ig9'
 
 DEBUG = False
 
+TEST = False
 # Application definition
 
 INSTALLED_APPS = [
@@ -150,6 +151,10 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
         'apps.annotation.renderers.JSONAPIRenderer',
     ),
+    'TEST_REQUEST_RENDERER_CLASSES': (
+        'apps.annotation.renderers.JSONAPIRenderer',
+    ),
+    'TEST_REQUEST_DEFAULT_FORMAT': 'vnd.api+json',
 }
 
 
