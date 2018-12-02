@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.utils.decorators import method_decorator
+from django.utils.text import Truncator
 from drf_yasg.utils import swagger_auto_schema
 from lazysignup.decorators import allow_lazy_user
 from rest_framework.response import Response
@@ -38,6 +39,10 @@ Fragment: {}
                 text=text,
             )
         except MailSendException as e:
-            logger.error('Annotation request could not be sent by e-mail: {}'.format(str(e)))
+            logger.error('Annotation request (url: {}, quote: {}) could not be sent by e-mail: {}'.format(
+                data['url'],
+                Truncator(data.get('quote', '')).chars(20),
+                str(e))
+            )
 
         return Response(deserializer.data)

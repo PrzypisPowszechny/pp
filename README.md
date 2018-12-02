@@ -45,9 +45,10 @@ Done!
 ### Sending e-mails in development
 
 At this point any part of the application sending e-mail will fail
-(and its failure will be logged).
-Since there are no development API keys in Mailgun, private key should
-be manually set in the environment variable:
+(and its failure will be logged). This is not a problem unless
+you want to work on the e-mail sending part.
+Once you get hold
+of the private key, set the environment variable:
 
 `export MAILGUN_API_KEY=XXX`
 
