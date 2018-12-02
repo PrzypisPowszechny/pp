@@ -42,6 +42,15 @@ Once previous step is complete, you just need to run the migrations
 
 Done!
 
+### Sending e-mails in development
+
+At this point any part of the application sending e-mail will fail
+(and its failure will be logged).
+Since there are no development API keys in Mailgun, private key should
+be manually set in the environment variable:
+
+`export MAILGUN_API_KEY=XXX`
+
 ### Special directories
 
 - `data/postgres` - data stored by postgres=databases

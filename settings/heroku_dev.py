@@ -6,7 +6,7 @@ SECRET_KEY = os.environ.get('PP_SECRET_KEY')
 
 # Mailgun settings
 MAILGUN_API_KEY=os.environ.get('MAILGUN_API_KEY')
-PP_MAIL_DOMAIN='mail.przypispowszechny.pl'
+PP_MAIL_DOMAIN='dev.mail.przypispowszechny.pl'
 MAILGUN_API_URL='https://api.mailgun.net/v3/{}/messages'.format(PP_MAIL_DOMAIN)
 
 ALLOWED_HOSTS = [

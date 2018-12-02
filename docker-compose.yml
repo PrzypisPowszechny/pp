@@ -24,6 +24,7 @@ services:
       - ENV_PATH=/opt/env
       - PIP_ROOT=/opt/env/
       - PIP_PREFIX=./
+      - MAILGUN_API_KEY=${MAILGUN_API_KEY} # use local variable in docker env
     entrypoint:
       - ./docker/virtualenv_setup_entrypoint.sh
     # The access-logfile and error-logfile settings to make sure gunicorn does not silence any of them
