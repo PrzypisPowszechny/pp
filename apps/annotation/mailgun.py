@@ -1,6 +1,8 @@
 import requests
 from django.conf import settings
 
+class MailSendException(Exception):
+    pass
 
 def send_mail(to_addr, subject, text, sender,
               from_name='Przypis Powszechny',
@@ -15,6 +17,6 @@ def send_mail(to_addr, subject, text, sender,
               'text': text})
 
     if not (200 <= response.status_code < 300):
-        raise RuntimeError('Request to {} unexpected status {}. Response: \n {}'.format(
+        raise MailSendException('Request to {} unexpected status {}. Response: \n {}'.format(
             settings.MAILGUN_API_URL, response.status_code, response.content)
         )

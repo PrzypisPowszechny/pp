@@ -5,10 +5,12 @@ from lazysignup.decorators import allow_lazy_user
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.annotation.mailgun import send_mail
+from apps.annotation.mailgun import send_mail, MailSendException
 from apps.annotation.responses import ValidationErrorResponse
 from apps.annotation.serializers import AnnotationRequestDeserializer
 
+import logging
+logger = logging.getLogger('pp.annotation')
 
 class AnnotationRequests(APIView):
 
@@ -28,11 +30,14 @@ URL: {}
 Fragment: {}
         '''.format(data['url'], data.get('quote'))
 
-        if not (settings.TEST or settings.DEBUG):
+        try:
             send_mail(
                 sender='prosba-o-przypis',
                 to_addr='przypispowszechny@gmail.com',
                 subject=subject,
                 text=text,
             )
+        except MailSendException as e:
+            logger.error('Annotation request could not be sent by e-mail: {}'.format(str(e)))
+
         return Response(deserializer.data)

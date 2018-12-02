@@ -1,3 +1,5 @@
+import responses
+from django.conf import settings
 from django.test import TestCase
 from parameterized import parameterized
 from rest_framework.test import APIRequestFactory
@@ -30,9 +32,16 @@ class AnnotationRequestsViewTest(TestCase):
     @parameterized.expand([
         ({'data': {'attributes': {'url': 'http://www.xyz.pl', 'quote': 'fragment tekstu'}}},),
         ({'data': {'attributes': {'url': 'http://www.xyz.pl'}}},),
-        ({'data': {'attributes': {'url': 'http://www.xyz.pl'}}},),
     ])
+    @responses.activate
     def test_post_200(self, data):
+        responses.add(responses.Response(
+            method='POST',
+            url=settings.MAILGUN_API_URL,
+            match_querystring=True,
+            content_type='application/json',
+            status=200,
+        ))
         response = self.request_to_class_view(AnnotationRequests, 'post', data=data)
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(response)
@@ -41,8 +50,33 @@ class AnnotationRequestsViewTest(TestCase):
         ({'data': {'attributes': {'url': 'http://www.xyz.pl'}}}, 'http://www.xyz.pl/'),
         ({'data': {'attributes': {'url': 'http://www.xyz.pl#xyz'}}}, 'http://www.xyz.pl/'),
     ])
+    @responses.activate
     def test_url_standardized(self, data, expected_response_url):
+        responses.add(responses.Response(
+            method='POST',
+            url=settings.MAILGUN_API_URL,
+            match_querystring=True,
+            content_type='application/json',
+            status=200,
+        ))
         response = self.request_to_class_view(AnnotationRequests, 'post', data=data)
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(response)
         self.assertEqual(response.data['attributes']['url'], expected_response_url)
+
+    @responses.activate
+    def test_error_logged(self):
+        data = {'data': {'attributes': {'url': 'http://www.xyz.pl'}}}
+        responses.add(responses.Response(
+            method='POST',
+            url=settings.MAILGUN_API_URL,
+            match_querystring=True,
+            content_type='application/json',
+            status=400,
+        ))
+
+        with self.assertLogs('pp.annotation', level='ERROR') as cm:
+            response = self.request_to_class_view(AnnotationRequests, 'post', data=data)
+            self.assertEqual(response.status_code, 200)
+            self.assertIsNotNone(response)
+            self.assertEqual(len(cm.output), 1)
