@@ -21,7 +21,7 @@ from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 
 from apps.pp import version
-from apps.site_test import views as site_test_views
+from apps.site import views as site_views
 from apps.analytics import views as analytics_views
 
 
@@ -56,13 +56,15 @@ urlpatterns = [
     url(r'^api/docs-redoc/$',
         yasg_schema_view.with_ui('redoc', cache_timeout=None), name='schema_redoc'),
 
-    # Site_test
-    url(r'^site_test/', site_test_views.index, name='site_test'),
-
     # Analytics
     url(r'^site/extension-uninstalled/$', analytics_views.extension_uninstalled_hook),
     url(r'^site/pings/init/$', analytics_views.init_ping),
     url(r'^site/iamstaff/$', analytics_views.set_iamstaff),
+
+    # Other site pages
+    url(r'^site_test/', site_views.site_test_index, name='site_test'),
+    url(r'^site/report/$', site_views.report_form),
+    url(r'^site/about/$', site_views.about),
 
     # This is the challenge from cerbot (certbot.eff.org) after running "sudo certbot certonly --manual"
     url(r'^\.well-known/acme-challenge/(?P<acme>.+)$',

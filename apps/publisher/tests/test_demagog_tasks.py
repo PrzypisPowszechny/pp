@@ -56,7 +56,7 @@ class DemagogTasksTest(DemagogTestCase):
         self.assertEqual(annotation.annotation_link, statement_attrs['factchecker_uri'])
         # JSON converting is a bit inaccurate, so compare two json dates, to same inaccurate
         self.assertEqual(json.dumps(annotation.create_date, cls=DjangoJSONEncoder),
-                         json.dumps(statement_attrs['date'], cls=DjangoJSONEncoder))
+                         json.dumps(statement_attrs['timestamp_factcheck'], cls=DjangoJSONEncoder))
 
     # TODO: this should be unit test of function responsible of comparing records, not whole functional test
     @responses.activate
@@ -102,7 +102,7 @@ class DemagogTasksTest(DemagogTestCase):
     @parameterized.expand([
         [{}],
         # Test that create_date is demagog create_date, not out insert date
-        [{'date': timezone.now() - timedelta(days=2)}],
+        [{'timestamp_factcheck': timezone.now() - timedelta(days=2)}],
     ])
     def test_update_or_create_annotation__general_fields_mapping(self, override_attrs):
         statement_data = self.get_statement_valid_data()
@@ -119,4 +119,4 @@ class DemagogTasksTest(DemagogTestCase):
         self.assertEqual(annotation.demagog_category, attrs['rating'].upper())
         self.assertEqual(annotation.annotation_link, attrs['factchecker_uri'])
         self.assertEqual(annotation.comment, attrs['explanation'])
-        self.assertEqual(annotation.create_date, attrs['date'])
+        self.assertEqual(annotation.create_date, attrs['timestamp_factcheck'])

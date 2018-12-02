@@ -123,7 +123,7 @@ def statement_attrs_to_annotation_fields(attrs):
         'annotation_link': attrs['factchecker_uri'],
         'comment': get_first_paragraph(attrs['explanation']),
         'annotation_link_title': 'Weryfikacja opracowana przez zespół Demagoga',
-        'create_date': attrs.get('date'),
+        'create_date': attrs.get('timestamp_factcheck'),
     }
     return {key: val for key, val in vals.items() if val is not None}
 

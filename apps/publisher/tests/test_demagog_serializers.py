@@ -40,8 +40,8 @@ class SerializersTest(DemagogTestCase):
         [{}, {'explanation': ''}],
         [{}, {'factchecker_uri': ''}],
         [{}, {'factchecker_uri': 'not-valid-url'}],
-        [{}, {'date': ''}],
-        [{}, {'date': 'not-valid-date'}],
+        [{}, {'timestamp_factcheck': ''}],
+        [{}, {'timestamp_factcheck': 'not-valid-date'}],
     ])
     def test_statement_deserializer__invalid_field_value(self, override_data, override_attributes):
         data = self.get_statement_valid_data()
