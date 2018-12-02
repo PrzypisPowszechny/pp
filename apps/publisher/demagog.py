@@ -1,4 +1,5 @@
 import logging
+from collections import defaultdict
 
 import bleach
 from django.conf import settings
@@ -10,6 +11,12 @@ from apps.annotation.models import Annotation
 from .consumers import DemagogConsumer
 
 logger = logging.getLogger('pp.publisher')
+
+
+UNCHANGED = 'unchanged'
+CREATED = 'created'
+UPDATED = 'updated'
+FAILED = 'failed'
 
 
 @celery_app.task
@@ -50,15 +57,24 @@ def sync_using_sources_list():
     else:
         logger.info('Starting iteration over %s sources' % len(sources_list))
 
+    annotation_stats = defaultdict(int)
+    consuming_errors = 0
     demagog_user = get_user_model().objects.get(username=settings.DEMAGOG_USERNAME)
     for source_url in sources_list:
         try:
             statements = consumer.get_statements(source_url)
         except DemagogConsumer.ConsumingError as e:
             logger.warning(str(e))
+            consuming_errors += 1
         else:
             for statement_data in statements:
-                update_or_create_annotation(statement_data, demagog_user)
+                annotation, action_applied = update_or_create_annotation(statement_data, demagog_user)
+                annotation_stats[action_applied] += 1
+    logger.info('Consumed {sources_num} sources with {errors_num} errors, annotations created/updated: {stats}'.format(
+        sources_num=len(sources_list),
+        errors_num=consuming_errors,
+        stats=",".join('%s=%s' % (k, v) for k, v in annotation_stats.items()))
+    )
 
 
 def update_or_create_annotation(statement_data, demagog_user=None):
@@ -78,6 +94,7 @@ def update_or_create_annotation(statement_data, demagog_user=None):
 
     if created:
         action = 'created'
+        status = CREATED
     else:
         changed = False
         for key, val in annotation_fields.items():
@@ -86,13 +103,15 @@ def update_or_create_annotation(statement_data, demagog_user=None):
                 changed = True
         if changed:
             action = 'changed'
+            status = UPDATED
             annotation._history_user = demagog_user
             annotation.save()
         else:
             action = 'ignored (unchanged)'
+            status = UNCHANGED
 
-    logger.info('Annotation with demagog id=%s was: %s' % (statement_data['id'], action))
-    return annotation
+    logger.debug('Annotation with demagog id=%s was: %s' % (statement_data['id'], action))
+    return annotation, status
 
 
 def statement_attrs_to_annotation_fields(attrs):

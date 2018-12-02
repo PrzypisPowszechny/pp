@@ -14,7 +14,7 @@ class DemagogConsumer(JSONConsumer):
     base_url = settings.DEMAGOG_API_URL
 
     def get(self, endpoint_path, params=None):
-        logger.info('Querying {api_name} endpoint {endpoint} with params: {params}'.format(
+        logger.debug('Querying {api_name} endpoint {endpoint} with params: {params}'.format(
             api_name=self.api_name, endpoint=endpoint_path, params=params
         ))
         return super().get(endpoint_path, params)
