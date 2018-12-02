@@ -30,8 +30,7 @@ Fragment: {}
 
         if not (settings.TEST or settings.DEBUG):
             send_mail(
-                sender='annotation_requests',
-                # TODO should work when the domain is verified
+                sender='prosba-o-przypis',
                 to_addr='przypispowszechny@gmail.com',
                 subject=subject,
                 text=text,
