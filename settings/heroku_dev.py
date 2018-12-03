@@ -20,6 +20,7 @@ CORS_ORIGIN_REGEX_WHITELIST = (
     r'https?://localhost:.*',
     r'https?://([0-9a-zA-Z_.-]+\.)?przypispowszechny\.pl(/.*)?'
 )
+CORS_ALLOW_CREDENTIALS = True
 
 # Allow to share cookies between the primary dev domain and its subdomains such as panel.devdeploy1.przypispowszechny.pl
 SESSION_COOKIE_DOMAIN = 'devdeploy1.przypispowszechny.pl'
