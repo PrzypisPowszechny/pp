@@ -71,3 +71,12 @@ Use `--region` arg to move between data centers
 ### Resources
 
 CLI commands reference: https://devcenter.heroku.com/articles/heroku-cli-commands
+
+### Celery queue maintenance
+
+Based on: http://docs.celeryproject.org/en/latest/userguide/monitoring.html#monitoring-redis-queues
+
+Interactive list of events like acknowledging/finishing etc: `heroku run --app pp-dev1 celery events -- --app=worker.celery_app`
+
+See all reserved tasks (for given worker): `heroku run --app pp-dev1 celery inspect reserved -- --app=worker.celery_app`
+
