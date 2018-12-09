@@ -116,7 +116,7 @@ class AnnotationViewTest(TestCase):
         if expected_count == 'all':
             expected_count = Annotation.objects.count()
 
-        response, results = self.request_to_class_view(AnnotationList, 'get', data={'check_status': query_status})
+        response, results = self.request_to_generic_class_view(AnnotationList, 'get', data={'check_status': query_status})
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(results)
         self.assertEqual(len(results), expected_count)
