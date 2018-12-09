@@ -43,9 +43,7 @@ class Consumer:
             raise self.ConsumingResponseError(self.request_error(getattr(error, 'message', error)))
 
         if not (200 <= response.status_code < 300):
-            raise self.ConsumingResponseError('{} request to {} unexpected status {}. Response: \n {}'.format(
-                self.api_name, url, response.status_code, response.content)
-            )
+            raise self.ConsumingResponseError(self.request_status_error(url, response.status_code, response.content))
 
         return response
 
@@ -58,8 +56,17 @@ class Consumer:
     def request_error(self, reason):
         return '{} request error: {}'.format(self.api_name, reason)
 
-    def request_deserialize_error(self, reason):
-        return '{} request deserialize error: {}'.format(self.api_name, reason)
+    def request_deserialize_error(self, reason, for_endpoint=None, for_params=None):
+        for_endpoint_text = 'to endpoint {} '.format(for_endpoint) if for_endpoint is not None else ''
+        for_params_text = 'with params {} '.format(for_params) if for_params is not None else ''
+        return '{api_name} request {for_endpoint_text}{for_params_text}deserialization error: {reason}'.format(
+            api_name=self.api_name, for_endpoint_text=for_endpoint_text, for_params_text=for_params_text, reason=reason
+        )
+
+    def request_status_error(self, url, status_code, response_content):
+        return '{api_name} request to {url} unexpected status {status}. Response: \n {content}'.format(
+            api_name=self.api_name, url=url, status=status_code, content=response_content
+        )
 
 
 class JSONConsumer(Consumer):
