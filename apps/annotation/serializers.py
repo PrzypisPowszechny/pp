@@ -7,7 +7,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from apps.annotation.consts import SUGGESTED_CORRECTION
-from apps.annotation.models import AnnotationReport
+from apps.annotation.models import AnnotationReport, AnnotationRequest
 from apps.annotation.utils import standardize_url
 from .models import Annotation, AnnotationUpvote
 
@@ -315,9 +315,22 @@ class UserSerializer(ResourceSerializer):
 
 # Annotation request
 
-class AnnotationRequestDeserializer(serializers.Serializer):
-    class Attributes(serializers.Serializer):
+class AnnotationRequestDeserializer(ResourceTypeSerializer):
+    class Attributes(serializers.ModelSerializer):
         url = StandardizedRepresentationURLField()
-        quote = serializers.CharField(required=False, allow_blank=True)
+
+        class Meta:
+            model = AnnotationRequest
+            fields = ('url', 'quote', 'comment', 'notification_email')
+
+    attributes = Attributes()
+
+class AnnotationRequestSerializer(ResourceSerializer, AnnotationRequestDeserializer):
+
+    class Attributes(AnnotationRequestDeserializer.Attributes):
+        class Meta:
+            model = AnnotationRequestDeserializer.Attributes.Meta.model
+
+            fields = AnnotationRequestDeserializer.Attributes.Meta.fields
 
     attributes = Attributes()

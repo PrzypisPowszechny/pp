@@ -25,15 +25,6 @@ class AnnotationBase(UserInput):
     url_id = models.CharField(max_length=URL_SUPPORTED_LENGTH, blank=True)
     # Processed URL striped of some (probably) irrelevant data that might make identification harder
 
-    range = models.TextField(max_length=1000, blank=True)
-    # Json data with information about the annotation location
-
-    quote = models.TextField(max_length=250)
-    # The exact annotated text part
-
-    quote_context = models.TextField(max_length=250, blank=True)
-    # The annotated text with its surrounding
-
     active = models.BooleanField(blank=True, default=True)
 
     # We never actually delete models -- we only mark them as not active
@@ -47,13 +38,34 @@ class AnnotationBase(UserInput):
         super().save(*args, **kwargs)
 
 
+class LocatedAnnotationBase(AnnotationBase):
+    range = models.TextField(max_length=1000, blank=True)
+    # Json data with information about the annotation location
+
+    quote = models.TextField(max_length=250)
+    # The exact annotated text part
+
+    quote_context = models.TextField(max_length=250, blank=True)
+    # The annotated text with its surrounding
+
+    class Meta:
+        abstract = True
+
+
 class AnnotationRequest(AnnotationBase):
 
     class JSONAPIMeta:
         resource_name = 'annotation_requests'
 
+    quote = models.TextField(max_length=250, blank=True)
+    # The exact annotated text part
 
-class Annotation(AnnotationBase):
+    comment = models.TextField(max_length=250, blank=True)
+
+    notification_email = models.EmailField(max_length=250, blank=True)
+
+
+class Annotation(LocatedAnnotationBase):
 
     class JSONAPIMeta:
         resource_name = 'annotations'
