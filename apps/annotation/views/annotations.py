@@ -95,11 +95,11 @@ class AnnotationSingle(AnnotationBase, APIView):
 
 
 class AnnotationListFilter(django_filters.FilterSet):
-    validity_status = ListORFilter(field_name='validity_status')
+    check_status = ListORFilter(field_name='check_status')
 
     class Meta:
         model = apps.get_model('annotation.Annotation')
-        fields = ['validity_status']
+        fields = ['check_status']
 
 
 class AnnotationList(AnnotationBase, GenericAPIView):

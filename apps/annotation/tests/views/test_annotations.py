@@ -17,7 +17,7 @@ class AnnotationViewTest(TestCase):
 
     def setUp(self):
         self.user, password = create_test_user()
-        Annotation.objects.all().update(validity_status=Annotation.UNVERIFIED)
+        Annotation.objects.all().update(check_status=Annotation.UNVERIFIED)
 
 
     def request_to_generic_class_view(self, view_class, method, data=None, headers=None):
@@ -107,16 +107,16 @@ class AnnotationViewTest(TestCase):
          Annotation.CONFIRMED,
          0),
     ])
-    def test_list_validity_status_filtering(self, actual_status, query_status, expected_count):
+    def test_list_check_status_filtering(self, actual_status, query_status, expected_count):
         # Relies on setUp UNVERIFIED value
         annotation = mommy.make('annotation.Annotation')
-        annotation.validity_status = actual_status
+        annotation.check_status = actual_status
         annotation.save()
 
         if expected_count == 'all':
             expected_count = Annotation.objects.count()
 
-        response, results = self.request_to_class_view(AnnotationList, 'get', data={'validity_status': query_status})
+        response, results = self.request_to_class_view(AnnotationList, 'get', data={'check_status': query_status})
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(results)
         self.assertEqual(len(results), expected_count)

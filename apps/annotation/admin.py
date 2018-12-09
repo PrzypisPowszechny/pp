@@ -27,11 +27,11 @@ def truncate_url(string, allowed_max):
 
 class AnnotationAdmin(SimpleHistoryAdmin):
     date_hierarchy = 'create_date'
-    list_display = ('short_url', 'publisher', 'short_quote', 'active', 'validity_status',
+    list_display = ('short_url', 'publisher', 'short_quote', 'active', 'check_status',
                     'annotation_link_title', 'create_date', 'short_annotation_link', 'short_comment', 'count_upvote')
-    list_filter = ('active', 'validity_status')
-    list_editable = ('validity_status',)
-    fields = ('user', 'url', 'publisher', 'quote', 'active', 'validity_status',
+    list_filter = ('active', 'check_status')
+    list_editable = ('check_status',)
+    fields = ('user', 'url', 'publisher', 'quote', 'active', 'check_status',
               'annotation_link_title', 'create_date', 'annotation_link', 'comment', 'count_upvote')
     readonly_fields = ('user', 'create_date', 'count_upvote')
 
