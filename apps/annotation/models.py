@@ -100,7 +100,7 @@ class Annotation(AnnotationBase):
     PAGE_404 = 'PAGE_404'
     OTHER_FATAL = 'OTHER_FATAL'
 
-    check_statusES = (
+    CHECK_STATUSES = (
         (UNVERIFIED, 'niesprawdzony (wyświetlany)'),
         (CONFIRMED, 'potwierdzony'),
         (UNLOCATED, 'nie lokalizuje się (a mógłby)'),
@@ -125,7 +125,7 @@ class Annotation(AnnotationBase):
     annotation_link = models.CharField(max_length=URL_SUPPORTED_LENGTH)
     # A hyperlink
 
-    check_status = models.CharField(choices=check_statusES, max_length=30, null=True, default=UNVERIFIED)
+    check_status = models.CharField(choices=CHECK_STATUSES, max_length=30, null=True, default=UNVERIFIED)
 
     annotation_link_title = models.CharField(max_length=110)
     # Short summary of the page referred to
