@@ -10,7 +10,7 @@ PP_MAIL_DOMAIN='mail.przypispowszechny.pl'
 MAILGUN_API_URL='https://api.mailgun.net/v3/{}/messages'.format(PP_MAIL_DOMAIN)
 
 ALLOWED_HOSTS = [
-    'przypispowszechny.pl', 'www.przypispowszechny.pl',
+    'przypispowszechny.pl', 'www.przypispowszechny.pl', 'app.przypispowszechny.pl',
 ]
 
 # Honor the X-Forwarded-Host header to know real domain (one from ALLOWED_HOSTS)
