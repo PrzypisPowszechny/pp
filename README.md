@@ -22,7 +22,7 @@ To see how the extension works go to
 
 # REST API Documentation 
 
-Check **[swagger documentation of the latest release](https://przypispowszechny.pl/api/docs/)**.
+Check **[swagger documentation of the latest release](https://app.przypispowszechny.pl/api/docs/)**.
 
 # Development
 
