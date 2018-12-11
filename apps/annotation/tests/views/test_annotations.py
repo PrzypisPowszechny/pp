@@ -17,6 +17,8 @@ class AnnotationViewTest(TestCase):
 
     def setUp(self):
         self.user, password = create_test_user()
+        Annotation.objects.all().update(check_status=Annotation.UNVERIFIED)
+
 
     def request_to_generic_class_view(self, view_class, method, data=None, headers=None):
         factory = APIRequestFactory()
@@ -45,7 +47,7 @@ class AnnotationViewTest(TestCase):
         self.assertIsNotNone(results)
         self.assertEqual(len(results), expected_count)
 
-    filtering_test_params = [
+    filtering_url_test_params = [
         # No filtering - include
         ("https://docs.python.org/",
          "",
@@ -60,7 +62,7 @@ class AnnotationViewTest(TestCase):
          0),
     ]
 
-    @parameterized.expand(filtering_test_params)
+    @parameterized.expand(filtering_url_test_params)
     def test_list_header_url_filtering(self, actual_url, query_url, expected_count):
         annotation = mommy.make('annotation.Annotation')
         annotation.url = actual_url
@@ -76,7 +78,7 @@ class AnnotationViewTest(TestCase):
         self.assertIsNotNone(results)
         self.assertEqual(len(results), expected_count)
 
-    @parameterized.expand(filtering_test_params)
+    @parameterized.expand(filtering_url_test_params)
     def test_list_param_url_filtering(self, actual_url, query_url, expected_count):
         annotation = mommy.make('annotation.Annotation')
         annotation.url = actual_url
@@ -89,6 +91,36 @@ class AnnotationViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(results)
         self.assertEqual(len(results), expected_count)
+
+
+    @parameterized.expand([
+        # No filtering - include
+        (Annotation.CONFIRMED,
+         '',
+         'all'),
+        # Exact - include
+        (Annotation.CONFIRMED,
+         Annotation.CONFIRMED,
+         1),
+        # Different
+        (Annotation.UNLOCATABLE,
+         Annotation.CONFIRMED,
+         0),
+    ])
+    def test_list_check_status_filtering(self, actual_status, query_status, expected_count):
+        # Relies on setUp UNVERIFIED value
+        annotation = mommy.make('annotation.Annotation')
+        annotation.check_status = actual_status
+        annotation.save()
+
+        if expected_count == 'all':
+            expected_count = Annotation.objects.count()
+
+        response, results = self.request_to_generic_class_view(AnnotationList, 'get', data={'check_status': query_status})
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNotNone(results)
+        self.assertEqual(len(results), expected_count)
+
 
     # Pagination is out of the box with DRF, but it is actually something important...
     def test_list_returns_limited(self):

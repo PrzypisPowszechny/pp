@@ -43,6 +43,7 @@ INSTALLED_APPS = [
 
     # framework for creating api
     'rest_framework',
+    'django_filters',
 
     # Adds cross-origin headers to http request in development
     'corsheaders',
@@ -150,6 +151,9 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_RENDERER_CLASSES': (
         'apps.annotation.renderers.JSONAPIRenderer',
+    ),
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
     ),
     'TEST_REQUEST_RENDERER_CLASSES': (
         'apps.annotation.renderers.JSONAPIRenderer',
