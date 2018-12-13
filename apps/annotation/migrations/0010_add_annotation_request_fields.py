@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('annotation', '0008_alter_annotation_request_blank'),
+        ('annotation', '0009_add_annotation_check_status'),
     ]
 
     operations = [
