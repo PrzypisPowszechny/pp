@@ -5,7 +5,7 @@ import os
 SECRET_KEY = os.environ.get('PP_SECRET_KEY')
 
 ALLOWED_HOSTS = [
-    'przypispowszechny.pl', 'www.przypispowszechny.pl',
+    'przypispowszechny.pl', 'www.przypispowszechny.pl', 'app.przypispowszechny.pl'
 ]
 
 # Honor the X-Forwarded-Host header to know real domain (one from ALLOWED_HOSTS)
