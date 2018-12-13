@@ -3,6 +3,7 @@ import string
 
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from deepmerge import Merger
 
 
 def create_test_user(unique=False):
@@ -19,3 +20,19 @@ def testserver_reverse(*args, **kwargs):
     Prepend to reverse() prefix "http://testserver" which is default domain (+protocol) used by Django test Client.
     """
     return 'http://testserver%s' % reverse(*args, **kwargs)
+
+merge = Merger(
+    # pass in a list of tuple, with the
+    # strategies you are looking to apply
+    # to each type.
+    [
+        (list, ["append"]),
+        (dict, ["merge"])
+    ],
+    # next, choose the fallback strategies,
+    # applied to all other types:
+    ["override"],
+    # finally, choose the strategies in
+    # the case where the types conflict:
+    ["override"]
+).merge
