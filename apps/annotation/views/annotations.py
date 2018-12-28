@@ -11,7 +11,8 @@ from rest_framework.views import APIView
 from rest_framework_json_api.pagination import LimitOffsetPagination
 
 from apps.annotation.filters import StandardizedURLFilterBackend, ConflictingFilterValueError, ListORFilter
-from apps.annotation.models import Annotation, AnnotationUpvote, AnnotationReport
+from apps.annotation.mailgun import send_mail, MailSendException
+from apps.annotation.models import Annotation, AnnotationUpvote, AnnotationReport, AnnotationRequest
 from apps.annotation.responses import PermissionDenied, ValidationErrorResponse, ErrorResponse, NotFoundResponse, \
     Forbidden
 from apps.annotation.serializers import AnnotationPatchDeserializer, AnnotationListSerializer, AnnotationDeserializer, \
@@ -19,6 +20,8 @@ from apps.annotation.serializers import AnnotationPatchDeserializer, AnnotationL
 from apps.annotation.utils import get_resource_name, DataPreSerializer
 from apps.annotation.views.decorators import allow_lazy_user_smart
 
+import logging
+logger = logging.getLogger('pp.annotation')
 
 class AnnotationBase(object):
     def get_pre_serialized_annotation(self, annotation, feedback=None, reports=()):
@@ -110,6 +113,33 @@ class AnnotationList(AnnotationBase, GenericAPIView):
     ordering = "-create_date"
     filter_class = AnnotationListFilter
 
+    @staticmethod
+    def notify_subscribers(url, notification_emails):
+        if not notification_emails:
+            return
+        # Send e-mail to users
+        subject = 'Dodano przypis na stronie, na którą czytałeś'
+        text = '''
+                Hej,
+                Ostatnio skorzystałeś z "poproś o przypis" na stronie {}.
+                Właśnie ktoś dodał na niej przypis. Możliwe, że odpowiada na Twoje zgłoszenie!
+                Sprawdź!
+                {}
+                        '''.format(url, url)
+
+        try:
+            send_mail(
+                sender='dodano-przypis',
+                to_addr=notification_emails,
+                subject=subject,
+                text=text,
+            )
+        except MailSendException as e:
+            logger.error('Annotation request notification (url: {}) could not be sent by e-mail: {}'.format(
+                url,
+                str(e),
+            ))
+
     @swagger_auto_schema(request_body=AnnotationDeserializer,
                          responses={200: AnnotationSerializer})
     @method_decorator(allow_lazy_user_smart)
@@ -120,16 +150,22 @@ class AnnotationList(AnnotationBase, GenericAPIView):
         annotation = Annotation(**deserializer.validated_data['attributes'])
         annotation.user_id = request.user.pk
         annotation.save()
+        response_data = AnnotationSerializer(instance=self.get_pre_serialized_annotation(annotation),
+                                             context={'request': request}).data
+        annotation_requests = AnnotationRequest.objects.filter(url_id=annotation.url_id)
+        notification_emails = [
+            (instance.notification_email, None) for instance in annotation_requests if instance.notification_email
+        ]
 
-        return Response(AnnotationSerializer(instance=self.get_pre_serialized_annotation(annotation),
-                                             context={'request': request}).data)
+        self.notify_subscribers(annotation.url, notification_emails)
+        return Response(response_data)
 
     def get_queryset(self):
         queryset = Annotation.objects.filter(active=True).annotate(
             total_upvote_count=Count('feedbacks__id')
         ).select_related(
             'user'
-         ).prefetch_related(
+        ).prefetch_related(
             Prefetch('annotation_reports', queryset=AnnotationReport.objects.filter(user=self.request.user),
                      to_attr='user_annotation_reports')
         )

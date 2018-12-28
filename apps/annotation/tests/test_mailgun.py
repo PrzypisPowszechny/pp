@@ -26,9 +26,28 @@ class MailgunTest(TestCase):
 
         self.assertEqual(len(responses.calls), 1)
 
+    @responses.activate
+    def test_batch_sent(self):
+        responses.add(responses.Response(
+            method='POST',
+            url=settings.MAILGUN_API_URL,
+            match_querystring=True,
+            content_type='application/json',
+            status=200,
+        ))
+
+        send_mail(
+            to_addr=[('mock1@mail.com', None), ('mock2@mail.com', None)],
+            subject='',
+            text='',
+            sender='test',
+        )
+
+        self.assertEqual(len(responses.calls), 1)
+
 
     @responses.activate
-    def test_exception_raised(self):
+    def test_400_exception_raised(self):
         responses.add(responses.Response(
             method='POST',
             url=settings.MAILGUN_API_URL,
