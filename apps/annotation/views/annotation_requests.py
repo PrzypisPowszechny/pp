@@ -42,7 +42,7 @@ Fragment: {}
         try:
             send_mail(
                 sender='prosba-o-przypis',
-                to_addr='przypispowszechny@gmail.com',
+                receiver='przypispowszechny@gmail.com',
                 subject=subject,
                 text=text,
             )

@@ -1,5 +1,4 @@
 import json
-
 import requests
 from django.conf import settings
 
@@ -8,26 +7,27 @@ class MailSendException(Exception):
     pass
 
 
-def receiver_to_param(receiver):
+def validate_single_receiver(receiver):
     if isinstance(receiver, str):
-        addr, name = receiver, ''
+        mail, name = receiver, ''
     elif isinstance(receiver, tuple):
-        addr, name = receiver
+        mail, name = receiver
     else:
         raise ValueError('Receiver argument is unknown type {} (should be string or tuple)'.format(type(receiver)))
-    return addr, name
+    return mail, name
 
-def send_mail(to_addr, subject, text, sender, recipient_variables=None,
+
+def send_mail(receiver, subject, text, sender, recipient_variables=None,
               from_name='Przypis Powszechny'):
     """
     For multiple addresses recipient variables are always initialised
     so the recipient is not shown all other recipients.
     (see https://documentation.mailgun.com/en/latest/user_manual.html#batch-sending)
-    :param to_addr: an address string ot a tuple (address, address_name) or a list of tuples.
+    :param receiver: an address string ot a tuple (address, address_name) or a list of tuples.
     :param subject:
     :param text:
-    :param sender:
-    :param from_name:
+    :param sender: name displayed before "@" character
+    :param from_name: display name of the sender
     :return:
     """
     recipient_variables = recipient_variables or {}
@@ -38,17 +38,15 @@ def send_mail(to_addr, subject, text, sender, recipient_variables=None,
         ('text', text),
     ]
 
-    if isinstance(to_addr, str) or isinstance(to_addr, tuple):
-        addr, name = receiver_to_param(to_addr)
-        data.append(('to', '{} <{}>'.format(name, addr)))
-    elif isinstance(to_addr, list):
-        for single in to_addr:
+    if isinstance(receiver, str) or isinstance(receiver, tuple):
+        mail, name = validate_single_receiver(receiver)
+        data.append(('to', '{} <{}>'.format(name, mail)))
+    elif isinstance(receiver, list):
+        for single in receiver:
             assert len(single) == 2, "Receiver is not in correct format: {}".format(single)
-            addr, name = receiver_to_param(single)
-            recipient_variables.setdefault(addr, {}).update(recipient_variables.get(addr, {}))
-            data.append(('to', '{} <{}>'.format(name, addr)))
-
-
+            mail, name = validate_single_receiver(single)
+            recipient_variables.setdefault(mail, {}).update(recipient_variables.get(mail, {}))
+            data.append(('to', '{} <{}>'.format(name, mail)))
         data.append(('recipient-variables', json.dumps(recipient_variables)))
 
     response = requests.post(

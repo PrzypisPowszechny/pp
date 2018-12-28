@@ -146,7 +146,7 @@ class AnnotationList(AnnotationBase, GenericAPIView):
         try:
             send_mail(
                 sender='dodano-przypis',
-                to_addr=notification_emails,
+                receiver=notification_emails,
                 subject=subject,
                 text=text,
                 recipient_variables=recipient_variables,

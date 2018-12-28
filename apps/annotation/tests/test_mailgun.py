@@ -18,7 +18,7 @@ class MailgunTest(TestCase):
         ))
 
         send_mail(
-            to_addr='mock@mail.com',
+            receiver='mock@mail.com',
             subject='',
             text='',
             sender='test',
@@ -37,7 +37,7 @@ class MailgunTest(TestCase):
         ))
 
         send_mail(
-            to_addr=[('mock1@mail.com', None), ('mock2@mail.com', None)],
+            receiver=[('mock1@mail.com', None), ('mock2@mail.com', None)],
             subject='',
             text='',
             sender='test',
@@ -58,7 +58,7 @@ class MailgunTest(TestCase):
 
         with self.assertRaises(MailSendException):
             send_mail(
-                to_addr='mock@mail.com',
+                receiver='mock@mail.com',
                 subject='',
                 text='',
                 sender='test',
