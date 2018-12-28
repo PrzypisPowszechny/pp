@@ -1,7 +1,7 @@
 from settings.base import *
 import os
 
-
+HOST = os.environ.get('HEROKU_HOST')
 SECRET_KEY = os.environ.get('PP_SECRET_KEY')
 
 # Mailgun settings

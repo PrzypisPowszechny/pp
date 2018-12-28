@@ -1,3 +1,5 @@
+import logging
+
 from django.utils.decorators import method_decorator
 from django.utils.text import Truncator
 from drf_yasg.utils import swagger_auto_schema
@@ -9,9 +11,6 @@ from apps.annotation.mailgun import send_mail, MailSendException
 from apps.annotation.models import AnnotationRequest
 from apps.annotation.responses import ValidationErrorResponse
 from apps.annotation.serializers import AnnotationRequestDeserializer, AnnotationRequestSerializer
-
-import logging
-
 from apps.annotation.utils import DataPreSerializer
 
 logger = logging.getLogger('pp.annotation')

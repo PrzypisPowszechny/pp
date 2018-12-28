@@ -42,7 +42,7 @@ def extension_uninstalled_hook(request):
             except GAConsumer.ConsumingError as e:
                 logger.error(str(e))
 
-    return render_to_response('analytics.html')
+    return render_to_response('uninstalled.html')
 
 
 def set_iamstaff(request):

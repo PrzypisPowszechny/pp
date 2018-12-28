@@ -1,5 +1,8 @@
 from django.apps import apps
+from django.conf import settings
+from django.core.signing import Signer
 from django.db.models import Prefetch, Count
+from django.urls import reverse
 from django.utils.decorators import method_decorator
 import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
@@ -114,10 +117,22 @@ class AnnotationList(AnnotationBase, GenericAPIView):
     filter_class = AnnotationListFilter
 
     @staticmethod
-    def notify_subscribers(url, notification_emails):
+    def notify_subscribers(url, annotation_requests):
+        notification_emails = []
+        recipient_variables = {}
+        for instance in annotation_requests:
+            if instance.notification_email:
+                notification_emails.append((instance.notification_email, None))
+                token = Signer().sign(instance.id).split(':')[1]
+                unsubscribe_reverse = reverse('annotation_request_unsubscribe',
+                                           kwargs={'annotation_request_id': instance.id, 'token': token}
+                                           )
+                unsubscribe_link = '{}{}'.format(settings.HOST, unsubscribe_reverse)
+                recipient_variables[instance.notification_email] = {'unsubscribe_link': unsubscribe_link}
         if not notification_emails:
             return
-        # Send e-mail to users
+
+        # TODO: format as HTML
         subject = 'Dodano przypis na stronie, na którą czytałeś'
         text = '''
                 Hej,
@@ -125,6 +140,7 @@ class AnnotationList(AnnotationBase, GenericAPIView):
                 Właśnie ktoś dodał na niej przypis. Możliwe, że odpowiada na Twoje zgłoszenie!
                 Sprawdź!
                 {}
+                By zrezygnować z subskrypcji, wejdź tutaj: %recipient.unsubscribe_link%
                         '''.format(url, url)
 
         try:
@@ -133,6 +149,7 @@ class AnnotationList(AnnotationBase, GenericAPIView):
                 to_addr=notification_emails,
                 subject=subject,
                 text=text,
+                recipient_variables=recipient_variables,
             )
         except MailSendException as e:
             logger.error('Annotation request notification (url: {}) could not be sent by e-mail: {}'.format(
@@ -153,11 +170,9 @@ class AnnotationList(AnnotationBase, GenericAPIView):
         response_data = AnnotationSerializer(instance=self.get_pre_serialized_annotation(annotation),
                                              context={'request': request}).data
         annotation_requests = AnnotationRequest.objects.filter(url_id=annotation.url_id)
-        notification_emails = [
-            (instance.notification_email, None) for instance in annotation_requests if instance.notification_email
-        ]
 
-        self.notify_subscribers(annotation.url, notification_emails)
+
+        self.notify_subscribers(annotation.url, annotation_requests)
         return Response(response_data)
 
     def get_queryset(self):

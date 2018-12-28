@@ -15,12 +15,14 @@ def receiver_to_param(receiver):
         addr, name = receiver
     else:
         raise ValueError('Receiver argument is unknown type {} (should be string or tuple)'.format(type(receiver)))
-    return 'to', '{} <{}>'.format(name, addr)
+    return addr, name
 
-
-def send_mail(to_addr, subject, text, sender,
+def send_mail(to_addr, subject, text, sender, recipient_variables=None,
               from_name='Przypis Powszechny'):
     """
+    For multiple addresses recipient variables are always initialised
+    so the recipient is not shown all other recipients.
+    (see https://documentation.mailgun.com/en/latest/user_manual.html#batch-sending)
     :param to_addr: an address string ot a tuple (address, address_name) or a list of tuples.
     :param subject:
     :param text:
@@ -28,6 +30,7 @@ def send_mail(to_addr, subject, text, sender,
     :param from_name:
     :return:
     """
+    recipient_variables = recipient_variables or {}
     from_addr = '{}@{}'.format(sender, settings.PP_MAIL_DOMAIN)
     data = [
         ('from', '{} <{}>'.format(from_name, from_addr)),
@@ -36,14 +39,16 @@ def send_mail(to_addr, subject, text, sender,
     ]
 
     if isinstance(to_addr, str) or isinstance(to_addr, tuple):
-        data.append(receiver_to_param(to_addr))
+        addr, name = receiver_to_param(to_addr)
+        data.append(('to', '{} <{}>'.format(name, addr)))
     elif isinstance(to_addr, list):
         for single in to_addr:
-            assert len(single) == 2, "Receiver is not in correct format: {}".format(to_addr)
-            data.append(receiver_to_param(single))
-        #  For multiple addresses set recipient variables so the recipient is not shown all other recipients:
-        # (see https://documentation.mailgun.com/en/latest/user_manual.html#batch-sending)
-        recipient_variables = {email: {} for email, name in to_addr}
+            assert len(single) == 2, "Receiver is not in correct format: {}".format(single)
+            addr, name = receiver_to_param(single)
+            recipient_variables.setdefault(addr, {}).update(recipient_variables.get(addr, {}))
+            data.append(('to', '{} <{}>'.format(name, addr)))
+
+
         data.append(('recipient-variables', json.dumps(recipient_variables)))
 
     response = requests.post(
