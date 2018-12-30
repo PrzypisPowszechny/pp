@@ -4,17 +4,6 @@ from urllib.parse import urlencode, parse_qsl, urlsplit
 from django.db import models
 
 
-def get_relationship_id(root_serializer, name):
-    path = ['relationships', name, 'data', 'id']
-    val = root_serializer.validated_data
-    while path and val:
-        key = path.pop(0)
-        val = val.get(key)
-    assert isinstance(val, (int, str, None.__class__)), \
-        "Relationship value can only be int or str, got: %s" % val.__class__.__name__
-    return val
-
-
 def get_jsonapimeta(obj, related_field=None):
     model = obj
     if isinstance(obj, models.Model):
@@ -48,32 +37,25 @@ class DataPreSerializer(object):
         return resource_name[:-1] if is_single_relation else resource_name
 
     def set_relation(self, resource_name, resource_id, relation_name=None):
-        # resource_names_map is dict of resource_names with falses and only one true
-        # for the only one relation we want to use resource_id with.
-        if isinstance(resource_name, collections.Mapping):
-            assert relation_name is None, "relation_name param can be used when resource_name is string not mapping"
-        resource_names_map = {resource_name: True} if not isinstance(resource_name, collections.Mapping) \
-            else resource_name
         is_single_relation = not isinstance(resource_id, collections.Iterable)
-        if is_single_relation:
-            resource_id = [resource_id] if resource_id is not None else []
+        res_key_name = relation_name or self.get_relation_name(resource_name, is_single_relation)
 
-        for res_name, use_res_id in resource_names_map.items():
-            res_key_name = relation_name or self.get_relation_name(resource_name, is_single_relation)
-            if not use_res_id or not resource_id:
-                data = None if is_single_relation else []
-            else:
-                data = []
-                for res_id in resource_id:
-                    data.append({
-                        'type': res_name, 'id': getattr(res_id, 'id', None) or res_id,
-                    })
-                if is_single_relation:
-                    data = data[0]
-            self.root_data.setdefault('relationships', {})[res_key_name] = {
-                'data': data,
-                'links': self.root_obj.id
-            }
+        if resource_id is None:
+            data = None
+        else:
+            resource_ids = [resource_id] if is_single_relation else resource_id
+
+            data = []
+            for res_id in resource_ids:
+                data.append({'type': resource_name,
+                             'id': getattr(res_id, 'id', None) or res_id})
+            if is_single_relation:
+                data = data[0]
+
+        self.root_data.setdefault('relationships', {})[res_key_name] = {
+            'data': data,
+            'links': self.root_obj.id
+        }
 
 
 OMITTED_QUERY_VARS = (

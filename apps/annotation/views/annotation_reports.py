@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from apps.annotation.models import Annotation, AnnotationReport
 from apps.annotation.responses import ValidationErrorResponse, NotFoundResponse, ErrorResponse
 from apps.annotation.serializers import AnnotationReportSerializer, AnnotationReportDeserializer
-from apps.annotation.utils import get_relationship_id, DataPreSerializer, get_resource_name
+from apps.annotation.utils import DataPreSerializer, get_resource_name
 from apps.annotation.views.decorators import allow_lazy_user_smart
 
 
@@ -40,7 +40,7 @@ class AnnotationReportList(APIView):
             return ValidationErrorResponse(deserializer.errors)
         report = AnnotationReport(**deserializer.validated_data['attributes'])
         report.user_id = request.user.pk
-        report.annotation_id = get_relationship_id(deserializer, 'annotation')
+        report.annotation_id = deserializer.validated_data['relationships']['annotation']['data']['id']
 
         # TODO: make this validation in serializer, because: 1. if you can validate there 2. for friendly error message
         try:

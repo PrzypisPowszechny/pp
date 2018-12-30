@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from apps.annotation.models import AnnotationUpvote
 from apps.annotation.responses import ErrorResponse, NotFoundResponse, ValidationErrorResponse
 from apps.annotation.serializers import AnnotationUpvoteSerializer, AnnotationUpvoteDeserializer
-from apps.annotation.utils import DataPreSerializer, get_resource_name, get_relationship_id
+from apps.annotation.utils import DataPreSerializer, get_resource_name
 from apps.annotation.views.decorators import allow_lazy_user_smart
 
 
@@ -57,7 +57,7 @@ class AnnotationUpvoteList(APIView):
 
         feedback = AnnotationUpvote(user=request.user,
                                     **({self.resource_attr: True} if self.resource_attr else {}))
-        feedback.annotation_id = get_relationship_id(deserializer, 'annotation')
+        feedback.annotation_id = deserializer.validated_data['relationships']['annotation']['data']['id']
 
         try:
             feedback.save()
