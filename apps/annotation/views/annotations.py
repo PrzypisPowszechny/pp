@@ -56,9 +56,9 @@ class AnnotationSingle(AnnotationBase, APIView):
             instance={
                 'attributes': annotation,
                 'relationships': {
-                    'user': {'data': annotation.user_id},
-                    'annotation_upvote': {'data': upvote},
-                    'annotation_reports': {'data': reports},
+                    'user': annotation.user_id,
+                    'annotation_upvote': upvote,
+                    'annotation_reports': reports,
                 }},
             context={'request': request, 'root_obj': annotation}
         ).data)
