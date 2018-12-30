@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_json_api.pagination import LimitOffsetPagination
 
+from apps.annotation import serializers2
 from apps.annotation.filters import StandardizedURLFilterBackend, ConflictingFilterValueError, ListORFilter
 from apps.annotation.mailgun import send_mail, MailSendException
 from apps.annotation.models import Annotation, AnnotationUpvote, AnnotationReport, AnnotationRequest
@@ -46,12 +47,21 @@ class AnnotationSingle(AnnotationBase, APIView):
     def get(self, request, annotation_id):
         try:
             annotation = Annotation.objects.get(active=True, id=annotation_id)
-            feedback = AnnotationUpvote.objects.filter(annotation=annotation, user=request.user).first()
+            upvote = AnnotationUpvote.objects.filter(annotation=annotation, user=request.user).first()
             reports = AnnotationReport.objects.filter(annotation_id=annotation.id, user=request.user)
         except (AnnotationUpvote.DoesNotExist, Annotation.DoesNotExist):
             return NotFoundResponse()
-        return Response(AnnotationSerializer(instance=self.get_pre_serialized_annotation(annotation, feedback, reports),
-                                             context={'request': request}).data)
+
+        return Response(serializers2.AnnotationSerializer(
+            instance={
+                'attributes': annotation,
+                'relationships': {
+                    'user': {'data': annotation.user_id},
+                    'annotation_upvote': {'data': upvote},
+                    'annotation_reports': {'data': reports},
+                }},
+            context={'request': request, 'root_obj': annotation}
+        ).data)
 
     @swagger_auto_schema(request_body=AnnotationPatchDeserializer,
                          responses={200: AnnotationSerializer})

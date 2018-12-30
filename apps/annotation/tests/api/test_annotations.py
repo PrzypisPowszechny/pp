@@ -57,6 +57,9 @@ class AnnotationAPITest(TestCase):
                 'data': {
                     'id': str(annotation.id),
                     'type': 'annotations',
+                    'links': {
+                        'self': testserver_reverse('api:annotation', kwargs={'annotation_id': annotation.id})
+                    },
                     'attributes': {
                         'url': annotation.url,
                         'range': json.loads(annotation.range),
