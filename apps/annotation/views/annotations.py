@@ -60,7 +60,7 @@ class AnnotationSingle(AnnotationBase, APIView):
                     'annotation_upvote': upvote,
                     'annotation_reports': reports,
                 }},
-            context={'request': request, 'root_obj': annotation}
+            context={'request': request, 'root_resource_obj': annotation}
         ).data)
 
     @swagger_auto_schema(request_body=AnnotationPatchDeserializer,

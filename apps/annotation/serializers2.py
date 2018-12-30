@@ -1,24 +1,15 @@
 import copy
 import json
-import collections
+
 import inflection
 from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
-from rest_framework.fields import empty, _UnvalidatedField
+from rest_framework.fields import _UnvalidatedField
 
-from apps.annotation.consts import SUGGESTED_CORRECTION
-from apps.annotation.models import AnnotationReport, AnnotationRequest
 from apps.annotation.utils import standardize_url
 from .models import Annotation, AnnotationUpvote
 
-
-def relation_none():
-    return relation_none
-
-
-# Resource
 
 class IDField(serializers.IntegerField):
     def to_representation(self, value):
@@ -33,9 +24,37 @@ class RootIDField(IDField):
         super().__init__(**kwargs)
 
     def to_representation(self, value):
-        value = getattr(self.context['root_obj'], 'id', None) or self.context['root_obj']
+        value = getattr(self.context['root_resource_obj'], 'id', None) or self.context['root_resource_obj']
         value = super().to_representation(value)
         return str(value)
+
+
+class ConstField(serializers.Field):
+    default_error_messages = {
+        'non_equal': "value is not equal to constant",
+    }
+
+    def __init__(self, const_value=None, **kwargs):
+        kwargs['source'] = '*'
+        self.const_value = const_value
+        super(ConstField, self).__init__(**kwargs)
+
+    def to_internal_value(self, data):
+        if data is not self.const_value:
+            self.fail('non_equal', input=data)
+        return data
+
+    def to_representation(self, value):
+        return self.const_value
+
+
+class CamelcaseConstField(ConstField):
+    def to_internal_value(self, data):
+        return inflection.underscore(super().to_internal_value(data))
+
+    def to_representation(self, value):
+        value = super().to_representation(value)
+        return inflection.camelize(value, uppercase_first_letter=False)
 
 
 class ObjectField(serializers.Field):
@@ -63,62 +82,17 @@ class ObjectField(serializers.Field):
         return value
 
 
-class ConstField(serializers.Field):
-    default_error_messages = {
-        'non_equal': "value is not equal to constant",
-    }
-
-    def __init__(self, const_value=None, **kwargs):
-        kwargs['source'] = '*'
-        self.const_value = const_value
-        super(ConstField, self).__init__(**kwargs)
-
-    def bind(self, field_name, parent):
-        const_name = field_name.upper()
-        if self.const_value is None and not hasattr(parent, const_name):
-            assert self.const_value is not empty or hasattr(parent, const_name), (
-                    "For the ConstField %s to work properly you have to pass either const_value "
-                    "or set %s attribute in serializer '%s'" %
-                    (field_name, const_name, parent.__class__.__name__)
-            )
-        if self.const_value is None:
-            self.const_value = getattr(parent, const_name)
-
-        super().bind(field_name, parent)
-
-    def to_internal_value(self, data):
-        if data is not self.const_value:
-            self.fail('non_equal', input=data)
-        return data
-
-    def to_representation(self, value):
-        return self.const_value
-
-
-class CamelcaseConstField(ConstField):
-    def to_internal_value(self, data):
-        return inflection.underscore(super().to_internal_value(data))
-
-    def to_representation(self, value):
-        value = super().to_representation(value)
-        return inflection.camelize(value, uppercase_first_letter=False)
-
-
 class StandardizedRepresentationURLField(serializers.URLField):
     def to_representation(self, value):
         return standardize_url(value)
 
 
-class LinkField(serializers.SerializerMethodField, serializers.URLField):
+class LinkSerializerMethodField(serializers.SerializerMethodField, serializers.URLField):
     pass
 
 
-# Relation
-
-
 class RootLinksSerializer(serializers.Serializer):
-    self = LinkField()
-    self_link_url_name = None
+    self = LinkSerializerMethodField(read_only=True)
 
     def __init__(self, self_link_url_name,  *args, **kwargs):
         kwargs['source'] = '*'
@@ -126,7 +100,7 @@ class RootLinksSerializer(serializers.Serializer):
         self.self_link_url_name = self_link_url_name
 
     def get_self(self, instance):
-        root_obj = getattr(self.context['root_obj'], 'id', None) or self.context['root_obj']
+        root_obj = getattr(self.context['root_resource_obj'], 'id', None) or self.context['root_resource_obj']
         obj_id = getattr(root_obj, 'id', None) or root_obj
         return self.context['request'].build_absolute_uri(reverse(self.self_link_url_name, args=(obj_id,)))
 
@@ -154,7 +128,13 @@ class ResourceField(serializers.Field):
         }
 
 
+# Universal constant for marking the value of none relation (which does not mean whole output of field is =None).
+# It does not change reference even if called (as class-based const does).
+relation_none = lambda: relation_none
+
+
 class RelationField(serializers.Field):
+
     child = _UnvalidatedField()
 
     default_error_messages = {
@@ -163,14 +143,14 @@ class RelationField(serializers.Field):
     }
 
     def __init__(self, related_link_url_name, many=False, **kwargs):
+        self.related_link_url_name = related_link_url_name
         self.child = kwargs.pop('child', copy.deepcopy(self.child))
         self.many = many
+        kwargs.setdefault('default', relation_none)
+
         if self.many:
             self.child = serializers.ListField(child=self.child, default=[])
         self.child.bind(field_name='', parent=self)
-        self.related_link_url_name = related_link_url_name
-        if 'default' not in kwargs:
-            kwargs['default'] = relation_none
         super().__init__(**kwargs)
 
     def to_internal_value(self, data):
@@ -181,13 +161,10 @@ class RelationField(serializers.Field):
         return self.child.run_validation(data['data'])
 
     def to_representation(self, instance):
-        root_obj_id = getattr(self.context['root_obj'], 'id', None) or self.context['root_obj']
+        root_obj_id = getattr(self.context['root_resource_obj'], 'id', None) or self.context['root_resource_obj']
 
         if instance is relation_none:
-            if self.many:
-                data_value = []
-            else:
-                data_value = None
+            data_value = [] if self.many else None
         else:
             data_value = self.child.to_representation(instance)
 
@@ -206,7 +183,7 @@ class RelationField(serializers.Field):
         if attribute is None:
             return relation_none
         return attribute
-
+    
 
 class AnnotationSerializer(serializers.Serializer):
 

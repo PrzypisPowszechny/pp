@@ -34,7 +34,7 @@ class SerializersTest(TestCase):
                 instance={'my_relation': self.fake_related_id},
                 context={
                     'request': mock_request,
-                    'root_obj': self.fake_root_id
+                    'root_resource_obj': self.fake_root_id
                 }
             )
             self.assertDictEqual(serializer.data, {
@@ -58,7 +58,7 @@ class SerializersTest(TestCase):
                 instance={'my_relation': None},
                 context={
                     'request': mock_request,
-                    'root_obj': self.fake_root_id
+                    'root_resource_obj': self.fake_root_id
                 }
             )
             self.assertDictEqual(serializer.data, {
@@ -79,7 +79,7 @@ class SerializersTest(TestCase):
                 instance={},
                 context={
                     'request': mock_request,
-                    'root_obj': self.fake_root_id
+                    'root_resource_obj': self.fake_root_id
                 }
             )
             self.assertDictEqual(serializer.data, {
@@ -100,7 +100,7 @@ class SerializersTest(TestCase):
                 instance={'my_relation': []},
                 context={
                     'request': mock_request,
-                    'root_obj': self.fake_root_id
+                    'root_resource_obj': self.fake_root_id
                 }
             )
             self.assertDictEqual(serializer.data, {
@@ -121,7 +121,7 @@ class SerializersTest(TestCase):
                 instance={'my_relation': [self.fake_related_id]},
                 context={
                     'request': mock_request,
-                    'root_obj': self.fake_root_id
+                    'root_resource_obj': self.fake_root_id
                 }
             )
             self.assertDictEqual(serializer.data, {
