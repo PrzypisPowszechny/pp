@@ -172,6 +172,9 @@ SWAGGER_SETTINGS = {
     'DEFAULT_FIELD_INSPECTORS': [
         'apps.annotation.inspectors.RootSerializerInspector',
         'apps.annotation.inspectors.IDFieldInspector',
+        'apps.annotation.inspectors.ConstFieldInspector',
+        'apps.annotation.inspectors.ResourceFieldInspector',
+        'apps.annotation.inspectors.RelationFieldInspector',
         'apps.annotation.inspectors.ObjectFieldInspector',
         'drf_yasg.inspectors.CamelCaseJSONFilter',
         # ReferencingS... replaced with InlineS... which does not create serializers definitions index,

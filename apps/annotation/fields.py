@@ -79,6 +79,18 @@ class StandardizedRepresentationURLField(serializers.URLField):
         return standardize_url(value)
 
 
+class URLNameField(serializers.URLField):
+
+    def __init__(self, url_name, **kwargs):
+        kwargs['read_only'] = True
+        super().__init__(**kwargs)
+        self.url_name = url_name
+
+    def to_representation(self, instance):
+        obj_id = getattr(instance, 'id', None) or instance
+        return self.context['request'].build_absolute_uri(reverse(self.url_name, args=[obj_id]))
+
+
 class LinkSerializerMethodField(serializers.SerializerMethodField, serializers.URLField):
     pass
 
@@ -89,7 +101,9 @@ class ResourceField(serializers.Field):
 
     def __init__(self, resource_name, **kwargs):
         self.type_subfield = self.type_class(const_value=resource_name)
+        self.type_subfield.bind(field_name='', parent=self)
         self.id_subfield = self.id_class()
+        self.id_subfield.bind(field_name='', parent=self)
         super().__init__(**kwargs)
 
     def to_internal_value(self, data):
@@ -111,6 +125,7 @@ relation_none = lambda: relation_none
 
 class RelationField(serializers.Field):
     child = _UnvalidatedField()
+    link_child_class = URLNameField
 
     default_error_messages = {
         'data_missing': "'data' key is missing",
@@ -120,11 +135,13 @@ class RelationField(serializers.Field):
     def __init__(self, related_link_url_name, many=False, **kwargs):
         self.related_link_url_name = related_link_url_name
         self.child = kwargs.pop('child', copy.deepcopy(self.child))
+        self.link_child = self.link_child_class(url_name=related_link_url_name)
         self.many = many
 
         if self.many:
-            self.child = serializers.ListField(child=self.child, default=[])
+            self.child = serializers.ListField(child=self.child)
         self.child.bind(field_name='', parent=self)
+        self.link_child.bind(field_name='', parent=self)
         super().__init__(**kwargs)
 
     def get_default(self):
@@ -162,8 +179,6 @@ class RelationField(serializers.Field):
         return {
             'data': data_value,
             'links': {
-                'related': self.context['request'].build_absolute_uri(
-                    reverse(self.related_link_url_name, args=[root_obj_id])
-                )
+                'related': self.link_child.to_representation(root_obj_id)
             }
         }
