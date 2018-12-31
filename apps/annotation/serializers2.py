@@ -117,6 +117,25 @@ class AnnotationListSerializer(serializers.Serializer):
     relationships = Relationships()
 
 
+class AnnotationDeserializer(serializers.Serializer):
+    class Attributes(serializers.ModelSerializer):
+        url = fields.StandardizedRepresentationURLField()
+        range = fields.ObjectField(json_internal_type=True)
+        quote = serializers.CharField(required=True)
+        # TODO: this will be required soon
+        quote_context = serializers.CharField(required=False, allow_blank=True)
+        comment = serializers.CharField(required=False, allow_blank=True)
+
+        class Meta:
+            model = Annotation
+            fields = ('url', 'range', 'quote', 'quote_context',
+                      'pp_category', 'demagog_category', 'comment',
+                      'annotation_link', 'annotation_link_title')
+
+    type = fields.CamelcaseConstField('annotations')
+    attributes = Attributes()
+
+
 class AnnotationPatchDeserializer(serializers.Serializer):
     class Attributes(serializers.ModelSerializer):
         comment = serializers.CharField(required=False, allow_blank=True)
@@ -126,7 +145,6 @@ class AnnotationPatchDeserializer(serializers.Serializer):
             fields = ('pp_category', 'comment',
                       'annotation_link', 'annotation_link_title')
 
-    attributes = Attributes()
-
     id = fields.IDField()
     type = fields.CamelcaseConstField('annotations')
+    attributes = Attributes()

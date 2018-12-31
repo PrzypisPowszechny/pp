@@ -97,7 +97,10 @@ class AnnotationAPITest(TestCase):
                             },
                             'data': []
                         },
-                    }
+                    },
+                    'links': {
+                        'self': testserver_reverse('api:annotation', kwargs={'annotation_id': annotation.id})
+                    },
                 }
             }
         )
@@ -240,7 +243,10 @@ class AnnotationAPITest(TestCase):
                                 {'type': 'annotationReports', 'id': str(report.id)}
                             ]
                         },
-                    }
+                    },
+                    'links': {
+                        'self': testserver_reverse('api:annotation', kwargs={'annotation_id': annotation.id})
+                    },
                 }
             }
         )
@@ -305,7 +311,10 @@ class AnnotationAPITest(TestCase):
                                 {'type': 'annotationReports', 'id': str(report.id)}
                             ]
                         },
-                    }
+                    },
+                    'links': {
+                        'self': testserver_reverse('api:annotation', kwargs={'annotation_id': annotation.id})
+                    },
                 }
             }
         )
@@ -684,7 +693,10 @@ class AnnotationAPITest(TestCase):
                             },
                             'data': []
                         },
-                    }
+                    },
+                    'links': {
+                        'self': testserver_reverse('api:annotation', kwargs={'annotation_id': annotation.id})
+                    },
                 }
             }
         )
@@ -985,7 +997,10 @@ class AnnotationAPITest(TestCase):
                         },
                         'data': []
                     },
-                }
+                },
+                'links': {
+                    'self': testserver_reverse('api:annotation', kwargs={'annotation_id': annotation.id})
+                },
             }
 
         )
