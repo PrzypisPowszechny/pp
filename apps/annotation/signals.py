@@ -6,5 +6,6 @@ from .models import Annotation
 
 
 @receiver(post_save, sender=Annotation)
-def notify_subscribers(sender, instance, **kwargs):
-    notify_annotation_url_subscribers.delay(instance.id)
+def notify_subscribers(sender, instance, raw, created, **kwargs):
+    if created:
+        notify_annotation_url_subscribers.apply_async(args=[instance.id])
