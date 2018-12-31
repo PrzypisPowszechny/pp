@@ -1,5 +1,7 @@
 from .base import *
 
+HOST = 'https://localhost:8000'
+
 DEBUG = True
 
 # This allows the regular pp-client scripts to access API in development

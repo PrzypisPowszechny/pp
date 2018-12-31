@@ -65,6 +65,8 @@ urlpatterns = [
     url(r'^site_test/', site_views.site_test_index, name='site_test'),
     url(r'^site/report/$', site_views.report_form),
     url(r'^site/about/$', site_views.about),
+    url(r'^site/annotation_request_unsubscribe/(?P<annotation_request_id>[0-9]+)/(?P<token>[\w.:\-_=]+)/$',
+        site_views.annotation_request_unsubscribe, name='annotation_request_unsubscribe'),
 
     # This is the challenge from cerbot (certbot.eff.org) after running "sudo certbot certonly --manual"
     url(r'^\.well-known/acme-challenge/(?P<acme>.+)$',

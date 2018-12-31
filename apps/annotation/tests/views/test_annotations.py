@@ -1,3 +1,5 @@
+import responses
+from django.conf import settings
 from django.test import TestCase
 from mock import patch
 from model_mommy import mommy
@@ -19,7 +21,6 @@ class AnnotationViewTest(TestCase):
         self.user, password = create_test_user()
         Annotation.objects.all().update(check_status=Annotation.UNVERIFIED)
 
-
     def request_to_generic_class_view(self, view_class, method, data=None, headers=None):
         factory = APIRequestFactory()
         # factory.post(...) / .get(...)
@@ -30,7 +31,10 @@ class AnnotationViewTest(TestCase):
         for key, val in headers.items():
             request.META[key] = val
         response = view_class.as_view()(request)
-        results = response.data['results']
+        if method == 'get':
+            results = response.data['results']
+        else:
+            results = response.data
         return response, results
 
     def test_list_returns_200(self):
@@ -134,3 +138,52 @@ class AnnotationViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(results)
         self.assertLess(len(results), all_count)
+
+
+
+    def get_valid_annotation_attrs(self):
+        return {
+            'url': "http://www.przypis.pl/",
+            'range': {'start': "Od tad", 'end': "do tad"},
+            'quote': 'very nice',
+            'quoteContext': 'it is indeed very nice and smooth',
+            'publisher': 'PP',
+            'ppCategory': Annotation.ADDITIONAL_INFO,
+            'comment': "komentarz",
+            'annotationLink': 'www.przypispowszechny.com',
+            'annotationLinkTitle': 'very nice too',
+        }
+
+    def get_valid_request_template(self):
+        return {
+            'data': {
+                'type': 'annotations',
+                'attributes': self.get_valid_annotation_attrs()
+            }
+        }
+
+    @responses.activate
+    def test_subcribers_notified(self):
+        notification_email = 'test@gmail.com'
+        site_url = 'https://www.mocksite.com'
+
+        responses.add(responses.Response(
+            method='POST',
+            url=settings.MAILGUN_API_URL,
+            match_querystring=True,
+            content_type='application/json',
+            status=200,
+        ))
+
+        annotation_request = mommy.make('annotation.AnnotationRequest')
+        annotation_request.notification_email = notification_email
+        annotation_request.url = site_url
+        annotation_request.save()
+
+        data = self.get_valid_request_template()
+        data['data']['attributes']['url'] = site_url
+
+        response, results = self.request_to_generic_class_view(AnnotationList, 'post', data=data)
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNotNone(results)
+        self.assertEqual(len(responses.calls), 1)

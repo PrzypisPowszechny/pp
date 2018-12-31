@@ -1,5 +1,8 @@
 from django.apps import apps
+from django.conf import settings
+from django.core.signing import Signer
 from django.db.models import Prefetch, Count
+from django.urls import reverse
 from django.utils.decorators import method_decorator
 import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
@@ -11,7 +14,8 @@ from rest_framework.views import APIView
 from rest_framework_json_api.pagination import LimitOffsetPagination
 
 from apps.annotation.filters import StandardizedURLFilterBackend, ConflictingFilterValueError, ListORFilter
-from apps.annotation.models import Annotation, AnnotationUpvote, AnnotationReport
+from apps.annotation.mailgun import send_mail, MailSendException
+from apps.annotation.models import Annotation, AnnotationUpvote, AnnotationReport, AnnotationRequest
 from apps.annotation.responses import PermissionDenied, ValidationErrorResponse, ErrorResponse, NotFoundResponse, \
     Forbidden
 from apps.annotation.serializers import AnnotationPatchDeserializer, AnnotationListSerializer, AnnotationDeserializer, \
@@ -19,6 +23,8 @@ from apps.annotation.serializers import AnnotationPatchDeserializer, AnnotationL
 from apps.annotation.utils import get_resource_name, DataPreSerializer
 from apps.annotation.views.decorators import allow_lazy_user_smart
 
+import logging
+logger = logging.getLogger('pp.annotation')
 
 class AnnotationBase(object):
     def get_pre_serialized_annotation(self, annotation, feedback=None, reports=()):
@@ -110,6 +116,47 @@ class AnnotationList(AnnotationBase, GenericAPIView):
     ordering = "-create_date"
     filter_class = AnnotationListFilter
 
+    @staticmethod
+    def notify_subscribers(url, annotation_requests):
+        notification_emails = []
+        recipient_variables = {}
+        for instance in annotation_requests:
+            if instance.notification_email:
+                notification_emails.append((instance.notification_email, None))
+                token = Signer().sign(instance.id).split(':')[1]
+                unsubscribe_reverse = reverse('annotation_request_unsubscribe',
+                                           kwargs={'annotation_request_id': instance.id, 'token': token}
+                                           )
+                unsubscribe_link = '{}{}'.format(settings.HOST, unsubscribe_reverse)
+                recipient_variables[instance.notification_email] = {'unsubscribe_link': unsubscribe_link}
+        if not notification_emails:
+            return
+
+        # TODO: format as HTML
+        subject = 'Dodano przypis na stronie, na którą czytałeś'
+        text = '''
+                Hej,
+                Ostatnio skorzystałeś z "poproś o przypis" na stronie {}.
+                Właśnie ktoś dodał na niej przypis. Możliwe, że odpowiada na Twoje zgłoszenie!
+                Sprawdź!
+                {}
+                By zrezygnować z subskrypcji, wejdź tutaj: %recipient.unsubscribe_link%
+                        '''.format(url, url)
+
+        try:
+            send_mail(
+                sender='dodano-przypis',
+                receiver=notification_emails,
+                subject=subject,
+                text=text,
+                recipient_variables=recipient_variables,
+            )
+        except MailSendException as e:
+            logger.error('Annotation request notification (url: {}) could not be sent by e-mail: {}'.format(
+                url,
+                str(e),
+            ))
+
     @swagger_auto_schema(request_body=AnnotationDeserializer,
                          responses={200: AnnotationSerializer})
     @method_decorator(allow_lazy_user_smart)
@@ -120,16 +167,20 @@ class AnnotationList(AnnotationBase, GenericAPIView):
         annotation = Annotation(**deserializer.validated_data['attributes'])
         annotation.user_id = request.user.pk
         annotation.save()
+        response_data = AnnotationSerializer(instance=self.get_pre_serialized_annotation(annotation),
+                                             context={'request': request}).data
+        annotation_requests = AnnotationRequest.objects.filter(url_id=annotation.url_id)
 
-        return Response(AnnotationSerializer(instance=self.get_pre_serialized_annotation(annotation),
-                                             context={'request': request}).data)
+
+        self.notify_subscribers(annotation.url, annotation_requests)
+        return Response(response_data)
 
     def get_queryset(self):
         queryset = Annotation.objects.filter(active=True).annotate(
             total_upvote_count=Count('feedbacks__id')
         ).select_related(
             'user'
-         ).prefetch_related(
+        ).prefetch_related(
             Prefetch('annotation_reports', queryset=AnnotationReport.objects.filter(user=self.request.user),
                      to_attr='user_annotation_reports')
         )

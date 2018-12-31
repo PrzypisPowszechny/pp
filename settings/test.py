@@ -2,6 +2,7 @@ import sys
 
 from settings.base import *
 
+HOST = 'https://localhost:8000'
 TEST = True
 
 if 'test' in sys.argv:
