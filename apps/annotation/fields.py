@@ -19,8 +19,16 @@ class IDField(serializers.IntegerField):
 
 class RootIDField(IDField):
     def __init__(self, **kwargs):
-        kwargs['source'] = '*'
         super().__init__(**kwargs)
+
+    def get_attribute(self, instance):
+        """
+        We output just const_value, so do not select any attribute.
+        """
+        return instance
+
+    def to_internal_value(self, data):
+        return super().to_internal_value(data)
 
     def to_representation(self, value):
         value = getattr(self.context['root_resource_obj'], 'id', None) or self.context['root_resource_obj']
@@ -34,7 +42,6 @@ class ConstField(serializers.Field):
     }
 
     def __init__(self, const_value=None, **kwargs):
-        kwargs['source'] = '*'
         self.const_value = const_value
         super(ConstField, self).__init__(**kwargs)
 
@@ -42,6 +49,12 @@ class ConstField(serializers.Field):
         if data != self.const_value:
             self.fail('non_equal', input=data, constant_value=self.const_value)
         return data
+
+    def get_attribute(self, instance):
+        """
+        We output just const_value, so do not select any attribute.
+        """
+        return instance
 
     def to_representation(self, value):
         return self.const_value
@@ -94,7 +107,6 @@ class ResourceField(serializers.Field):
     id_class = IDField
 
     def __init__(self, resource_name, **kwargs):
-        # This is cons for `type` ConstField
         self.type_subfield = self.type_class(const_value=resource_name)
         self.id_subfield = self.id_class()
         super().__init__(**kwargs)

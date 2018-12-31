@@ -42,7 +42,7 @@ class AnnotationBase(object):
 class AnnotationSingle(AnnotationBase, APIView):
     resource_name = 'annotations'
 
-    @swagger_auto_schema(responses={200: AnnotationSerializer})
+    @swagger_auto_schema(responses={200: serializers2.AnnotationSerializer})
     @method_decorator(allow_lazy_user_smart)
     def get(self, request, annotation_id):
         try:
@@ -63,8 +63,8 @@ class AnnotationSingle(AnnotationBase, APIView):
             context={'request': request, 'root_resource_obj': annotation}
         ).data)
 
-    @swagger_auto_schema(request_body=AnnotationPatchDeserializer,
-                         responses={200: AnnotationSerializer})
+    @swagger_auto_schema(request_body=serializers2.AnnotationPatchDeserializer,
+                         responses={200: serializers2.AnnotationSerializer})
     @method_decorator(allow_lazy_user_smart)
     def patch(self, request, annotation_id):
         try:
@@ -74,7 +74,8 @@ class AnnotationSingle(AnnotationBase, APIView):
         # Check permissions
         if annotation.user_id != request.user.id:
             return PermissionDenied()
-        deserializer = AnnotationPatchDeserializer(data=request.data, context={'request': request}, partial=True)
+        deserializer = serializers2.AnnotationPatchDeserializer(data=request.data, context={'request': request},
+                                                                partial=True)
         if not deserializer.is_valid():
             return ValidationErrorResponse(deserializer.errors)
         if 'relationships' in request.data:
@@ -168,7 +169,7 @@ class AnnotationList(AnnotationBase, GenericAPIView):
             ))
 
     @swagger_auto_schema(request_body=AnnotationDeserializer,
-                         responses={200: AnnotationSerializer})
+                         responses={200: serializers2.AnnotationSerializer})
     @method_decorator(allow_lazy_user_smart)
     def post(self, request):
         deserializer = AnnotationDeserializer(data=request.data)
@@ -214,13 +215,8 @@ class AnnotationList(AnnotationBase, GenericAPIView):
             annotation.user_feedback = feedback
         return queryset
 
-    def pre_serialize_queryset(self, queryset):
-        return [
-            self.get_pre_serialized_annotation(annotation, annotation.user_feedback, annotation.user_annotation_reports)
-            for annotation in queryset]
-
     # Header parameters need to be provided explicitly
-    @swagger_auto_schema(responses={200: AnnotationListSerializer(many=True)},
+    @swagger_auto_schema(responses={200: serializers2.AnnotationListSerializer(many=True)},
                          manual_parameters=StandardizedURLFilterBackend.get_manual_parameters())
     @method_decorator(allow_lazy_user_smart)
     def get(self, request, *args, **kwargs):
@@ -233,11 +229,16 @@ class AnnotationList(AnnotationBase, GenericAPIView):
 
         queryset = self.annotate_fetched_queryset(queryset)
 
-        data_list = self.pre_serialize_queryset(queryset)
-
-        return self.get_paginated_response(
-            AnnotationListSerializer(data_list, many=True, context={'request': request}).data
-        )
+        return self.get_paginated_response([
+            serializers2.AnnotationListSerializer(instance={
+                'attributes': annotation,
+                'relationships': {
+                    'annotation_upvote': annotation.user_feedback,
+                    'annotation_reports': annotation.user_annotation_reports,
+                    'user': annotation.user_id,
+                }
+            }, context={'request': request, 'root_resource_obj': annotation}).data
+            for annotation in queryset])
 
 
 class AnnotationFeedbackRelatedAnnotationSingle(AnnotationBase, APIView):
