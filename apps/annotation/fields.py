@@ -17,25 +17,6 @@ class IDField(serializers.IntegerField):
         return str(value)
 
 
-class RootIDField(IDField):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def get_attribute(self, instance):
-        """
-        We output just const_value, so do not select any attribute.
-        """
-        return instance
-
-    def to_internal_value(self, data):
-        return super().to_internal_value(data)
-
-    def to_representation(self, value):
-        value = getattr(self.context['root_resource_obj'], 'id', None) or self.context['root_resource_obj']
-        value = super().to_representation(value)
-        return str(value)
-
-
 class ConstField(serializers.Field):
     default_error_messages = {
         'non_equal': "value '{input}' is not equal to constant value '{constant_value}'",

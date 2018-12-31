@@ -5,17 +5,16 @@ from apps.annotation import fields
 from .models import Annotation, AnnotationUpvote
 
 
-class RootLinksSerializer(serializers.Serializer):
+class ResourceLinksSerializer(serializers.Serializer):
     self = fields.LinkSerializerMethodField(read_only=True)
 
-    def __init__(self, self_link_url_name,  *args, **kwargs):
-        kwargs['source'] = '*'
-        super().__init__(*args, **kwargs)
+    def __init__(self, self_link_url_name, **kwargs):
+        kwargs['read_only'] = True
+        super().__init__(**kwargs)
         self.self_link_url_name = self_link_url_name
 
     def get_self(self, instance):
-        root_obj = getattr(self.context['root_resource_obj'], 'id', None) or self.context['root_resource_obj']
-        obj_id = getattr(root_obj, 'id', None) or root_obj
+        obj_id = getattr(instance, 'id', None) or instance
         return self.context['request'].build_absolute_uri(reverse(self.self_link_url_name, args=[obj_id]))
 
 
@@ -69,9 +68,9 @@ class AnnotationSerializer(serializers.Serializer):
             child=fields.ResourceField(resource_name='annotation_reports')
         )
 
-    id = fields.RootIDField()
+    id = fields.IDField()
     type = fields.CamelcaseConstField('annotations')
-    links = RootLinksSerializer(self_link_url_name='api:annotation')
+    links = ResourceLinksSerializer(source='id', self_link_url_name='api:annotation')
     attributes = Attributes()
     relationships = Relationships()
 
@@ -111,9 +110,9 @@ class AnnotationListSerializer(serializers.Serializer):
             child=fields.ResourceField(resource_name='annotation_reports')
         )
 
-    id = fields.RootIDField()
+    id = fields.IDField()
     type = fields.CamelcaseConstField('annotations')
-    links = RootLinksSerializer(self_link_url_name='api:annotation')
+    links = ResourceLinksSerializer(source='id', self_link_url_name='api:annotation')
     attributes = Attributes()
     relationships = Relationships()
 
@@ -129,5 +128,5 @@ class AnnotationPatchDeserializer(serializers.Serializer):
 
     attributes = Attributes()
 
-    #id = fields.RootIDField()
+    id = fields.IDField()
     type = fields.CamelcaseConstField('annotations')

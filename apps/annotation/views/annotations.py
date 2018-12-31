@@ -54,6 +54,7 @@ class AnnotationSingle(AnnotationBase, APIView):
 
         return Response(serializers2.AnnotationSerializer(
             instance={
+                'id': annotation,
                 'attributes': annotation,
                 'relationships': {
                     'user': annotation.user_id,
@@ -231,6 +232,7 @@ class AnnotationList(AnnotationBase, GenericAPIView):
 
         return self.get_paginated_response([
             serializers2.AnnotationListSerializer(instance={
+                'id': annotation,
                 'attributes': annotation,
                 'relationships': {
                     'annotation_upvote': annotation.user_feedback,
