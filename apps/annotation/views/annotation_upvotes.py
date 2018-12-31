@@ -5,7 +5,7 @@ from lazysignup.decorators import allow_lazy_user
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.annotation import serializers2
+from apps.annotation import serializers
 from apps.annotation.models import AnnotationUpvote
 from apps.annotation.responses import ErrorResponse, NotFoundResponse, ValidationErrorResponse
 from apps.annotation.views.decorators import allow_lazy_user_smart
@@ -13,9 +13,9 @@ from apps.annotation.views.decorators import allow_lazy_user_smart
 
 class AnnotationUpvoteSingle(APIView):
     resource_attr = None
-    serializer_class = serializers2.AnnotationUpvoteSerializer
+    serializer_class = serializers.AnnotationUpvoteSerializer
 
-    @swagger_auto_schema(responses={200: serializers2.AnnotationUpvoteSerializer})
+    @swagger_auto_schema(responses={200: serializers.AnnotationUpvoteSerializer})
     @method_decorator(allow_lazy_user)
     def get(self, request, feedback_id):
         try:
@@ -47,11 +47,11 @@ class AnnotationUpvoteSingle(APIView):
 
 class AnnotationUpvoteList(APIView):
     resource_attr = None
-    serializer_class = serializers2.AnnotationUpvoteSerializer
-    deserializer_class = serializers2.AnnotationUpvoteDeserializer
+    serializer_class = serializers.AnnotationUpvoteSerializer
+    deserializer_class = serializers.AnnotationUpvoteDeserializer
 
-    @swagger_auto_schema(request_body=serializers2.AnnotationUpvoteDeserializer,
-                         responses={200: serializers2.AnnotationUpvoteSerializer})
+    @swagger_auto_schema(request_body=serializers.AnnotationUpvoteDeserializer,
+                         responses={200: serializers.AnnotationUpvoteSerializer})
     @method_decorator(allow_lazy_user_smart)
     def post(self, request):
         deserializer = self.deserializer_class(data=request.data)
@@ -79,9 +79,9 @@ class AnnotationUpvoteList(APIView):
 
 
 class AnnotationRelatedAnnotationUpvoteSingle(APIView):
-    serializer_class = serializers2.AnnotationUpvoteSerializer
+    serializer_class = serializers.AnnotationUpvoteSerializer
 
-    @swagger_auto_schema(responses={200: serializers2.AnnotationUpvoteSerializer})
+    @swagger_auto_schema(responses={200: serializers.AnnotationUpvoteSerializer})
     @method_decorator(allow_lazy_user)
     def get(self, request, annotation_id):
         try:
