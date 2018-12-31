@@ -151,7 +151,7 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
         self.assertIsNone(AnnotationUpvote.objects.last())
         self.assertEqual(
             json.loads(response.content.decode('utf8'))['errors'][0]['source']['pointer'],
-            '/relationships/annotation/data/id'
+            '/relationships/annotation'
         )
 
         # Less and less detailed request and corresponding errors
@@ -164,7 +164,7 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
         self.assertEqual(response['content-type'], 'application/vnd.api+json', msg=response.content.decode('utf8'))
         self.assertEqual(
             json.loads(response.content.decode('utf8'))['errors'][0]['source']['pointer'],
-            '/relationships/annotation/data'
+            '/relationships/annotation'
         )
 
         post_payload['data']['relationships']['annotation'] = None
@@ -197,7 +197,9 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
                 'type': 'annotationUpvotes',
                 'relationships': {
                     'annotation': {
-                        'type': 'annotationUpvotes', 'id': None
+                        'data': {
+                            'type': 'annotations', 'id': None
+                        }
                     }
                 }
             }
@@ -211,7 +213,7 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
         self.assertIsNone(AnnotationUpvote.objects.last())
         self.assertEqual(
             json.loads(response.content.decode('utf8'))['errors'][0]['source']['pointer'],
-            '/relationships/annotation/data'
+            '/relationships/annotation'
         )
 
     # TODO: split this obsolete test to make it MORE UNIT

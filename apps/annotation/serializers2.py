@@ -174,7 +174,6 @@ class AnnotationReportDeserializer(serializers.Serializer):
             return data
 
     class Relationships(serializers.Serializer):
-
         annotation = fields.RelationField(
             related_link_url_name='api:annotation_report_related_annotation',
             child=fields.ResourceField('annotations')
@@ -194,7 +193,6 @@ class AnnotationReportSerializer(serializers.Serializer):
             extra_kwargs = {'comment': {'required': False, 'allow_blank': True}}
 
     class Relationships(serializers.Serializer):
-
         annotation = fields.RelationField(
             related_link_url_name='api:annotation_report_related_annotation',
             child=fields.ResourceField('annotations')
@@ -205,55 +203,67 @@ class AnnotationReportSerializer(serializers.Serializer):
     attributes = Attributes()
     relationships = Relationships()
 
-#
-# # Upvote
-#
-# class AnnotationUpvoteDeserializer(ResourceTypeSerializer):
-#     class Relationships(serializers.Serializer):
-#         class Annotation(RelationDeserializer):
-#             pass
-#
-#         annotation = Annotation()
-#
-#     relationships = Relationships()
-#
-#
-# class AnnotationUpvoteSerializer(ResourceSerializer):
-#     class Relationships(serializers.Serializer):
-#         class Annotation(RelationSerializer):
-#             related_link_url_name = 'api:annotation_upvote_related_annotation'
-#
-#         annotation = Annotation()
-#
-#     relationships = Relationships()
-#
-#
-# # User
-#
-# class UserSerializer(ResourceSerializer):
-#     class Attributes(serializers.Serializer):
-#         pass
-#
-#     attributes = Attributes()
-#
-# # Annotation request
-#
-# class AnnotationRequestDeserializer(ResourceTypeSerializer):
-#     class Attributes(serializers.ModelSerializer):
-#         url = StandardizedRepresentationURLField()
-#
-#         class Meta:
-#             model = AnnotationRequest
-#             fields = ('url', 'quote', 'comment', 'notification_email')
-#
-#     attributes = Attributes()
-#
-# class AnnotationRequestSerializer(ResourceSerializer, AnnotationRequestDeserializer):
-#
-#     class Attributes(AnnotationRequestDeserializer.Attributes):
-#         class Meta:
-#             model = AnnotationRequestDeserializer.Attributes.Meta.model
-#
-#             fields = AnnotationRequestDeserializer.Attributes.Meta.fields
-#
-#     attributes = Attributes()
+
+# Upvote
+
+class AnnotationUpvoteDeserializer(serializers.Serializer):
+    class Relationships(serializers.Serializer):
+        annotation = fields.RelationField(
+            related_link_url_name='api:annotation_upvote_related_annotation',
+            child=fields.ResourceField('annotations')
+        )
+
+    type = fields.CamelcaseConstField('annotation_upvotes')
+    relationships = Relationships()
+
+
+class AnnotationUpvoteSerializer(serializers.Serializer):
+    class Relationships(serializers.Serializer):
+        annotation = fields.RelationField(
+            related_link_url_name='api:annotation_upvote_related_annotation',
+            child=fields.ResourceField('annotations')
+        )
+
+    id = fields.IDField()
+    type = fields.CamelcaseConstField('annotation_upvotes')
+    relationships = Relationships()
+
+
+# User
+
+class UserSerializer(serializers.Serializer):
+    class Attributes(serializers.Serializer):
+        pass
+
+    attributes = Attributes()
+
+    id = fields.IDField()
+    type = fields.CamelcaseConstField('users')
+
+
+# Annotation request
+
+class AnnotationRequestDeserializer(serializers.Serializer):
+    class Attributes(serializers.ModelSerializer):
+        url = fields.StandardizedRepresentationURLField()
+
+        class Meta:
+            model = AnnotationRequest
+            fields = ('url', 'quote', 'comment', 'notification_email')
+
+    type = fields.CamelcaseConstField('annotation_requests')
+    attributes = Attributes()
+
+
+class AnnotationRequestSerializer(serializers.Serializer):
+
+    class Attributes(serializers.ModelSerializer):
+        url = fields.StandardizedRepresentationURLField()
+
+        class Meta:
+            model = AnnotationRequest
+            fields = ('url', 'quote', 'comment', 'notification_email')
+
+    id = fields.IDField()
+    type = fields.CamelcaseConstField('annotation_requests')
+    attributes = Attributes()

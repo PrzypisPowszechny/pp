@@ -11,9 +11,10 @@ from apps.annotation.mailgun import send_mail, MailSendException
 from apps.annotation.models import AnnotationRequest
 from apps.annotation.responses import ValidationErrorResponse
 from apps.annotation.serializers import AnnotationRequestDeserializer, AnnotationRequestSerializer
-from apps.annotation.utils import DataPreSerializer
+
 
 logger = logging.getLogger('pp.annotation')
+
 
 class AnnotationRequests(GenericAPIView):
     resource_name = 'annotation_requests'
@@ -53,5 +54,8 @@ Fragment: {}
                 str(e))
             )
 
-        instance = DataPreSerializer(annotation_request, {'attributes': annotation_request}).data
-        return Response(AnnotationRequestSerializer(instance=instance).data)
+        return Response(AnnotationRequestSerializer(
+            instance={
+                'id': annotation_request,
+                'attributes': annotation_request
+            }).data)
