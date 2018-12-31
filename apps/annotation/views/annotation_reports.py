@@ -4,6 +4,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.annotation import serializers2
 from apps.annotation.models import Annotation, AnnotationReport
 from apps.annotation.responses import ValidationErrorResponse, NotFoundResponse, ErrorResponse
 from apps.annotation.serializers import AnnotationReportSerializer, AnnotationReportDeserializer
@@ -21,12 +22,16 @@ class AnnotationReportSingle(APIView):
         except AnnotationReport.DoesNotExist:
             return NotFoundResponse()
 
-        pre_serializer = DataPreSerializer(report, {'attributes': report})
-        pre_serializer.set_relation(resource_name=get_resource_name(report, related_field='annotation_id'),
-                                    resource_id=report.annotation_id)
-        pre_serializer.set_relation(resource_name=get_resource_name(report, related_field='user_id'),
-                                    resource_id=report.user_id)
-        return Response(AnnotationReportSerializer(pre_serializer.data, context={'request': request}).data)
+        return Response(serializers2.AnnotationReportSerializer(
+            instance={
+                'id': report,
+                'attributes': report,
+                'relationships': {
+                    'annotation': report.annotation_id,
+                }
+            },
+            context={'request': request, 'root_resource_obj': report}
+        ).data)
 
 
 class AnnotationReportList(APIView):
@@ -53,12 +58,16 @@ class AnnotationReportList(APIView):
         except IntegrityError:
             return ErrorResponse('Failed to create object.')
 
-        pre_serializer = DataPreSerializer(report, {'attributes': report})
-        pre_serializer.set_relation(resource_name=get_resource_name(report, related_field='annotation_id'),
-                                    resource_id=report.annotation_id)
-        pre_serializer.set_relation(resource_name=get_resource_name(report, related_field='user_id'),
-                                    resource_id=report.user_id)
-        return Response(AnnotationReportSerializer(pre_serializer.data, context={'request': request}).data)
+        return Response(serializers2.AnnotationReportSerializer(
+            instance={
+                'id': report,
+                'attributes': report,
+                'relationships': {
+                    'annotation': report.annotation_id,
+                }
+            },
+            context={'request': request, 'root_resource_obj': report}
+        ).data)
 
 
 # TODO: add test
@@ -80,4 +89,17 @@ class AnnotationRelatedAnnotationReportList(APIView):
             pre_serializer.set_relation(resource_name=get_resource_name(report, related_field='user_id'),
                                         resource_id=report.user_id)
             data_list.append(pre_serializer.data)
-        return Response(AnnotationReportSerializer(data_list, many=True, context={'request': request}).data)
+
+        return Response([
+            serializers2.AnnotationReportSerializer(
+                instance={
+                    'id': report,
+                    'attributes': report,
+                    'relationships': {
+                        'annotation': report.annotation_id,
+                    }
+                },
+                context={'request': request, 'root_resource_obj': report}
+            ).data
+            for report in reports])
+

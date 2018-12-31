@@ -1,7 +1,10 @@
 from django.urls import reverse
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from apps.annotation import fields
+from apps.annotation.consts import SUGGESTED_CORRECTION
+from apps.annotation.models import AnnotationReport, AnnotationRequest
 from .models import Annotation, AnnotationUpvote
 
 
@@ -17,6 +20,8 @@ class ResourceLinksSerializer(serializers.Serializer):
         obj_id = getattr(instance, 'id', None) or instance
         return self.context['request'].build_absolute_uri(reverse(self.self_link_url_name, args=[obj_id]))
 
+
+# Annotation
 
 class AnnotationSerializer(serializers.Serializer):
 
@@ -148,3 +153,107 @@ class AnnotationPatchDeserializer(serializers.Serializer):
     id = fields.IDField()
     type = fields.CamelcaseConstField('annotations')
     attributes = Attributes()
+
+
+# Report
+
+
+class AnnotationReportDeserializer(serializers.Serializer):
+    class Attributes(serializers.ModelSerializer):
+
+        class Meta:
+            model = AnnotationReport
+            fields = ('reason', 'comment')
+            extra_kwargs = {'comment': {'required': False, 'allow_blank': True}}
+
+        def validate(self, data):
+            if data.get('reason') is SUGGESTED_CORRECTION and not data.get('comment'):
+                raise ValidationError({
+                    'comment': 'Comment is required for report "%s" reason' % SUGGESTED_CORRECTION}
+                )
+            return data
+
+    class Relationships(serializers.Serializer):
+
+        annotation = fields.RelationField(
+            related_link_url_name='api:annotation_report_related_annotation',
+            child=fields.ResourceField('annotations')
+        )
+
+    type = fields.CamelcaseConstField('annotation_reports')
+    attributes = Attributes()
+    relationships = Relationships()
+
+
+class AnnotationReportSerializer(serializers.Serializer):
+
+    class Attributes(serializers.ModelSerializer):
+        class Meta:
+            model = AnnotationReport
+            fields = ('reason', 'comment')
+            extra_kwargs = {'comment': {'required': False, 'allow_blank': True}}
+
+    class Relationships(serializers.Serializer):
+
+        annotation = fields.RelationField(
+            related_link_url_name='api:annotation_report_related_annotation',
+            child=fields.ResourceField('annotations')
+        )
+
+    id = fields.IDField()
+    type = fields.CamelcaseConstField('annotation_reports')
+    attributes = Attributes()
+    relationships = Relationships()
+
+#
+# # Upvote
+#
+# class AnnotationUpvoteDeserializer(ResourceTypeSerializer):
+#     class Relationships(serializers.Serializer):
+#         class Annotation(RelationDeserializer):
+#             pass
+#
+#         annotation = Annotation()
+#
+#     relationships = Relationships()
+#
+#
+# class AnnotationUpvoteSerializer(ResourceSerializer):
+#     class Relationships(serializers.Serializer):
+#         class Annotation(RelationSerializer):
+#             related_link_url_name = 'api:annotation_upvote_related_annotation'
+#
+#         annotation = Annotation()
+#
+#     relationships = Relationships()
+#
+#
+# # User
+#
+# class UserSerializer(ResourceSerializer):
+#     class Attributes(serializers.Serializer):
+#         pass
+#
+#     attributes = Attributes()
+#
+# # Annotation request
+#
+# class AnnotationRequestDeserializer(ResourceTypeSerializer):
+#     class Attributes(serializers.ModelSerializer):
+#         url = StandardizedRepresentationURLField()
+#
+#         class Meta:
+#             model = AnnotationRequest
+#             fields = ('url', 'quote', 'comment', 'notification_email')
+#
+#     attributes = Attributes()
+#
+# class AnnotationRequestSerializer(ResourceSerializer, AnnotationRequestDeserializer):
+#
+#     class Attributes(AnnotationRequestDeserializer.Attributes):
+#         class Meta:
+#             model = AnnotationRequestDeserializer.Attributes.Meta.model
+#
+#             fields = AnnotationRequestDeserializer.Attributes.Meta.fields
+#
+#     attributes = Attributes()
