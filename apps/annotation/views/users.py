@@ -7,7 +7,6 @@ from rest_framework.views import APIView
 
 from apps.annotation.responses import NotFoundResponse
 from apps.annotation.serializers import UserSerializer
-from apps.annotation.utils import DataPreSerializer
 
 User = get_user_model()
 
@@ -22,8 +21,8 @@ class UserSingle(APIView):
         except User.DoesNotExist:
             return NotFoundResponse()
 
-        pre_serializer = DataPreSerializer(other_user, {'attributes': other_user})
-        return Response(UserSerializer(pre_serializer.data, context={'request': request}).data)
+        return Response(UserSerializer(instance={'id': other_user, 'attributes': other_user},
+                                       context={'request': request}).data)
 
 
 class AnnotationRelatedUserSingle(APIView):
@@ -35,5 +34,5 @@ class AnnotationRelatedUserSingle(APIView):
         except User.DoesNotExist:
             return NotFoundResponse()
 
-        pre_serializer = DataPreSerializer(other_user, {'attributes': other_user})
-        return Response(UserSerializer(pre_serializer.data, context={'request': request}).data)
+        return Response(UserSerializer(instance={'id': other_user, 'attributes': other_user},
+                                       context={'request': request}).data)

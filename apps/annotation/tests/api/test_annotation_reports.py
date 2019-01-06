@@ -114,7 +114,7 @@ class AnnotationReportAPITest(TestCase):
                 'relationships': {
                     'annotation': {
                         'data': {
-                            'type': 'annotationReports',
+                            'type': 'annotations',
                             'id': str(annotation.id)
                         }
                     }

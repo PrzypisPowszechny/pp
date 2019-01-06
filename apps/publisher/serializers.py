@@ -11,7 +11,7 @@ class StatementDeserializer(serializers.Serializer):
     class Attributes(serializers.Serializer):
         sources = serializers.ListField(child=serializers.URLField(), allow_empty=False)
         text = serializers.CharField()
-        timestamp_factcheck = serializers.DateTimeField(required=True)
+        timestamp_factcheck = serializers.DateTimeField()
         rating = serializers.ChoiceField(choices=[(val.lower(), label) for val, label in Annotation.DEMAGOG_CATEGORIES])
         rating_text = serializers.CharField()
         factchecker_uri = serializers.URLField()
