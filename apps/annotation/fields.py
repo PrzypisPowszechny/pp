@@ -1,11 +1,77 @@
+"""
+
+An intro to REST framework serializers' serialization & deserialization flow that will help to play with defining
+new fields.
+
+class ChildSerializer(serializers.Serializer):
+    my_char_field = serializers.CharField()
+
+class ParentSerializer(serializers.Serializer):
+    my_child_serializer = ChildSerializer()
+
+
+Deserializing flow:
+
+serializer = ParentSerializer(data={...})
+serializer.is_valid()
+
+-> in ParentSerializer.is_valid()
+    ParentSerializer.run_validation(data=self.data)
+
+    -> in ParentSerializer.run_validation(data)
+        data = ParentSerializer.validate_empty_values(data)
+        ParentSerializer.to_internal_value(data)
+
+        -> in ParentSerializer.to_internal_value(data)
+            value = ChildSerializer.get_value(dictionary=data) // returns dictionary[self.field_name]
+            value = ChildSerializer.run_validation(data=value)
+
+            -> in ChildSerializer.run_validation(data)
+                data = ChildSerializer.validate_empty_values(data)
+                ChildSerializer.to_internal_value(data)
+
+                -> in ChildSerializer.to_internal_value(data)
+                    value = Field.get_value(dictionary=data) // returns dictionary[self.field_name]
+                    value = Field.run_validation(data=value)
+
+                    -> in Field.run_validation(data)
+                        data = field.validate_empty_values(data)
+                        Field.to_internal_value(data)
+
+                        -> in Field.to_internal_value(data)
+                            return data
+
+Serializing flow:
+
+response_data = serializer(instance=MyModel).data
+
+-> in @property ParentSerializer.data
+    ParentSerializer.to_representation(instance)
+
+    -> in ParentSerializer.to_representation (instance)
+        attribute = ChildSerializer.get_attribute(instance) // returns instance.get(self.field_name)
+                                                            //  or getattr(instance, self.field_name)
+        return if attribute is None
+        ChildSerializer.to_representation(instance=attribute)
+
+        -> in ChildSerializer.get_attribute(instance)
+            attribute = ChildSerializer.get_attribute(instance) // returns instance.get(self.field_name)
+                                                                //  or getattr(instance, self.field_name)
+            return if attribute is None
+            Field.to_representation(value=attribute)
+
+            -> in Field.to_representation(value)
+                return value
+
+
+"""
 import copy
 import json
 
 import inflection
 from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
-from rest_framework import serializers
-from rest_framework.fields import _UnvalidatedField
+from rest_framework import serializers, fields
 
 from apps.annotation.utils import standardize_url
 
@@ -118,13 +184,41 @@ class ResourceField(serializers.Field):
         }
 
 
-# Universal constant for marking the value of none relation (which does not mean whole output of field is =None).
-# It does not change reference even if called (as class-based const does).
-relation_none = lambda: relation_none
+def relation_none():
+    """
+    In short: universal constant for marking the value of none relation
+              which doesn't mean whole output of field is None.
+
+    It does not change reference even if called (as class-based const does).
+
+
+    We assume such scenario:
+
+        class MySerializer(serializers.Serializer):
+            my_field = serializers.CharField(default=...)
+
+        response_data = MySerializer(instance=...).data
+
+
+    Thorough comparison of values of default argument:
+
+        `empty` –  argument was ignored, default is undefined. If value for serialization isn't supplied
+                   error will be raised during serialization.
+        `None`  –  default is `None` which is interpreted by serializer that the value for the field is not required
+                   (no exception) but no value will be present in the output, the field will be omitted
+
+    so here comes relation_none:
+
+        `relation_none` – default is supplied and is not equal to None, so the field is not omitted by the serializer
+                          and field itself can decide what is it's "none output` by implementing in `to_representation`
+                          following flow: `if value is relation_none`
+
+    """
+    return relation_none
 
 
 class RelationField(serializers.Field):
-    child = _UnvalidatedField()
+    child = fields._UnvalidatedField()
     link_child_class = URLNameField
 
     default_error_messages = {
