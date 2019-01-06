@@ -81,7 +81,7 @@ class RelationSerializerTest(TestCase):
                 data = serializer.data
 
     def test_relation_serializer__single__key_missing__default(self):
-        serializer_class = self.get_serializer_class(kwargs={'default': fields.relation_none})
+        serializer_class = self.get_serializer_class(kwargs={'default': fields.custom_none})
         mock_request = MagicMock(build_absolute_uri=lambda val: val)
 
         with patch('apps.annotation.fields.reverse', return_value=self.fake_url):
@@ -159,7 +159,7 @@ class RelationSerializerTest(TestCase):
                 data = serializer.data
 
     def test_relation_serializer__many__key_missing__default(self):
-        serializer_class = self.get_serializer_class(kwargs={'many': True, 'default': fields.relation_none})
+        serializer_class = self.get_serializer_class(kwargs={'many': True, 'default': fields.custom_none})
         mock_request = MagicMock(build_absolute_uri=lambda val: val)
 
         with patch('apps.annotation.fields.reverse', return_value=self.fake_url):
@@ -214,7 +214,7 @@ class RelationSerializerTest(TestCase):
             self.assertTrue('my_relation' in serializer.errors, msg=serializer.errors)
 
     def test_relation_deserializer__single__key_missing__default(self):
-        serializer_class = self.get_serializer_class(kwargs={'default': fields.relation_none})
+        serializer_class = self.get_serializer_class(kwargs={'default': fields.custom_none})
 
         with patch('apps.annotation.fields.reverse', return_value=self.fake_url):
             serializer = serializer_class(data={})
@@ -256,7 +256,7 @@ class RelationSerializerTest(TestCase):
             self.assertTrue('my_relation' in serializer.errors, msg=serializer.errors)
 
     def test_relation_deserializer__many__key_missing__default(self):
-        serializer_class = self.get_serializer_class(kwargs={'many': True, 'default': fields.relation_none})
+        serializer_class = self.get_serializer_class(kwargs={'many': True, 'default': fields.custom_none})
 
         with patch('apps.annotation.fields.reverse', return_value=self.fake_url):
             serializer = serializer_class(data={})

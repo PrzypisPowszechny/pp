@@ -184,7 +184,7 @@ class ResourceField(serializers.Field):
         }
 
 
-def relation_none():
+class custom_none:
     """
     In short: universal constant for marking the value of none relation
               which doesn't mean whole output of field is None.
@@ -202,19 +202,25 @@ def relation_none():
 
     Thorough comparison of values of default argument:
 
-        `empty` –  argument was ignored, default is undefined. If value for serialization isn't supplied
+        `not in (empty, None)` –  default is supplied, it will be passed to `to_representation` where the field
+                   will transform internal value to representation.
+        `empty` –  argument `default` was ignored and is undefined. If value for serialization isn't supplied
                    error will be raised during serialization.
-        `None`  –  default is `None` which is interpreted by serializer that the value for the field is not required
-                   (no exception) but no value will be present in the output, the field will be omitted
+        `None`  –  default is supplied but is interpreted by serializer that the value for the field is not required
+                   (no exception). Output will be set just to None without passing it to `to_representation`
+                   where field transforms internal values to representation.
 
-    so here comes relation_none:
 
-        `relation_none` – default is supplied and is not equal to None, so the field is not omitted by the serializer
+    so here comes custom_none:
+
+        `custom_none` – default is supplied and is not equal to None, so the field is not omitted by the serializer
                           and field itself can decide what is it's "none output` by implementing in `to_representation`
-                          following flow: `if value is relation_none`
+                          following flow: `if value is custom_none`
 
     """
-    return relation_none
+
+    def __new__(cls, *args, **kwargs):
+        return custom_none
 
 
 class RelationField(serializers.Field):
@@ -240,19 +246,19 @@ class RelationField(serializers.Field):
 
     def get_default(self):
         default = super().get_default()
-        # relation_none -> None
-        # The internal value for relation_none is None.
-        if default is relation_none:
+        # custom_none -> None
+        # The internal value for custom_none is None.
+        if default is custom_none:
             return [] if self.many else None
         return default
 
     def get_attribute(self, instance):
         attribute = super().get_attribute(instance)
-        # None -> relation_none
+        # None -> custom_none
         # Attribute is not missing, but it's None, so we want to set none-relation instead, which outputs more than None
-        # value. To do that we override attribute with `relation_none`, so that we can add proper representation later.
+        # value. To do that we override attribute with `custom_none`, so that we can add proper representation later.
         if attribute is None:
-            return relation_none
+            return custom_none
         return attribute
 
     def to_internal_value(self, data):
@@ -265,7 +271,7 @@ class RelationField(serializers.Field):
     def to_representation(self, instance):
         root_obj_id = getattr(self.context['root_resource_obj'], 'id', None) or self.context['root_resource_obj']
 
-        if instance is relation_none:
+        if instance is custom_none:
             data_value = [] if self.many else None
         else:
             data_value = self.child.to_representation(instance)
