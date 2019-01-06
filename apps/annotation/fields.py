@@ -14,53 +14,65 @@ Deserializing flow:
 
 serializer = ParentSerializer(data={...})
 serializer.is_valid()
-
 -> in ParentSerializer.is_valid()
+
     ParentSerializer.run_validation(data=self.data)
-
     -> in ParentSerializer.run_validation(data)
-        data = ParentSerializer.validate_empty_values(data)
-        ParentSerializer.to_internal_value(data)
 
+        data = ParentSerializer.validate_empty_values(data)
+        -> in ParentSerializer.validate_empty_values(data)
+
+            if data in (empty, None) return self.get_default() // break; do not call ParentSerializer.to_internal_value
+        ParentSerializer.to_internal_value(data)
         -> in ParentSerializer.to_internal_value(data)
+
             value = ChildSerializer.get_value(dictionary=data) // returns dictionary[self.field_name]
             value = ChildSerializer.run_validation(data=value)
-
             -> in ChildSerializer.run_validation(data)
-                data = ChildSerializer.validate_empty_values(data)
-                ChildSerializer.to_internal_value(data)
 
+                data = ChildSerializer.validate_empty_values(data)
+                -> in ChildSerializer.validate_empty_values(data)
+
+                    if data in (empty, None) return self.get_default() // break; don't continue with to_internal_value
+                ChildSerializer.to_internal_value(data)
                 -> in ChildSerializer.to_internal_value(data)
+
                     value = Field.get_value(dictionary=data) // returns dictionary[self.field_name]
                     value = Field.run_validation(data=value)
-
                     -> in Field.run_validation(data)
-                        data = field.validate_empty_values(data)
-                        Field.to_internal_value(data)
 
+                        if data in (empty, None) return self.get_default()
+                        -> in Field.validate_empty_values(data)
+
+                            if data in (empty, None) return self.get_default() // break; don't continue with to_internal_value
+                        Field.to_internal_value(data)
                         -> in Field.to_internal_value(data)
+
                             return data
 
 Serializing flow:
 
 response_data = serializer(instance=MyModel).data
-
 -> in @property ParentSerializer.data
+
     ParentSerializer.to_representation(instance)
-
     -> in ParentSerializer.to_representation (instance)
-        attribute = ChildSerializer.get_attribute(instance) // returns instance.get(self.field_name)
-                                                            //  or getattr(instance, self.field_name)
-        return if attribute is None
-        ChildSerializer.to_representation(instance=attribute)
 
+        // return instance.get(self.field_name) or getattr(instance, self.field_name)
+        attribute = ChildSerializer.get_attribute(instance)
         -> in ChildSerializer.get_attribute(instance)
-            attribute = ChildSerializer.get_attribute(instance) // returns instance.get(self.field_name)
-                                                                //  or getattr(instance, self.field_name)
-            return if attribute is None
-            Field.to_representation(value=attribute)
 
+            return instance.get(self.field_name) or getattr(instance, self.field_name) or self.get_default()
+        if attribute is not None: ChildSerializer.to_representation(instance=attribute)
+        -> in ChildSerializer.to_representation(instance)
+
+            attribute = Field.get_attribute(instance)
+            -> in Field.get_attribute(instance)
+
+                return instance.get(self.field_name) or getattr(instance, self.field_name) or self.get_default()
+            if attribute is not None: Field.to_representation(value=attribute)
             -> in Field.to_representation(value)
+
                 return value
 
 
@@ -77,8 +89,19 @@ from apps.annotation.utils import standardize_url
 
 
 class IDField(serializers.IntegerField):
+    """
+    Field for strings containing valid integers and for pure None
+    """
+
+    def to_internal_value(self, data):
+        if data is None:
+            return None
+        return super().to_internal_value(data)
+
     def to_representation(self, value):
         value = getattr(value, 'id', None) or value
+        if value is None:
+            return None
         value = super().to_representation(value)
         return str(value)
 
@@ -178,6 +201,8 @@ class ResourceField(serializers.Field):
         return value
 
     def to_representation(self, value):
+        if value is None:
+            return None
         return {
             'type': self.type_subfield.to_representation(None),
             'id': self.id_subfield.to_representation(value)
@@ -214,13 +239,25 @@ class custom_none:
     so here comes custom_none:
 
         `custom_none` – default is supplied and is not equal to None, so the field is not omitted by the serializer
-                          and field itself can decide what is it's "none output` by implementing in `to_representation`
-                          following flow: `if value is custom_none`
+                        and field itself can decide what is it's "none output` by implementing in `to_representation`
+                        following flow: `if value is custom_none`
 
     """
 
     def __new__(cls, *args, **kwargs):
         return custom_none
+
+
+class Default:
+    def __init__(self, run):
+        self.serializer = None
+        self.run = run
+
+    def __call__(self):
+        self.run(self)
+
+    def set_context(self, serializer):
+        self.serializer = serializer
 
 
 class RelationField(serializers.Field):
@@ -244,24 +281,25 @@ class RelationField(serializers.Field):
         self.link_child.bind(field_name='', parent=self)
         super().__init__(**kwargs)
 
-    def get_default(self):
-        default = super().get_default()
-        # custom_none -> None
-        # The internal value for custom_none is None.
-        if default is custom_none:
-            return [] if self.many else None
-        return default
+    def validate_empty_values(self, data):
+        """
+        If during validation field defaulted to `custom_none`, mark it as non empty value, so that it will processed
+        further to to_internal_value.
+        """
+        is_empty_value, data = super().validate_empty_values(data)
+        return is_empty_value and data != custom_none, data
 
     def get_attribute(self, instance):
+        """
+        This fields has representation for `None` as well, so set temporary `custom_none` that will be treated as `None`
+        and properly handled by to_representation.
+        """
         attribute = super().get_attribute(instance)
-        # None -> custom_none
-        # Attribute is not missing, but it's None, so we want to set none-relation instead, which outputs more than None
-        # value. To do that we override attribute with `custom_none`, so that we can add proper representation later.
-        if attribute is None:
-            return custom_none
-        return attribute
+        return self.to_custom_none(attribute)
 
     def to_internal_value(self, data):
+        if data is custom_none:
+            return self.child.run_validation(self.from_custom_none(data))
         if not isinstance(data, dict):
             self.fail('not_a_dict', input_type=type(data).__name__)
         if 'data' not in data:
@@ -269,12 +307,13 @@ class RelationField(serializers.Field):
         return self.child.run_validation(data['data'])
 
     def to_representation(self, instance):
-        root_obj_id = getattr(self.context['root_resource_obj'], 'id', None) or self.context['root_resource_obj']
+        instance = self.from_custom_none(instance)
 
-        if instance is custom_none:
-            data_value = [] if self.many else None
-        else:
-            data_value = self.child.to_representation(instance)
+        root_obj_id = getattr(self.context['root_resource_obj'], 'id', None) or self.context.get('root_resource_obj')
+        assert isinstance(root_obj_id, (str, int)), "{cls} requires root_resource_obj (id or obj with id attr) to be " \
+                                                    "supplied in context' ".format(cls=self.__class__.__name__)
+
+        data_value = self.child.to_representation(instance)
 
         return {
             'data': data_value,
@@ -282,3 +321,11 @@ class RelationField(serializers.Field):
                 'related': self.link_child.to_representation(root_obj_id)
             }
         }
+
+    def to_custom_none(self, value):
+        return custom_none if value is None else value
+
+    def from_custom_none(self, value):
+        if value is custom_none:
+            return [] if self.many else None
+        return value

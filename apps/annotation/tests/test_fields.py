@@ -58,7 +58,8 @@ class RelationSerializerTest(TestCase):
             )
             self.assertDictEqual(serializer.data, {
                 'my_relation': {
-                    'data': None,
+                    # This field type is char, so None is converted to char as well
+                    'data': 'None',
                     'links': {
                         'related': self.fake_url
                     }
@@ -94,7 +95,8 @@ class RelationSerializerTest(TestCase):
             )
             self.assertDictEqual(serializer.data, {
                 'my_relation': {
-                    'data': None,
+                    # This field type is char, so None is converted to char as well
+                    'data': 'None',
                     'links': {
                         'related': self.fake_url
                     }
@@ -214,7 +216,8 @@ class RelationSerializerTest(TestCase):
             self.assertTrue('my_relation' in serializer.errors, msg=serializer.errors)
 
     def test_relation_deserializer__single__key_missing__default(self):
-        serializer_class = self.get_serializer_class(kwargs={'default': fields.custom_none})
+        serializer_class = self.get_serializer_class(kwargs={'default': fields.custom_none},
+                                                     kwargs_child={'allow_null': True})
 
         with patch('apps.annotation.fields.reverse', return_value=self.fake_url):
             serializer = serializer_class(data={})
