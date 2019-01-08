@@ -7,53 +7,55 @@ from mock import patch, MagicMock
 
 
 class RelationSerializerTest(TestCase):
-    fake_root_id = 123
-    fake_url_name = 'fake_url_name'
-    fake_url = 'fake://fake.fake/fake-root-resource/{root_id}/fake-related-resource'.format(root_id=fake_root_id)
-    fake_resource_name = 'fake_resources'
-    any_char = 'any-fake-char'
+    my_root_id = 123
+    my_url_name = 'an_url_name'
+    my_url = 'http://example.com/root_resources/{root_id}/related_resource'.format(root_id=my_root_id)
+    my_resource_name = 'my_resources'
+    my_string = 'unique-char-data'
 
     def get_serializer_class(self, kwargs=None, kwargs_child=None):
         class Relations(serializers.Serializer):
             my_relation = fields.RelationField(
-                related_link_url_name=self.fake_url_name,
+                related_link_url_name=self.my_url_name,
                 child=serializers.CharField(**(kwargs_child if kwargs_child is not None else {})),
                 **(kwargs if kwargs is not None else {})
             )
         return Relations
 
-    def test_relation_serializer(self):
+    # Serializer Single
+
+    def test_single(self):
         serializer_class = self.get_serializer_class()
         mock_request = MagicMock(build_absolute_uri=lambda val: val)
 
-        with patch('apps.annotation.fields.reverse', return_value=self.fake_url) as reverse_mock:
+        with patch('apps.annotation.fields.reverse', return_value=self.my_url) as reverse_mock:
             serializer = serializer_class(
-                instance={'my_relation': self.any_char},
+                instance={'my_relation': self.my_string},
                 context={
                     'request': mock_request,
-                    'root_resource_obj': self.fake_root_id
+                    'root_resource_obj': self.my_root_id
                 }
             )
             self.assertDictEqual(serializer.data, {
                 'my_relation': {
-                    'data': self.any_char,
+                    'data': self.my_string,
                     'links': {
-                        'related': self.fake_url
+                        'related': self.my_url
                     }
                 }
             })
-            reverse_mock.assert_called_once_with(self.fake_url_name, args=[self.fake_root_id])
+            reverse_mock.assert_called_once_with(self.my_url_name, args=[self.my_root_id])
 
-    def test_relation_serializer__single__none(self):
+    def test_single__none(self):
         serializer_class = self.get_serializer_class()
         mock_request = MagicMock(build_absolute_uri=lambda val: val)
 
-        with patch('apps.annotation.fields.reverse', return_value=self.fake_url):
+        with patch('apps.annotation.fields.reverse', return_value=self.my_url):
             serializer = serializer_class(
                 instance={'my_relation': None},
                 context={
                     'request': mock_request,
-                    'root_resource_obj': self.fake_root_id
+                    'root_resource_obj': self.my_root_id
                 }
             )
             self.assertDictEqual(serializer.data, {
@@ -61,36 +63,50 @@ class RelationSerializerTest(TestCase):
                     # This field type is char, so None is converted to char as well
                     'data': 'None',
                     'links': {
-                        'related': self.fake_url
+                        'related': self.my_url
                     }
                 }
             })
 
-    def test_relation_serializer__single__key_missing(self):
+    def test_single__key_missing(self):
         serializer_class = self.get_serializer_class()
         mock_request = MagicMock(build_absolute_uri=lambda val: val)
 
-        with patch('apps.annotation.fields.reverse', return_value=self.fake_url):
+        with patch('apps.annotation.fields.reverse', return_value=self.my_url):
             serializer = serializer_class(
                 instance={},
                 context={
                     'request': mock_request,
-                    'root_resource_obj': self.fake_root_id
+                    'root_resource_obj': self.my_root_id
                 }
             )
             with self.assertRaises(KeyError):
                 data = serializer.data
 
-    def test_relation_serializer__single__key_missing__default(self):
-        serializer_class = self.get_serializer_class(kwargs={'default': fields.custom_none})
+    def test_single__key_missing__not_required(self):
+        serializer_class = self.get_serializer_class(kwargs={'required': False})
         mock_request = MagicMock(build_absolute_uri=lambda val: val)
 
-        with patch('apps.annotation.fields.reverse', return_value=self.fake_url):
+        with patch('apps.annotation.fields.reverse', return_value=self.my_url):
             serializer = serializer_class(
                 instance={},
                 context={
                     'request': mock_request,
-                    'root_resource_obj': self.fake_root_id
+                    'root_resource_obj': self.my_root_id
+                }
+            )
+            self.assertDictEqual(serializer.data,  {})
+
+    def test_single__key_missing__default(self):
+        serializer_class = self.get_serializer_class(kwargs={'default': fields.custom_none})
+        mock_request = MagicMock(build_absolute_uri=lambda val: val)
+
+        with patch('apps.annotation.fields.reverse', return_value=self.my_url):
+            serializer = serializer_class(
+                instance={},
+                context={
+                    'request': mock_request,
+                    'root_resource_obj': self.my_root_id
                 }
             )
             self.assertDictEqual(serializer.data, {
@@ -98,107 +114,109 @@ class RelationSerializerTest(TestCase):
                     # This field type is char, so None is converted to char as well
                     'data': 'None',
                     'links': {
-                        'related': self.fake_url
+                        'related': self.my_url
                     }
                 }
             })
 
-    def test_relation_serializer__many(self):
+    # Serializer Many
+
+    def test_many(self):
         serializer_class = self.get_serializer_class(kwargs={'many': True})
         mock_request = MagicMock(build_absolute_uri=lambda val: val)
 
-        with patch('apps.annotation.fields.reverse', return_value=self.fake_url):
+        with patch('apps.annotation.fields.reverse', return_value=self.my_url):
             serializer = serializer_class(
-                instance={'my_relation': [self.any_char]},
+                instance={'my_relation': [self.my_string]},
                 context={
                     'request': mock_request,
-                    'root_resource_obj': self.fake_root_id
+                    'root_resource_obj': self.my_root_id
                 }
             )
             self.assertDictEqual(serializer.data, {
                 'my_relation': {
-                    'data': [self.any_char],
+                    'data': [self.my_string],
                     'links': {
-                        'related': self.fake_url
+                        'related': self.my_url
                     }
                 }
             })
 
-    def test_relation_serializer__many__empty_list(self):
+    def test_many__empty_list(self):
         serializer_class = self.get_serializer_class(kwargs={'many': True})
         mock_request = MagicMock(build_absolute_uri=lambda val: val)
 
-        with patch('apps.annotation.fields.reverse', return_value=self.fake_url):
+        with patch('apps.annotation.fields.reverse', return_value=self.my_url):
             serializer = serializer_class(
                 instance={'my_relation': []},
                 context={
                     'request': mock_request,
-                    'root_resource_obj': self.fake_root_id
+                    'root_resource_obj': self.my_root_id
                 }
             )
             self.assertDictEqual(serializer.data, {
                 'my_relation': {
                     'data': [],
                     'links': {
-                        'related': self.fake_url
+                        'related': self.my_url
                     }
                 }
             })
 
-    def test_relation_serializer__many__key_missing(self):
+    def test_many__key_missing(self):
         serializer_class = self.get_serializer_class(kwargs={'many': True})
         mock_request = MagicMock(build_absolute_uri=lambda val: val)
 
-        with patch('apps.annotation.fields.reverse', return_value=self.fake_url):
+        with patch('apps.annotation.fields.reverse', return_value=self.my_url):
             serializer = serializer_class(
                 instance={},
                 context={
                     'request': mock_request,
-                    'root_resource_obj': self.fake_root_id
+                    'root_resource_obj': self.my_root_id
                 }
             )
             with self.assertRaises(KeyError):
                 data = serializer.data
 
-    def test_relation_serializer__many__key_missing__default(self):
+    def test_many__key_missing__default(self):
         serializer_class = self.get_serializer_class(kwargs={'many': True, 'default': fields.custom_none})
         mock_request = MagicMock(build_absolute_uri=lambda val: val)
 
-        with patch('apps.annotation.fields.reverse', return_value=self.fake_url):
+        with patch('apps.annotation.fields.reverse', return_value=self.my_url):
             serializer = serializer_class(
                 instance={},
                 context={
                     'request': mock_request,
-                    'root_resource_obj': self.fake_root_id
+                    'root_resource_obj': self.my_root_id
                 }
             )
             self.assertDictEqual(serializer.data, {
                 'my_relation': {
                     'data': [],
                     'links': {
-                        'related': self.fake_url
+                        'related': self.my_url
                     }
                 }
             })
 
-    # Deserializer
+    # Deserializer Single
 
-    def test_relation_deserializer__single(self):
+    def test_deserializer_single(self):
         serializer_class = self.get_serializer_class()
 
-        with patch('apps.annotation.fields.reverse', return_value=self.fake_url):
+        with patch('apps.annotation.fields.reverse', return_value=self.my_url):
             serializer = serializer_class(data={
                 'my_relation': {
-                    'data': self.any_char,
+                    'data': self.my_string,
                 },
             })
             self.assertTrue(serializer.is_valid(), msg=serializer.errors)
-            self.assertDictEqual(serializer.validated_data, {'my_relation': self.any_char})
+            self.assertDictEqual(serializer.validated_data, {'my_relation': self.my_string})
 
-    def test_relation_deserializer__single__none(self):
+    def test_deserializer_single__none(self):
         serializer_class = self.get_serializer_class(kwargs_child={'allow_null': True})
 
-        with patch('apps.annotation.fields.reverse', return_value=self.fake_url):
+        with patch('apps.annotation.fields.reverse', return_value=self.my_url):
             serializer = serializer_class(data={
                 'my_relation': {
                     'data': None,
@@ -207,29 +225,31 @@ class RelationSerializerTest(TestCase):
             self.assertTrue(serializer.is_valid(), msg=serializer.errors)
             self.assertDictEqual(serializer.validated_data, {'my_relation': None})
 
-    def test_relation_deserializer__single__key_missing(self):
+    def test_deserializer_single__key_missing(self):
         serializer_class = self.get_serializer_class()
 
-        with patch('apps.annotation.fields.reverse', return_value=self.fake_url):
+        with patch('apps.annotation.fields.reverse', return_value=self.my_url):
             serializer = serializer_class(data={})
             self.assertFalse(serializer.is_valid())
             self.assertTrue('my_relation' in serializer.errors, msg=serializer.errors)
 
-    def test_relation_deserializer__single__key_missing__default(self):
+    def test_deserializer_single__key_missing__default(self):
         serializer_class = self.get_serializer_class(kwargs={'default': fields.custom_none},
                                                      kwargs_child={'allow_null': True})
 
-        with patch('apps.annotation.fields.reverse', return_value=self.fake_url):
+        with patch('apps.annotation.fields.reverse', return_value=self.my_url):
             serializer = serializer_class(data={})
             self.assertTrue(serializer.is_valid(), msg=serializer.errors)
             self.assertDictEqual(serializer.validated_data, {
                 'my_relation': None
             })
 
-    def test_relation_deserializer__many(self):
+    # Deserializer Many
+
+    def test_deserializer_many(self):
         serializer_class = self.get_serializer_class(kwargs={'many': True})
 
-        with patch('apps.annotation.fields.reverse', return_value=self.fake_url):
+        with patch('apps.annotation.fields.reverse', return_value=self.my_url):
             serializer = serializer_class(data={
                 'my_relation': {
                     'data': [],
@@ -238,30 +258,30 @@ class RelationSerializerTest(TestCase):
             self.assertTrue(serializer.is_valid(), msg=serializer.errors)
             self.assertDictEqual(serializer.validated_data, {'my_relation': []})
 
-    def test_relation_deserializer__many__empty_list(self):
+    def test_deserializer_many__empty_list(self):
         serializer_class = self.get_serializer_class(kwargs={'many': True})
 
-        with patch('apps.annotation.fields.reverse', return_value=self.fake_url):
+        with patch('apps.annotation.fields.reverse', return_value=self.my_url):
             serializer = serializer_class(data={
                 'my_relation': {
-                    'data': [self.any_char],
+                    'data': [self.my_string],
                 },
             })
             self.assertTrue(serializer.is_valid(), msg=serializer.errors)
-            self.assertDictEqual(serializer.validated_data, {'my_relation': [self.any_char]})
+            self.assertDictEqual(serializer.validated_data, {'my_relation': [self.my_string]})
 
-    def test_relation_deserializer__many__key_missing(self):
+    def test_deserializer_many__key_missing(self):
         serializer_class = self.get_serializer_class(kwargs={'many': True})
 
-        with patch('apps.annotation.fields.reverse', return_value=self.fake_url):
+        with patch('apps.annotation.fields.reverse', return_value=self.my_url):
             serializer = serializer_class(data={})
             self.assertFalse(serializer.is_valid())
             self.assertTrue('my_relation' in serializer.errors, msg=serializer.errors)
 
-    def test_relation_deserializer__many__key_missing__default(self):
+    def test_deserializer_many__key_missing__default(self):
         serializer_class = self.get_serializer_class(kwargs={'many': True, 'default': fields.custom_none})
 
-        with patch('apps.annotation.fields.reverse', return_value=self.fake_url):
+        with patch('apps.annotation.fields.reverse', return_value=self.my_url):
             serializer = serializer_class(data={})
             self.assertTrue(serializer.is_valid(), msg=serializer.errors)
             self.assertDictEqual(serializer.validated_data, {
@@ -269,58 +289,37 @@ class RelationSerializerTest(TestCase):
             })
 
 
-class ResourceRelationTest(TestCase):
-    fake_url_name = 'fake_url_name'
-    fake_url = 'fake://fake.fake/fake/'
-    fake_resource_name = 'fake_resources'
-    fake_root_id = 123
-    fake_related_id = 987
+class ResourceTest(TestCase):
+    my_resource_name = 'my_resources'
+    my_related_id = 987
 
     def get_serializer_class(self, **kwargs):
-        class Relations(serializers.Serializer):
-            my_relation = fields.RelationField(
-                related_link_url_name=self.fake_url_name,
-                child=fields.ResourceField(resource_name=self.fake_resource_name),
-                **kwargs
-            )
-        return Relations
+        class Resources(serializers.Serializer):
+            my_resource_data = fields.ResourceField(resource_name=self.my_resource_name)
 
-    # @parameterized.expand([(x,y])
-    def test_relation_serializer(self):
-        serializer_class = self.get_serializer_class()
-        mock_request = MagicMock(build_absolute_uri=lambda val: val)
+        return Resources
 
-        with patch('apps.annotation.fields.reverse', return_value=self.fake_url):
-            serializer = serializer_class(
-                instance={'my_relation': self.fake_related_id},
-                context={
-                    'request': mock_request,
-                    'root_resource_obj': self.fake_root_id
-                }
-            )
-            self.assertDictEqual(serializer.data, {
-                'my_relation': {
-                    'data': {
-                        'type': inflection.camelize(self.fake_resource_name, uppercase_first_letter=False),
-                        'id': str(self.fake_related_id)
-                    },
-                    'links': {
-                        'related': self.fake_url
-                    }
-                }
-            })
-
-    def test_relation_deserializer(self):
+    def test_serializer(self):
         serializer_class = self.get_serializer_class()
 
-        with patch('apps.annotation.fields.reverse', return_value=self.fake_url):
-            serializer = serializer_class(data={
-                'my_relation': {
-                    'data': {
-                        'type': inflection.camelize(self.fake_resource_name, uppercase_first_letter=False),
-                        'id': self.fake_related_id
-                    },
-                },
-            })
-            self.assertTrue(serializer.is_valid(), msg=serializer.errors)
-            self.assertDictEqual(serializer.validated_data, {'my_relation': self.fake_related_id})
+        serializer = serializer_class(
+            instance={'my_resource_data': self.my_related_id}
+        )
+        self.assertDictEqual(serializer.data, {
+            'my_resource_data': {
+                'type': inflection.camelize(self.my_resource_name, uppercase_first_letter=False),
+                'id': str(self.my_related_id)
+            },
+        })
+
+    def test_deserializer(self):
+        serializer_class = self.get_serializer_class()
+
+        serializer = serializer_class(data={
+            'my_resource_data': {
+                'type': inflection.camelize(self.my_resource_name, uppercase_first_letter=False),
+                'id': str(self.my_related_id)
+            },
+        })
+        self.assertTrue(serializer.is_valid(), msg=serializer.errors)
+        self.assertDictEqual(serializer.validated_data, {'my_resource_data': self.my_related_id})
