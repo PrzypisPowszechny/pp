@@ -7,6 +7,7 @@ from parameterized import parameterized
 from rest_framework.test import APIRequestFactory
 
 from apps.annotation.models import Annotation
+from apps.annotation.tasks import notify_annotation_url_subscribers
 from apps.annotation.tests.utils import create_test_user
 from apps.annotation.views.annotations import AnnotationList
 
@@ -163,7 +164,21 @@ class AnnotationViewTest(TestCase):
         }
 
     @responses.activate
-    def test_subcribers_notified(self):
+    def test_notify_subscribers_scheduled(self):
+        site_url = 'https://www.mocksite.com'
+
+        data = self.get_valid_request_template()
+        data['data']['attributes']['url'] = site_url
+
+        with patch('apps.annotation.signals.notify_annotation_url_subscribers') as task_mock:
+            response, results = self.request_to_generic_class_view(AnnotationList, 'post', data=data)
+            self.assertEqual(response.status_code, 200)
+            self.assertIsNotNone(results)
+            annotation_id = int(results['id'])
+            task_mock.apply_async.assert_called_once_with(args=[annotation_id])
+
+    @responses.activate
+    def test_subscribers_notified(self):
         notification_email = 'test@gmail.com'
         site_url = 'https://www.mocksite.com'
 
@@ -183,7 +198,11 @@ class AnnotationViewTest(TestCase):
         data = self.get_valid_request_template()
         data['data']['attributes']['url'] = site_url
 
-        response, results = self.request_to_generic_class_view(AnnotationList, 'post', data=data)
-        self.assertEqual(response.status_code, 200)
-        self.assertIsNotNone(results)
+        with patch('apps.annotation.signals.notify_annotation_url_subscribers') as task_mock:
+            annotation = mommy.make('annotation.Annotation', url=site_url)
+            annotation.save()
+            task_mock.apply_async.assert_called_once_with(args=[annotation.id])
+
+        notify_annotation_url_subscribers(annotation.id)
+
         self.assertEqual(len(responses.calls), 1)

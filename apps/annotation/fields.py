@@ -14,68 +14,74 @@ Deserializing flow:
 
 serializer = ParentSerializer(data={...})
 serializer.is_valid()
--> in ParentSerializer.is_valid()
+---> ParentSerializer.IS_VALID()
 
     ParentSerializer.run_validation(data=self.data)
-    -> in ParentSerializer.run_validation(data)
+    ---> ParentSerializer.RUN_VALIDATION(data)
 
-        data = ParentSerializer.validate_empty_values(data)
-        -> in ParentSerializer.validate_empty_values(data)
+        is_empty, data = ParentSerializer.validate_empty_values(data)
+        ---> ParentSerializer.VALIDATE_EMPTY_VALUES(data)
 
-            if data in (empty, None) return self.get_default() // break; do not call ParentSerializer.to_internal_value
-        ParentSerializer.to_internal_value(data)
-        -> in ParentSerializer.to_internal_value(data)
+            if data in (empty, None): return True, self.get_default()
+            else: return False, data
+        if not is_empty: ParentSerializer.to_internal_value(data)
+        ---> ParentSerializer.TO_INTERNAL_VALUE(data)
 
-            value = ChildSerializer.get_value(dictionary=data) // returns dictionary[self.field_name]
+            value = ChildSerializer.get_value(dictionary=data)
+            ---> ChildSerializer.GET_VALUE(dictionary)
+            
+                return dictionary[self.field_name]
             value = ChildSerializer.run_validation(data=value)
-            -> in ChildSerializer.run_validation(data)
+            ---> ChildSerializer.RUN_VALIDATION(data)
 
                 data = ChildSerializer.validate_empty_values(data)
-                -> in ChildSerializer.validate_empty_values(data)
+                ---> ChildSerializer.VALIDATE_EMPTY_VALUES(data)
 
-                    if data in (empty, None) return self.get_default() // break; don't continue with to_internal_value
-                ChildSerializer.to_internal_value(data)
-                -> in ChildSerializer.to_internal_value(data)
+                    if data in (empty, None): return True, self.get_default()
+                    else: return False, data
+                if not is_empty: ChildSerializer.to_internal_value(data)
+                ---> ChildSerializer.TO_INTERNAL_VALUE(data)
 
-                    value = Field.get_value(dictionary=data) // returns dictionary[self.field_name]
+                    value = Field.get_value(dictionary=data)
+                    ---> Field.GET_VALUE(dictionary)
+            
+                        return dictionary[self.field_name]
                     value = Field.run_validation(data=value)
-                    -> in Field.run_validation(data)
+                    ---> Field.RUN_VALIDATION(data)
 
                         if data in (empty, None) return self.get_default()
-                        -> in Field.validate_empty_values(data)
+                        ---> Field.VALIDATE_EMPTY_VALUES(data)
 
-                            if data in (empty, None) return self.get_default() // break; don't continue with to_internal_value
-                        Field.to_internal_value(data)
-                        -> in Field.to_internal_value(data)
+                            if data in (empty, None): return True, self.get_default()
+                            else: return False, data
+                        if not is_empty: Field.to_internal_value(data)
+                        ---> Field.TO_INTERNAL_VALUE(data)
 
                             return data
 
 Serializing flow:
 
 response_data = serializer(instance=MyModel).data
--> in @property ParentSerializer.data
+---> @property ParentSerializer.DATA()
 
     ParentSerializer.to_representation(instance)
-    -> in ParentSerializer.to_representation (instance)
+    ---> ParentSerializer.TO_REPRESENTATION(instance)
 
-        // return instance.get(self.field_name) or getattr(instance, self.field_name)
         attribute = ChildSerializer.get_attribute(instance)
-        -> in ChildSerializer.get_attribute(instance)
+        ---> ChildSerializer.GET_ATTRIBUTE(instance)
 
             return instance.get(self.field_name) or getattr(instance, self.field_name) or self.get_default()
         if attribute is not None: ChildSerializer.to_representation(instance=attribute)
-        -> in ChildSerializer.to_representation(instance)
+        ---> ChildSerializer.TO_REPRESENTATION(instance)
 
             attribute = Field.get_attribute(instance)
-            -> in Field.get_attribute(instance)
+            ---> Field.GET_ATTRIBUTE(instance)
 
                 return instance.get(self.field_name) or getattr(instance, self.field_name) or self.get_default()
             if attribute is not None: Field.to_representation(value=attribute)
-            -> in Field.to_representation(value)
+            ---> Field.TO_REPRESENTATION(value)
 
                 return value
-
-
 """
 import copy
 import json
@@ -209,13 +215,12 @@ class ResourceField(serializers.Field):
         }
 
 
-class custom_none:
+def custom_none():
     """
-    In short: universal constant for marking the value of none relation
-              which doesn't mean whole output of field is None.
+    In short: universal constant designed to mark the value as custom none which doesn't simply mean whole output of
+              field is None, but that the field want to handle it and produce output using to_representation
 
     It does not change reference even if called (as class-based const does).
-
 
     We assume such scenario:
 
@@ -243,9 +248,7 @@ class custom_none:
                         following flow: `if value is custom_none`
 
     """
-
-    def __new__(cls, *args, **kwargs):
-        return custom_none
+    return custom_none
 
 
 class Default:
