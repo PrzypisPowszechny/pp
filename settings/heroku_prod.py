@@ -22,7 +22,7 @@ CORS_ORIGIN_REGEX_WHITELIST = (
 CORS_ALLOW_CREDENTIALS = True
 
 # Allow to share cookies between the primary dev domain and its subdomains such as panel.devdeploy1.przypispowszechny.pl
-SESSION_COOKIE_DOMAIN = 'devdeploy1.przypispowszechny.pl'
+SESSION_COOKIE_DOMAIN = 'app.przypispowszechny.pl'
 
 # Honor the X-Forwarded-Host header to know real domain (one from ALLOWED_HOSTS)
 USE_X_FORWARDED_HOST = True
