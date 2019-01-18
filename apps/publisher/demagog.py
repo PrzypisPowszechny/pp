@@ -131,7 +131,7 @@ def statement_attrs_to_annotation_fields(attrs):
 def get_first_paragraph(explanation):
     # TODO: when format of explanation is known implement this function as needed by finding \n or <br/> or </div> etc
     # Use bleach to get rid of html tags 100% safely
-    return Truncator(bleach.clean(explanation, tags=[], strip=True)).chars(200)
+    return Truncator(bleach.clean(explanation, tags=[], strip=True)).chars(400)
 
 
 demagog_to_pp_category = {
