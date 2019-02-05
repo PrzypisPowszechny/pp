@@ -17,7 +17,6 @@ from apps.annotation.filters import StandardizedURLFilterBackend, ConflictingFil
 from apps.annotation.models import Annotation, AnnotationUpvote, AnnotationReport, AnnotationRequest
 from apps.annotation.responses import PermissionDenied, ValidationErrorResponse, ErrorResponse, NotFoundResponse, \
     Forbidden
-from apps.annotation.views.decorators import allow_lazy_user_smart
 
 logger = logging.getLogger('pp.annotation')
 
@@ -25,7 +24,6 @@ logger = logging.getLogger('pp.annotation')
 class AnnotationSingle(APIView):
 
     @swagger_auto_schema(responses={200: serializers.AnnotationSerializer})
-    @method_decorator(allow_lazy_user_smart)
     def get(self, request, annotation_id):
         try:
             annotation = Annotation.objects.get(active=True, id=annotation_id)
@@ -48,7 +46,6 @@ class AnnotationSingle(APIView):
 
     @swagger_auto_schema(request_body=serializers.AnnotationPatchDeserializer,
                          responses={200: serializers.AnnotationSerializer})
-    @method_decorator(allow_lazy_user_smart)
     def patch(self, request, annotation_id):
         try:
             annotation = Annotation.objects.get(active=True, id=annotation_id)
@@ -87,7 +84,6 @@ class AnnotationSingle(APIView):
             context={'request': request, 'root_resource_obj': annotation}
         ).data)
 
-    @method_decorator(allow_lazy_user_smart)
     def delete(self, request, annotation_id):
         try:
             annotation = Annotation.objects.get(id=annotation_id)
@@ -121,7 +117,6 @@ class AnnotationList(GenericAPIView):
 
     @swagger_auto_schema(request_body=serializers.AnnotationDeserializer,
                          responses={200: serializers.AnnotationSerializer})
-    @method_decorator(allow_lazy_user_smart)
     def post(self, request):
         deserializer = serializers.AnnotationDeserializer(data=request.data)
         if not deserializer.is_valid():
@@ -175,7 +170,6 @@ class AnnotationList(GenericAPIView):
     # Header parameters need to be provided explicitly
     @swagger_auto_schema(responses={200: serializers.AnnotationListSerializer(many=True)},
                          manual_parameters=StandardizedURLFilterBackend.get_manual_parameters())
-    @method_decorator(allow_lazy_user_smart)
     def get(self, request, *args, **kwargs):
         try:
             queryset = self.filter_queryset(self.get_queryset())
@@ -202,7 +196,6 @@ class AnnotationList(GenericAPIView):
 class AnnotationUpvoteRelatedAnnotationSingle(APIView):
 
     @swagger_auto_schema(responses={200: serializers.AnnotationSerializer})
-    @method_decorator(allow_lazy_user_smart)
     def get(self, request, feedback_id):
         try:
             feedback = AnnotationUpvote.objects.get(id=feedback_id, user=request.user)
@@ -227,7 +220,6 @@ class AnnotationUpvoteRelatedAnnotationSingle(APIView):
 class AnnotationReportRelatedAnnotationSingle(APIView):
 
     @swagger_auto_schema(responses={200: serializers.AnnotationSerializer})
-    @method_decorator(allow_lazy_user_smart)
     def get(self, request, report_id):
         try:
             AnnotationReport.objects.get(id=report_id, user=request.user)

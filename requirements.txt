@@ -18,7 +18,6 @@ Django==1.11.16
 django-allauth==0.38.0
 django-cors-headers==2.1.0
 django-filter==2.0.0
-django-lazysignup==2.0.0
 django-model-utils==3.0.0
 django-rest-auth==0.9.3
 django-simple-history==2.4.0

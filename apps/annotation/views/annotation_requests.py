@@ -3,7 +3,6 @@ import logging
 from django.utils.decorators import method_decorator
 from django.utils.text import Truncator
 from drf_yasg.utils import swagger_auto_schema
-from lazysignup.decorators import allow_lazy_user
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 
@@ -21,7 +20,6 @@ class AnnotationRequests(GenericAPIView):
 
     @swagger_auto_schema(request_body=AnnotationRequestDeserializer,
                          responses={200: AnnotationRequestSerializer})
-    @method_decorator(allow_lazy_user)
     def post(self, request):
         deserializer = AnnotationRequestDeserializer(data=request.data)
         if not deserializer.is_valid():

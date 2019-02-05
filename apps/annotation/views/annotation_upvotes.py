@@ -1,14 +1,12 @@
 from django.db import IntegrityError
 from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
-from lazysignup.decorators import allow_lazy_user
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.annotation import serializers
 from apps.annotation.models import AnnotationUpvote
 from apps.annotation.responses import ErrorResponse, NotFoundResponse, ValidationErrorResponse
-from apps.annotation.views.decorators import allow_lazy_user_smart
 
 
 class AnnotationUpvoteSingle(APIView):
@@ -16,7 +14,6 @@ class AnnotationUpvoteSingle(APIView):
     serializer_class = serializers.AnnotationUpvoteSerializer
 
     @swagger_auto_schema(responses={200: serializers.AnnotationUpvoteSerializer})
-    @method_decorator(allow_lazy_user)
     def get(self, request, feedback_id):
         try:
             feedback = AnnotationUpvote.objects.get(id=feedback_id, user=request.user,
@@ -33,7 +30,6 @@ class AnnotationUpvoteSingle(APIView):
             },
             context={'request': request, 'root_resource_obj': feedback}).data)
 
-    @method_decorator(allow_lazy_user_smart)
     def delete(self, request, feedback_id):
         try:
             feedback = AnnotationUpvote.objects.get(id=feedback_id, user=request.user,
@@ -52,7 +48,6 @@ class AnnotationUpvoteList(APIView):
 
     @swagger_auto_schema(request_body=serializers.AnnotationUpvoteDeserializer,
                          responses={200: serializers.AnnotationUpvoteSerializer})
-    @method_decorator(allow_lazy_user_smart)
     def post(self, request):
         deserializer = self.deserializer_class(data=request.data)
         if not deserializer.is_valid():
@@ -82,7 +77,6 @@ class AnnotationRelatedAnnotationUpvoteSingle(APIView):
     serializer_class = serializers.AnnotationUpvoteSerializer
 
     @swagger_auto_schema(responses={200: serializers.AnnotationUpvoteSerializer})
-    @method_decorator(allow_lazy_user)
     def get(self, request, annotation_id):
         try:
             feedback = AnnotationUpvote.objects.get(annotation_id=annotation_id, user=request.user)

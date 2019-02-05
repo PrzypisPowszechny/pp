@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
-from lazysignup.decorators import allow_lazy_user
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -14,7 +13,6 @@ User = get_user_model()
 class UserSingle(APIView):
 
     @swagger_auto_schema(responses={200: UserSerializer})
-    @method_decorator(allow_lazy_user)
     def get(self, request, user_id):
         try:
             other_user = User.objects.get(id=user_id)

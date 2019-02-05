@@ -7,13 +7,11 @@ from rest_framework.views import APIView
 from apps.annotation import serializers
 from apps.annotation.models import Annotation, AnnotationReport
 from apps.annotation.responses import ValidationErrorResponse, NotFoundResponse, ErrorResponse
-from apps.annotation.views.decorators import allow_lazy_user_smart
 
 
 class AnnotationReportSingle(APIView):
 
     @swagger_auto_schema(responses={200: serializers.AnnotationReportSerializer})
-    @method_decorator(allow_lazy_user_smart)
     def get(self, request, report_id):
         try:
             report = AnnotationReport.objects.get(id=report_id, user=request.user)
@@ -36,7 +34,6 @@ class AnnotationReportList(APIView):
 
     @swagger_auto_schema(request_body=serializers.AnnotationReportDeserializer,
                          responses={200: serializers.AnnotationReportSerializer})
-    @method_decorator(allow_lazy_user_smart)
     def post(self, request):
         deserializer = serializers.AnnotationReportDeserializer(data=request.data, context={'request': request})
         if not deserializer.is_valid():
