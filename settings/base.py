@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 
 # noinspection PyUnresolvedReferences
 from .partial_custom import *
-from .partial_celery import *
 
 import os
 import dj_database_url
@@ -29,24 +28,22 @@ TEST = False
 # Application definition
 
 INSTALLED_APPS = [
-
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    # Currently serving
+    'django.contrib.sites',
+
+    # Static files
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
-    # an application that creates account for all anonymous users' requests and associates it with user session
-    'lazysignup',
 
-    # framework for creating api
+    # API
     'rest_framework',
+    'rest_auth',
     'django_filters',
-
-    # Adds cross-origin headers to http request in development
-    'corsheaders',
+    'drf_yasg',
 
     # Main project apps
     'apps.annotation',
@@ -55,21 +52,26 @@ INSTALLED_APPS = [
     'apps.site',
     'apps.analytics',
 
-    # Ann app that saves models' states as they change together with the user who produced the change
-    'simple_history',
+    # Additional authentication providers by allauth
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
 
-    'drf_yasg',
+    # Other
+    'corsheaders',
+    'simple_history',
 ]
+
+SITE_ID = 1
 
 # Set PPUser as Django user model
 AUTH_USER_MODEL = 'pp.User'
 
-# Lines below added based on http://django-lazysignup.readthedocs.io/en/latest/install.html#installation
-AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend',
-    'lazysignup.backends.LazySignupBackend',
-)
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
 
 
 MIDDLEWARE = [
@@ -111,16 +113,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'wsgi.application'
 
-# Database
-# https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
 DATABASES = {
     # Get whole conf from DATABASE_URL in the form of db_engine://user:pass@host:port/db_name
     'default': dj_database_url.config(conn_max_age=500)
 }
 
-# Password validation
-# https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -139,8 +137,12 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 REST_FRAMEWORK = {
-    # SessionAuthentication is thin integration of rest_framework authentication hooks with django auth middleware
-    'DEFAULT_AUTHENTICATION_CLASSES': ['apps.annotation.authentication.IgnoreRefererSessionAuthentication'],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
     'PAGE_SIZE': 10,
     'ORDERING_PARAM': 'sort',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework_json_api.pagination.LimitOffsetPagination',
@@ -161,7 +163,7 @@ REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'vnd.api+json',
 }
 
-
+# djangorestframework_camel_case app used by our JSONAPIRenderer and JSONAPIRenderer
 JSON_CAMEL_CASE = {
     'PARSER_CLASS': 'rest_framework.parsers.JSONParser',
     'RENDERER_CLASS': 'rest_framework.renderers.JSONRenderer',
@@ -190,6 +192,9 @@ SWAGGER_SETTINGS = {
         'drf_yasg.inspectors.StringDefaultFieldInspector',
     ]
 }
+
+# rest_auth app
+REST_USE_JWT = True
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
