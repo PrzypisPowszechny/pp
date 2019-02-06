@@ -104,6 +104,8 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
+ACCOUNT_ADAPTER = 'apps.auth.allauth.AccountAdapter'
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -227,8 +229,10 @@ SWAGGER_SETTINGS = {
 # rest_auth app
 REST_USE_JWT = True
 
-# Internationalization
-# https://docs.djangoproject.com/en/1.11/topics/i18n/
+
+# apps.auth
+PP_AUTH_REST_SESSION_LOGIN = False
+
 
 LANGUAGE_CODE = 'en-us'
 
@@ -239,7 +243,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 
 LOGGING = {
