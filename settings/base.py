@@ -13,11 +13,9 @@ DEBUG = _env.DEBUG
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = _env.SECRET_KEY
-if SECRET_KEY is None and _env.ENV not in ['prod']:
-    SECRET_KEY = '_96(y+)c++%-5m6i*4i-4md6o1@zc(5a9fjpoop#%+q=fg3ig9'
 
 HOST = _env.HOST
-if DEBUG and HOST is None:
+if HOST is None and DEBUG:
     HOST = 'https://localhost:8000'
 
 # Application definition

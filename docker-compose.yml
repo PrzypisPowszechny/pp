@@ -5,34 +5,21 @@ services:
     depends_on:
       - postgres
       - redis
-    image: virtualenv
-    build:
-      context: .
-      dockerfile: ./docker/virtualenv-Dockerfile
-      args:
-        - ENV_PATH=/opt/env
+    image: pp/python-venv
     ports:
       - "8000:8000"
-    working_dir: /code
     volumes:
       - .:/code
-      - ./docker-env:/opt/env
-      - bash_history:/root
+      - ./docker-env:/opt/venv
+    env_file:
+      - ./dev.env
     environment:
-      - DATABASE_URL=postgres://pp:pp@postgres:5432/pp
-      - REDIS_URL=redis://redis:6379/0
-      - ENV_PATH=/opt/env
-      - PIP_ROOT=/opt/env/
-      - PIP_PREFIX=./
-      - MAILGUN_API_KEY=${MAILGUN_API_KEY} # use local variable in docker env
-      - ENV=dev
-      - DEBUG=TRUE
-    entrypoint:
-      - ./docker/virtualenv_setup_entrypoint.sh
-    # The access-logfile and error-logfile settings to make sure gunicorn does not silence any of them
+      - MAILGUN_API_KEY={$MAILGUN_API_KEY}
     command: python manage.py runserver 0.0.0.0:8000
 
     # Alternative gunicorn configuration - failing to reload properly, but useful to simulate prod environment
+    #
+    # The access-logfile and error-logfile settings to make sure gunicorn does not silence any of them
     #command: gunicorn
     #  --reload
     #  --bind=0.0.0.0:8000
@@ -47,23 +34,12 @@ services:
       - postgres
       - redis
       - web
-    image: virtualenv
-    working_dir: /code
+    image: pp/python-venv
     volumes:
       - .:/code
-      - ./docker-env:/opt/env
-      - bash_history:/root
-    environment:
-      - DATABASE_URL=postgres://pp:pp@postgres:5432/pp
-      - REDIS_URL=redis://redis:6379/0
-      - ENV_PATH=/opt/env
-      - PIP_ROOT=/opt/env/
-      - PIP_PREFIX=./
-      - C_FORCE_ROOT=TRUE
-      - ENV=dev
-      - DEBUG=TRUE
-    entrypoint:
-      - ./docker/virtualenv_setup_entrypoint.sh
+      - ./docker-env:/opt/venv
+    env_file:
+      - ./dev.env
     command: celery worker --app=worker.celery_app --loglevel=info --concurrency=2
 
   worker_beat:
@@ -71,23 +47,12 @@ services:
       - postgres
       - redis
       - web
-    image: virtualenv
-    working_dir: /code
+    image: pp/python-venv
     volumes:
       - .:/code
-      - ./docker-env:/opt/env
-      - bash_history:/root
-    environment:
-      - DATABASE_URL=postgres://pp:pp@postgres:5432/pp
-      - REDIS_URL=redis://redis:6379/0
-      - ENV_PATH=/opt/env
-      - PIP_ROOT=/opt/env/
-      - PIP_PREFIX=./
-      - C_FORCE_ROOT=TRUE
-      - ENV=dev
-      - DEBUG=TRUE
-    entrypoint:
-      - ./docker/virtualenv_setup_entrypoint.sh
+      - ./docker-env:/opt/venv
+    env_file:
+      - ./dev.env
     command: celery beat --app=worker.celery_app --loglevel=info
 
   redis:
@@ -99,10 +64,5 @@ services:
     image: "postgres:10-alpine"
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_USER=pp
-      - POSTGRES_PASSWORD=pp
-      - POSTGRES_DB=pp
-
-volumes:
-  bash_history:
+    env_file:
+      - ./dev.env

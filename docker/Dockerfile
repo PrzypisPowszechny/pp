@@ -1,11 +1,20 @@
 FROM python:3.6-slim
-ARG ENV_PATH
 
 RUN mkdir /code
 WORKDIR /code
 
 RUN pip install --no-cache-dir virtualenv
-VOLUME $ENV_PATH
+VOLUME /opt/venv
+
+# Save bash history etc
+VOLUME /root
+
+# Used by our entrypoint setting venv up
+ENV VENV_PATH /opt/venv
+
+# Guarantees that pip correctly installs packages in venv even if user is root
+ENV PIP_ROOT /opt/venv/
+ENV PIP_PREFIX=./
 
 # For apt related issues with interactions after installation
 ENV DEBIAN_FRONTEND noninteractive
@@ -21,6 +30,6 @@ RUN mkdir /usr/share/man/man1 && mkdir /usr/share/man/man7 \
  && rm -rf /var/cache/apt/*
 
 
-COPY ./docker/virtualenv_entrypoint.sh /virtualenv_entrypoint.sh
-ENTRYPOINT ["/virtualenv_entrypoint.sh"]
+COPY ./entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["bash"]
