@@ -1,13 +1,14 @@
-from settings.base import *
+# TODO: merge this config into base.py settings
 import os
+from . import base
+from .utils import update_locals
 
-HOST = os.environ.get('HEROKU_HOST')
-SECRET_KEY = os.environ.get('PP_SECRET_KEY')
+update_locals(base.__dict__, locals())
 
 # Mailgun settings
-MAILGUN_API_KEY=os.environ.get('MAILGUN_API_KEY')
-PP_MAIL_DOMAIN='dev.mail.przypispowszechny.pl'
-MAILGUN_API_URL='https://api.mailgun.net/v3/{}/messages'.format(PP_MAIL_DOMAIN)
+MAILGUN_API_KEY = os.environ.get('MAILGUN_API_KEY')
+PP_MAIL_DOMAIN = 'dev.mail.przypispowszechny.pl'
+MAILGUN_API_URL = 'https://api.mailgun.net/v3/{}/messages'.format(PP_MAIL_DOMAIN)
 
 ALLOWED_HOSTS = [
     'devdeploy1.przypispowszechny.pl', 'www.devdeploy1.przypispowszechny.pl',

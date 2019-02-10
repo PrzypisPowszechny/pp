@@ -25,6 +25,8 @@ services:
       - PIP_ROOT=/opt/env/
       - PIP_PREFIX=./
       - MAILGUN_API_KEY=${MAILGUN_API_KEY} # use local variable in docker env
+      - ENV=dev
+      - DEBUG=TRUE
     entrypoint:
       - ./docker/virtualenv_setup_entrypoint.sh
     # The access-logfile and error-logfile settings to make sure gunicorn does not silence any of them
@@ -58,6 +60,8 @@ services:
       - PIP_ROOT=/opt/env/
       - PIP_PREFIX=./
       - C_FORCE_ROOT=TRUE
+      - ENV=dev
+      - DEBUG=TRUE
     entrypoint:
       - ./docker/virtualenv_setup_entrypoint.sh
     command: celery worker --app=worker.celery_app --loglevel=info --concurrency=2
@@ -80,6 +84,8 @@ services:
       - PIP_ROOT=/opt/env/
       - PIP_PREFIX=./
       - C_FORCE_ROOT=TRUE
+      - ENV=dev
+      - DEBUG=TRUE
     entrypoint:
       - ./docker/virtualenv_setup_entrypoint.sh
     command: celery beat --app=worker.celery_app --loglevel=info
