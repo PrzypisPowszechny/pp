@@ -252,13 +252,6 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
         },
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filters': ['require_debug_true'],
-            'filename': 'django.log',
-            'formatter': 'verbose',
-        },
     },
     'loggers': {
         # Override gunicorn definitions - for the time of running http applicaton, not for the gunicorn host-app itself
@@ -278,24 +271,24 @@ LOGGING = {
             "qualname": "gunicorn.access"
         },
         'django': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console'],
             'level': 'INFO',
             'propagate': False
         },
         'pp': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console'],
             'level': 'INFO',
             'propagate': False
         },
         'pp.publisher': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console'],
             'level': 'INFO',
             # Avoid duplicating by celery
             'propagate': False,
         },
         # Catch all for any other undefined
         '': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console'],
             'level': 'INFO',
             'propagate': False
         },

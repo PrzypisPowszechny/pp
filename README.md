@@ -4,10 +4,10 @@
 1. [About](#about)
 2. [REST API Documentation](#rest-api-documentation)
 2. [Development](#development)
-   - [Starting from the scratch](#starting-from-the-scratch) 
-   - [Special directories](#special-directories) 
+   - [Starting from the scratch](#starting-from-the-scratch)  
    - [Daily operations](#daily-operations) 
-   - [Other operations and issues](#other-operations-and-issues) 
+   - [Other operations and issues](#other-operations-and-issues)
+   - [Docker-related directories](#docker-related-directories) 
    - [Useful resources](#useful-resources) 
 
 
@@ -32,62 +32,80 @@ Install docker compose
 
 `$ sudo apt install docker-compose`
 
-Then start it all (it's almost done!)
+To run docker as non-root (you live without it, but it's saves a bit of effort with sudo typing everyday):
 
-`$ sudo docker-compose up`
+```
+$ sudo groupadd docker
+$ sudo usermod -aG docker $USER
 
-Once previous step is complete, you just need to run the migrations
+# Now log out and log in
+```
+(
+[From docker docs](https://docs.docker.com/install/linux/linux-postinstall/#manage-docker-as-a-non-root-user) - 
+this creates docker group and add your user to group
+)
 
-`$ sudo docker-compose run --rm web python manage.py migrate`
+Let's build our image and install python requirements:
+
+`$ make build`
+
+Once previous step is complete, you just need to run the migrations:
+
+`$ make migrate`
+
+And run it all:
+
+`$ make start-all`
 
 Done!
 
-### Sending e-mails in development
+### Development environment
 
-At this point any part of the application sending e-mail will fail
-(and its failure will be logged). This is not a problem unless
-you want to work on the e-mail sending part.
-Once you get hold
-of the private key, set the environment variable:
+#### `dev.env`
+Defined the environment for development. 
 
-`export MAILGUN_API_KEY=XXX`
+#### `.env`
+Is for setting local development variables that cannot be committed to public repo.
+Currently consists of: 
+ 
+ `MAILGUN_API_KEY`- Sending emails depends on this setting, so it might not work properly if real private key 
+ (but intended for dev, of course) is not set.    
 
-### Special directories
+### Daily operations
 
-- `data/postgres` - data stored by postgres=databases
+- `make test` - run tests
+- `make migrate` - run django migrate command to migrate SQL DB
+- `make makemigrations` - run django makemigrations command
+- `make makemigrations-dry-run` - run django makemigrations command in dry-run mode
+- `make dbshell` - open database cmdline
+- `make shell` - open bash shell in container 
+- `make python-shell` - open ipython shell with initialized django 
+- `make install` - (re)install python requirements using `pip install`
 
-- `data/postgres` - data stored by redis
+##### `make help` lists all available commands
 
-- `docker-env` - python environment created inside web/worker containers
+You can also always bypass `make` commands and run any command in container : 
+
+`$ sudo docker-compose run --rm web COMMAND...`
+
+
+### Other operations and issues
+
+- **Recreating database**: _just remove `docker/data/postgres` directory_, it is owned by root, so use `sudo`.
+
+
+### Docker-related directories
+
+- `docker/data/postgres` - data stored by postgres SQL DB
+
+- `docker/data/redis` - data stored by redis
+
+- `docker/venv/` - python environment created inside web/worker containers
 **Important**: _do not activate this environment_ as it was created inside docker container and should be run from it
 only. This directory is just for the purpose of sharing env files between containers, so the python environments in 
 web/worker stays in sync and thanks to it `pip -r requirements` has to be run once only. 
 
 
-### Daily operations
-
-Running tests: `$ sudo docker-compose run --rm web python manage.py test`
-
-Migrating database: `$ sudo docker-compose run --rm web python manage.py migrate`
-
-Opening database cmdline: `sudo docker-compose run --rm web python manage.py dbshell`
-
-Installing new python packages:
-`$ sudo docker-compose run --rm web pip install ...`
-
-Moving around _inside/- the container: `$ sudo docker-compose run --rm web bash`  
-From _inside_ you can of course also run migrations, pip install or do anything... 
-
-All other operation can be run in similar manner: `$ sudo docker-compose run --rm web COMMAND...`
-
-
-### Other operations and issues
-
-- **Recreating database**: _just remove `data/postgres` directory_.
-
-- **Permissions**: files created from withing docker might be owned by `root`, so if you need to change them either do it 
-running the command in container or just use `sudo`. The most probably case when such situation can take place after 
-`docker-compose run --rm web python manage.py makemigrations` is run and new migrations are created.   
 
 ### Useful resources
 

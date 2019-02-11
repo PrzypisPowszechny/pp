@@ -10,59 +10,48 @@ services:
       - "8000:8000"
     volumes:
       - .:/code
-      - ./docker-env:/opt/venv
+      - ./docker/venv:/opt/venv
     env_file:
       - ./dev.env
     environment:
       - MAILGUN_API_KEY={$MAILGUN_API_KEY}
     command: python manage.py runserver 0.0.0.0:8000
 
-    # Alternative gunicorn configuration - failing to reload properly, but useful to simulate prod environment
-    #
-    # The access-logfile and error-logfile settings to make sure gunicorn does not silence any of them
-    #command: gunicorn
-    #  --reload
-    #  --bind=0.0.0.0:8000
-    #  --log-level=info
-    #  --access-logfile=-
-    #  --error-logfile=-
-    #  --config=python:wsgi
-    #  wsgi
-
   worker:
     depends_on:
       - postgres
       - redis
-      - web
     image: pp/python-venv
     volumes:
       - .:/code
-      - ./docker-env:/opt/venv
+      - ./docker/venv:/opt/venv
     env_file:
       - ./dev.env
+    environment:
+      - MAILGUN_API_KEY={$MAILGUN_API_KEY}
     command: celery worker --app=worker.celery_app --loglevel=info --concurrency=2
 
   worker_beat:
     depends_on:
-      - postgres
       - redis
-      - web
     image: pp/python-venv
     volumes:
       - .:/code
-      - ./docker-env:/opt/venv
+      - ./docker/venv:/opt/venv
     env_file:
       - ./dev.env
-    command: celery beat --app=worker.celery_app --loglevel=info
+    command: >
+      celery beat --app=worker.celery_app --loglevel=info
+      --schedule=/home/user/celerybeat.db --pidfile=/home/user/celerybeat.pid
 
   redis:
     image: "redis:alpine"
     volumes:
-      - ./data/redis:/data
+      - ./docker/data/redis:/data
 
   postgres:
     image: "postgres:10-alpine"
     volumes:
-      - ./data/postgres:/var/lib/postgresql/data
+      - ./docker/data/postgres:/var/lib/postgresql/data
     env_file:
       - ./dev.env

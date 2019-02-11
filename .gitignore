@@ -97,7 +97,8 @@ celerybeat.pid
 .venv
 venv/
 env/
-docker-env/
+docker/venv/
+docker/data/
 
 # Spyder project settings
 .spyderproject
