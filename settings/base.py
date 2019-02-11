@@ -15,8 +15,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = _env.SECRET_KEY
 
 HOST = _env.HOST
-if HOST is None and DEBUG:
-    HOST = 'https://localhost:8000'
 
 # Application definition
 
@@ -34,9 +32,9 @@ INSTALLED_APPS = [
 
     # API
     'rest_framework',
-    'rest_auth',
-    'rest_auth.registration',
     'django_filters',
+    # TODO: djoser will be used for password setting/forgetting etc views
+    'djoser',
     'drf_yasg',
 
     # Main project apps
@@ -46,14 +44,10 @@ INSTALLED_APPS = [
     'apps.site',
     'apps.analytics',
 
-    # Additional authentication providers by allauth
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.facebook',
-    'allauth.socialaccount.providers.google',
+    # Additional authentication views and social providers
 
     # Other
+    'social_django',
     'corsheaders',
     'simple_history',
 ]
@@ -64,39 +58,47 @@ SITE_ID = 1
 AUTH_USER_MODEL = 'pp.User'
 
 AUTHENTICATION_BACKENDS = [
+    'social_core.backends.google.GoogleOAuth2',
+    'social_core.backends.facebook.FacebookOAuth2',
     'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
-SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'SCOPE': [
-            'profile',
-            'email',
-        ],
-        'AUTH_PARAMS': {
-            'access_type': 'offline',
-        },
-    },
-    'facebook': {
-        'SCOPE': ['email', 'public_profile'],
-        'AUTH_PARAMS': {'auth_type': 'reauthenticate'},
-        'INIT_PARAMS': {'cookie': True},
-        'FIELDS': [
-            'id',
-            'email',
-            'name',
-            'first_name',
-            'last_name',
-            'verified',
-        ],
-        'EXCHANGE_TOKEN': True,
-        'VERIFIED_EMAIL': True,
-        'VERSION': 'v2.12',
-    }
+# Key and Secret needed only if we want to use implement using refresh token
+# Additionally key (client_id) and should be used by frontend client retrieving access_token etc.
+SOCIAL_AUTH_FACEBOOK_KEY = ''
+SOCIAL_AUTH_FACEBOOK_SECRET = ''
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email', 'public_profile']
+SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
+  'fields': 'id, name, email, first_name, last_name, verified',
 }
+SOCIAL_AUTH_FACEBOOK_API_VERSION = '2.12'
 
-ACCOUNT_ADAPTER = 'apps.auth.allauth.AccountAdapter'
+# Key and Secret needed only if we want to use implement using refresh token
+# Additionally key (client_id) and should be used by frontend client retrieving access_token etc.
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = ''
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = ''
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = ['email', 'profile']
+
+# config per http://psa.matiasaguirre.net/docs/configuration/django.html#django-admin
+SOCIAL_AUTH_ADMIN_USER_SEARCH_FIELDS = ['username', 'first_name', 'email']
+
+SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL = True
+
+SOCIAL_AUTH_PIPELINE = (
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.social_auth.associate_by_email',  # this line is not included by default
+    'social_core.pipeline.user.create_user',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+)
+
+SOCIAL_AUTH_POSTGRES_JSONFIELD = True
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -159,7 +161,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
@@ -213,11 +215,21 @@ SWAGGER_SETTINGS = {
     ]
 }
 
-# rest_auth app
-REST_USE_JWT = True
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=10),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=10),
+    'ROTATE_REFRESH_TOKENS': True,
 
-# apps.auth
-PP_AUTH_REST_SESSION_LOGIN = False
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': _env.SECRET_KEY,
+
+    'AUTH_HEADER_TYPES': ['JWT'],
+}
+
+DJOSER = {
+    # Do not use model when using stateless method like JWT
+    'TOKEN_MODEL': None
+}
 
 LANGUAGE_CODE = 'en-us'
 

@@ -1,31 +1,24 @@
-from allauth.account.utils import perform_login
-from allauth.socialaccount.providers.facebook.views import FacebookOAuth2Adapter
-from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
-from allauth.socialaccount import app_settings as socialaccount_settings
-from rest_auth.registration import views as rest_auth_views
+from django.utils.decorators import method_decorator
+from django.views.decorators.debug import sensitive_post_parameters
+from rest_framework.generics import CreateAPIView
+from rest_framework import permissions
+
+from apps.auth.serializers import SocialLoginSerializer
 
 
-class LoginView(rest_auth_views.LoginView):
-    def process_login(self):
-        """
-        Process login using allauth complete tool, that calls all signals and might trigger mails.
-        It replaces default "shortcut" behaviour by django_rest_auth that evades it and calls django login directly.
-        """
-        perform_login(self.request, self.user, socialaccount_settings.EMAIL_VERIFICATION)
+class SocialLoginView(CreateAPIView):
+    permission_classes = [permissions.AllowAny]
+    serializer_class = SocialLoginSerializer
+    backend_name = None
 
-
-class SocialLoginView(rest_auth_views.SocialLoginView):
-    def process_login(self):
-        """
-        SocialLoginView serializer's validation triggers perform_login,
-        so we clean this hook to avoid duplicating signals etc.
-        """
-        pass
+    @method_decorator(sensitive_post_parameters(*SocialLoginSerializer.sensitive_fields))
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
 
 class FacebookLogin(SocialLoginView):
-    adapter_class = FacebookOAuth2Adapter
+    backend_name = 'facebook'
 
 
 class GoogleLogin(SocialLoginView):
-    adapter_class = GoogleOAuth2Adapter
+    backend_name = 'google-oauth2'
