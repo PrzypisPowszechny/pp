@@ -69,7 +69,7 @@ SOCIAL_AUTH_FACEBOOK_KEY = ''
 SOCIAL_AUTH_FACEBOOK_SECRET = ''
 SOCIAL_AUTH_FACEBOOK_SCOPE = ['email', 'public_profile']
 SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
-  'fields': 'id, name, email, first_name, last_name, verified',
+    'fields': 'id, name, email, first_name, last_name, verified',
 }
 SOCIAL_AUTH_FACEBOOK_API_VERSION = '2.12'
 
@@ -98,7 +98,6 @@ SOCIAL_AUTH_PIPELINE = (
 )
 
 SOCIAL_AUTH_POSTGRES_JSONFIELD = True
-
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -194,17 +193,21 @@ JSON_CAMEL_CASE = {
 
 SWAGGER_SETTINGS = {
     'DEFAULT_FIELD_INSPECTORS': [
+        'drf_yasg.inspectors.CamelCaseJSONFilter',
+        'apps.annotation.inspectors.AppendWriteOnlyFilter',
+
         'apps.annotation.inspectors.RootSerializerInspector',
+        # ReferencingS... replaced with InlineS... which does not create serializers definitions index,
+        # but does not require serializers class names to be unique across whole application
+        # 'drf_yasg.inspectors.ReferencingSerializerInspector',
+        'drf_yasg.inspectors.InlineSerializerInspector',
+
         'apps.annotation.inspectors.IDFieldInspector',
         'apps.annotation.inspectors.ConstFieldInspector',
         'apps.annotation.inspectors.ResourceFieldInspector',
         'apps.annotation.inspectors.RelationFieldInspector',
         'apps.annotation.inspectors.ObjectFieldInspector',
-        'drf_yasg.inspectors.CamelCaseJSONFilter',
-        # ReferencingS... replaced with InlineS... which does not create serializers definitions index,
-        # but does not require serializers class names to be unique across whole application
-        # 'drf_yasg.inspectors.ReferencingSerializerInspector',
-        'drf_yasg.inspectors.InlineSerializerInspector',
+
         'drf_yasg.inspectors.RelatedFieldInspector',
         'drf_yasg.inspectors.ChoiceFieldInspector',
         'drf_yasg.inspectors.FileFieldInspector',
@@ -212,7 +215,16 @@ SWAGGER_SETTINGS = {
         'drf_yasg.inspectors.HiddenFieldInspector',
         'drf_yasg.inspectors.SimpleFieldInspector',
         'drf_yasg.inspectors.StringDefaultFieldInspector',
-    ]
+    ],
+
+    'SECURITY_DEFINITIONS': {
+        'JWT token in format "JWT ${token}" (prepend "JWT" prefix manually)': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+        }
+    }
+
 }
 
 SIMPLE_JWT = {
