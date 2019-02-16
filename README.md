@@ -61,15 +61,22 @@ Done!
 
 ### Development environment
 
-#### `dev.env`
+#### `.dev.env`
 Defined the environment for development. 
 
-#### `.env`
+#### `.dev-local.env`
 Is for setting local development variables that cannot be committed to public repo.
 Currently consists of: 
  
  `MAILGUN_API_KEY`- Sending emails depends on this setting, so it might not work properly if real private key 
- (but intended for dev, of course) is not set.    
+ (but intended for dev, of course) is not set.
+ 
+ `FACEBOOK_GRAPH_SECRET` - Secret for Facebook Graph API
+ 
+ `GOOGLE_OAUTH_SECRET` - Secret for Google OAUTH API
+ 
+File `.dev-local.env` will be automatically populated with dummy values using `.dev-local.env-template`. 
+Put there real credentials if you need to use the in the dev environment.     
 
 ### Daily operations
 

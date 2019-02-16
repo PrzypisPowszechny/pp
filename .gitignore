@@ -92,6 +92,7 @@ celerybeat.pid
 
 # dotenv
 .env
+dev-local.env
 
 # virtualenv
 .venv

@@ -13,8 +13,7 @@ services:
       - ./docker/venv:/opt/venv
     env_file:
       - ./dev.env
-    environment:
-      - MAILGUN_API_KEY={$MAILGUN_API_KEY}
+      - ./dev-local.env
     command: python manage.py runserver 0.0.0.0:8000
 
   worker:
@@ -27,8 +26,7 @@ services:
       - ./docker/venv:/opt/venv
     env_file:
       - ./dev.env
-    environment:
-      - MAILGUN_API_KEY={$MAILGUN_API_KEY}
+      - ./dev-local.env
     command: celery worker --app=worker.celery_app --loglevel=info --concurrency=2
 
   worker_beat:

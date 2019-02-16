@@ -63,15 +63,14 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-# Key and Secret needed only if we want to use implement using refresh token
-# Additionally key (client_id) and should be used by frontend client retrieving access_token etc.
-SOCIAL_AUTH_FACEBOOK_KEY = ''
-SOCIAL_AUTH_FACEBOOK_SECRET = ''
+# Facebook require secret even when already have access_token
+SOCIAL_AUTH_FACEBOOK_KEY = '2290339024350798'
+SOCIAL_AUTH_FACEBOOK_SECRET = _env.FACEBOOK_GRAPH_SECRET
 SOCIAL_AUTH_FACEBOOK_SCOPE = ['email', 'public_profile']
 SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
     'fields': 'id, name, email, first_name, last_name, verified',
 }
-SOCIAL_AUTH_FACEBOOK_API_VERSION = '2.12'
+SOCIAL_AUTH_FACEBOOK_API_VERSION = '2.9'
 
 # Key and Secret needed only if we want to use implement using refresh token
 # Additionally key (client_id) and should be used by frontend client retrieving access_token etc.

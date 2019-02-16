@@ -10,3 +10,5 @@ if ENV in ('prod', 'test'):
 SECRET_KEY = os.environ.get('PP_SECRET_KEY') or os.environ.get('SECRET_KEY')
 HOST = os.environ.get('HEROKU_HOST') or os.environ.get('HOST')
 BROKER_URL = os.environ.get('REDIS_URL')
+FACEBOOK_GRAPH_SECRET = os.environ.get('FACEBOOK_GRAPH_SECRET')
+GOOGLE_OAUTH_SECRET = os.environ.get('GOOGLE_OAUTH_SECRET')
