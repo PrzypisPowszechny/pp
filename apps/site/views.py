@@ -35,3 +35,7 @@ def annotation_request_unsubscribe(request, annotation_request_id, token):
     instance.save()
 
     return render_to_response('site/unsubscribed.html')
+
+
+def social_login_demo(request):
+    return render(request, 'site/social_login_demo.html')

@@ -1,0 +1,82 @@
+{% load static %}
+<!Doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>PP Social login demo</title>
+</head>
+
+<body>
+  <script>
+    window.fbAsyncInit = function() {
+      FB.init({
+        appId            : '2290339024350798',
+        autoLogAppEvents : true,
+        xfbml            : true,  // render ui using <fb: > tags
+        version          : 'v2.9'
+      });
+    };
+
+    (function(d, s, id){
+       var js, fjs = d.getElementsByTagName(s)[0];
+       if (d.getElementById(id)) {return;}
+       js = d.createElement(s); js.id = id;
+       js.src = "https://connect.facebook.net/pl_PL/sdk.js";
+       fjs.parentNode.insertBefore(js, fjs);
+     }(document, 'script', 'facebook-jssdk'));
+
+    window.ppFbLogin = function() {
+      console.log('trigger');
+      FB.login(function(response) {
+        console.log(response);
+        if (response.status === 'connected') {
+          ppAuth(response.authResponse);
+        }
+      }, { scope: 'email,public_profile' });
+    };
+
+    window.ppCheckLoginResponse = function() {
+      FB.getLoginStatus(function(response) {
+        console.log(response);
+        if (response.status === 'connected') {
+          ppAuth(response.authResponse);
+        }
+      });
+    };
+
+    window.ppAuth = function(authResponse) {
+        fetch('/api/auth/facebook/', {
+          method: 'POST',
+          headers: {
+            'Content-Type':  'application/vnd.api+json'
+          },
+          body: JSON.stringify({
+            data: {
+              accessToken: authResponse.accessToken,
+              expiresIn: authResponse.expiresIn
+            }
+          })
+        })
+        .then(response => response.json())
+        .then(ppPrint);
+    };
+
+    window.ppPrint = function(data) {
+      var text = JSON.stringify(data, null, '  ');
+
+      document.getElementById('pp-response-container').innerHTML += text;
+    }
+  </script>
+
+  <div style="margin: auto; width: 600px">
+    <h4> Click and login. In the end i should result in response containing 'data.access' field</h4>
+
+    <fb:login-button scope="email,public_profile" onlogin="ppCheckLoginResponse();">
+    </fb:login-button>
+
+    <button onclick="ppFbLogin();"> PP custom fb login button </button>
+
+    <div id="pp-response-container"></div>
+  </div>
+</body>
+</html>
