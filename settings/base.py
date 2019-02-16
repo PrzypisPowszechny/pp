@@ -74,7 +74,7 @@ SOCIAL_AUTH_FACEBOOK_API_VERSION = '2.9'
 
 # Key and Secret needed only if we want to use implement using refresh token
 # Additionally key (client_id) and should be used by frontend client retrieving access_token etc.
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = ''
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '823340157121-mplb4uvgu5ena8fuuuvvnpn773hpjim4.apps.googleusercontent.com'
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = ''
 SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = ['email', 'profile']
 
