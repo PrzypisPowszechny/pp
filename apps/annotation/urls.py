@@ -4,6 +4,8 @@ from apps.annotation.views import users, annotation_requests
 from .views import annotations, annotation_reports, annotation_upvotes
 
 
+app_name = 'annotation'
+
 urlpatterns = [
     url(r'^annotations', include([
         url(r'^/(?P<annotation_id>[0-9]+)$', annotations.AnnotationSingle.as_view(),

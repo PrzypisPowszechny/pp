@@ -49,7 +49,7 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
 
     url(r'^api/', include('apps.annotation.urls', namespace='api')),
-    url(r'^api/auth/', include('apps.auth.urls')),
+    url(r'^api/auth/', include('apps.auth.urls', namespace='api')),
     url(r'^api/docs/swagger(?P<format>\.json|\.yaml)$',
         yasg_schema_view.without_ui(cache_timeout=None), name='schema_json'),
     url(r'^api/docs/$',
