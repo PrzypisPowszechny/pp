@@ -33,7 +33,6 @@ INSTALLED_APPS = [
     # API
     'rest_framework',
     'django_filters',
-    # TODO: djoser will be used for password setting/forgetting etc views
     'djoser',
     'drf_yasg',
 
