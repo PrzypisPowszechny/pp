@@ -3,6 +3,7 @@ import json
 from django.test import TestCase
 from model_mommy import mommy
 from parameterized import parameterized
+from rest_framework_simplejwt.tokens import AccessToken
 
 from apps.annotation.consts import SUGGESTED_CORRECTION
 from apps.annotation.models import Annotation
@@ -19,13 +20,15 @@ class AnnotationReportAPITest(TestCase):
     # IMPORTANT: we log in for each test, so self.user has already an open session with server
     def setUp(self):
         self.user, self.password = create_test_user()
-        self.client.login(username=self.user, password=self.password)
+        self.token = str(AccessToken.for_user(self.user))
+        self.token_header = 'JWT %s' % self.token
 
     # TODO: split this obsolete test to make it MORE UNIT
     def test_get_annotation_report(self):
         annotation = Annotation.objects.create(user=self.user)
         report = mommy.make(AnnotationReport, annotation=annotation, user=self.user)
-        response = self.client.get(self.report_single_url.format(report.id), content_type='application/vnd.api+json')
+        response = self.client.get(self.report_single_url.format(report.id), content_type='application/vnd.api+json',
+                                   HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(
             json.loads(response.content.decode('utf8')),
@@ -49,14 +52,15 @@ class AnnotationReportAPITest(TestCase):
         )
 
         response = self.client.get(self.report_single_url.format(report.id + 1),
-                                   content_type='application/vnd.api+json')
+                                   content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 404)
 
     def test_get_annotation_report__deny_other_user(self):
         owner_user, owner_user_password = create_test_user(unique=True)
         annotation = Annotation.objects.create(user=owner_user)
         report = mommy.make(AnnotationReport, annotation=annotation, user=owner_user)
-        response = self.client.get(self.report_single_url.format(report.id), content_type='application/vnd.api+json')
+        response = self.client.get(self.report_single_url.format(report.id), content_type='application/vnd.api+json',
+                                   HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 404)
 
     # TODO: split this obsolete test to make it MORE UNIT
@@ -64,7 +68,7 @@ class AnnotationReportAPITest(TestCase):
         annotation = Annotation.objects.create(user=self.user)
         report = mommy.make(AnnotationReport, annotation=annotation, user=self.user)
         response = self.client.get(self.annotation_related_reports_url.format(annotation.id),
-                                   content_type='application/vnd.api+json')
+                                   content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(
             json.loads(response.content.decode('utf8')),
@@ -90,7 +94,7 @@ class AnnotationReportAPITest(TestCase):
         )
 
         response = self.client.get(self.report_single_url.format(report.id + 1),
-                                   content_type='application/vnd.api+json')
+                                   content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 404)
 
     @parameterized.expand([
@@ -123,7 +127,7 @@ class AnnotationReportAPITest(TestCase):
         })
 
         response = self.client.post(self.report_url.format(annotation.id), body,
-                                    content_type='application/vnd.api+json')
+                                    content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, response_code)
         if response_code == 200:
             response_data = json.loads(response.content.decode('utf8'))

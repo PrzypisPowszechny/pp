@@ -7,6 +7,7 @@ from django.utils import timezone
 from model_mommy import mommy
 from parameterized import parameterized
 from rest_framework import serializers
+from rest_framework_simplejwt.tokens import AccessToken
 
 from apps.annotation import consts
 from apps.annotation.models import Annotation, AnnotationUpvote, AnnotationReport
@@ -22,7 +23,8 @@ class AnnotationAPITest(TestCase):
     # IMPORTANT: we log in for each test, so self.user has already an open session with server
     def setUp(self):
         self.user, self.password = create_test_user()
-        self.client.login(username=self.user, password=self.password)
+        self.token = str(AccessToken.for_user(self.user))
+        self.token_header = 'JWT %s' % self.token
 
     # TODO: do not hardcode data all the time, use helper to create valid annotation
     def test_get_returns_json_200(self):
@@ -33,7 +35,7 @@ class AnnotationAPITest(TestCase):
                                                annotation_link="www.przypispowszechny.com",
                                                annotation_link_title="very nice")
         AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
-        response = self.client.get(self.base_url.format(annotation.id))
+        response = self.client.get(self.base_url.format(annotation.id), HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/vnd.api+json')
 
@@ -47,7 +49,7 @@ class AnnotationAPITest(TestCase):
                                                annotation_link="www.przypispowszechny.com",
                                                annotation_link_title="very nice")
         urf = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
-        response = self.client.get(self.base_url.format(annotation.id))
+        response = self.client.get(self.base_url.format(annotation.id), HTTP_AUTHORIZATION=self.token_header)
 
         upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).exclude(user=self.user).count()
 
@@ -57,9 +59,6 @@ class AnnotationAPITest(TestCase):
                 'data': {
                     'id': str(annotation.id),
                     'type': 'annotations',
-                    'links': {
-                        'self': testserver_reverse('api:annotation', kwargs={'annotation_id': annotation.id})
-                    },
                     'attributes': {
                         'url': annotation.url,
                         'range': json.loads(annotation.range),
@@ -117,7 +116,7 @@ class AnnotationAPITest(TestCase):
 
         # No relation, no count
 
-        response = self.client.get(self.base_url.format(annotation.id))
+        response = self.client.get(self.base_url.format(annotation.id), HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/vnd.api+json')
         response_content_data = json.loads(response.content.decode('utf8')).get('data')
@@ -139,7 +138,7 @@ class AnnotationAPITest(TestCase):
 
         urf = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
 
-        response = self.client.get(self.base_url.format(annotation.id))
+        response = self.client.get(self.base_url.format(annotation.id), HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/vnd.api+json')
         response_content_data = json.loads(response.content.decode('utf8')).get('data')
@@ -165,7 +164,7 @@ class AnnotationAPITest(TestCase):
         AnnotationUpvote.objects.create(user=other_user2, annotation=annotation)
         upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).exclude(user=self.user).count()
 
-        response = self.client.get(self.base_url.format(annotation.id))
+        response = self.client.get(self.base_url.format(annotation.id), HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/vnd.api+json')
         response_content_data = json.loads(response.content.decode('utf8')).get('data')
@@ -196,7 +195,7 @@ class AnnotationAPITest(TestCase):
         urf = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
         upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).exclude(user=self.user).count()
 
-        response = self.client.get(self.report_related_url.format(report.id))
+        response = self.client.get(self.report_related_url.format(report.id), HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             json.loads(response.content.decode('utf8')),
@@ -264,7 +263,7 @@ class AnnotationAPITest(TestCase):
         upvote = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
         upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).exclude(user=self.user).count()
 
-        response = self.client.get(self.upvote_related_url.format(upvote.id))
+        response = self.client.get(self.upvote_related_url.format(upvote.id), HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             json.loads(response.content.decode('utf8')),
@@ -321,7 +320,7 @@ class AnnotationAPITest(TestCase):
 
     def test_list_annotations_empty_return_json_200(self):
         search_base_url = "/api/annotations?url={}"
-        response = self.client.get(search_base_url.format('przypis powszechny'))
+        response = self.client.get(search_base_url.format('przypis powszechny'), HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/vnd.api+json')
 
@@ -344,7 +343,7 @@ class AnnotationAPITest(TestCase):
                                   annotation_link="www.przypispowszechny.com",
                                   annotation_link_title="very nice again")
 
-        response = self.client.get(search_base_url.format(annotation_url))
+        response = self.client.get(search_base_url.format(annotation_url), HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/vnd.api+json')
         response_content_data = json.loads(response.content.decode('utf8')).get('data')
@@ -403,7 +402,7 @@ class AnnotationAPITest(TestCase):
                                   range='{}', url=annotation_url,
                                   annotation_link="www.przypispowszechny.com",
                                   annotation_link_title="very nice")
-        response = self.client.get(search_base_url.format(quote(query_url)))
+        response = self.client.get(search_base_url.format(quote(query_url)), HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/vnd.api+json')
         response_content_data = json.loads(response.content.decode('utf8')).get('data')
@@ -439,7 +438,7 @@ class AnnotationAPITest(TestCase):
         upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).exclude(user=self.user).count()
         upvote_count2 = AnnotationUpvote.objects.filter(annotation=annotation2).exclude(user=self.user).count()
 
-        raw_response = self.client.get(search_base_url.format(annotation.url))
+        raw_response = self.client.get(search_base_url.format(annotation.url), HTTP_AUTHORIZATION=self.token_header)
         response = json.loads(raw_response.content.decode('utf8'))['data']
         response_annotation = next(row for row in response if str(row['id']) == str(annotation.id))
         response_annotation2 = next(row for row in response if str(row['id']) == str(annotation2.id))
@@ -549,7 +548,7 @@ class AnnotationAPITest(TestCase):
 
         # No relation, no count
 
-        response = self.client.get(list_url)
+        response = self.client.get(list_url, HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/vnd.api+json')
         response_content_data = json.loads(response.content.decode('utf8')).get('data')
@@ -571,7 +570,7 @@ class AnnotationAPITest(TestCase):
 
         urf = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
 
-        response = self.client.get(list_url)
+        response = self.client.get(list_url, HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/vnd.api+json')
         response_content_data = json.loads(response.content.decode('utf8')).get('data')
@@ -597,7 +596,7 @@ class AnnotationAPITest(TestCase):
         AnnotationUpvote.objects.create(user=other_user2, annotation=annotation)
         upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).exclude(user=self.user).count()
 
-        response = self.client.get(list_url)
+        response = self.client.get(list_url, HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response['content-type'], 'application/vnd.api+json')
         response_content_data = json.loads(response.content.decode('utf8')).get('data')
@@ -642,7 +641,7 @@ class AnnotationAPITest(TestCase):
         response = self.client.post(
             base_url,
             json.dumps(request_payload),
-            content_type='application/vnd.api+json')
+            content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
 
         self.assertEqual(response.status_code, 200, msg=response.data)
         annotation = Annotation.objects.get(user=self.user)
@@ -716,7 +715,7 @@ class AnnotationAPITest(TestCase):
         response = self.client.post(
             base_url,
             json.dumps(request_payload),
-            content_type='application/vnd.api+json')
+            content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
 
         self.assertEqual(response.status_code, 200, msg=response.data)
         new_annotation = Annotation.objects.filter(user=self.user).last()
@@ -740,7 +739,7 @@ class AnnotationAPITest(TestCase):
         response = self.client.patch(
             '{}/{}'.format(base_url, annotation.id),
             json.dumps(request_payload),
-            content_type='application/vnd.api+json')
+            content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200, msg=response.data)
         response_data = json.loads(response.content.decode('utf8'))
         self.assertEqual(
@@ -762,7 +761,7 @@ class AnnotationAPITest(TestCase):
         response = self.client.post(
             base_url,
             json.dumps(request_payload),
-            content_type='application/vnd.api+json')
+            content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
 
         self.assertEqual(response.status_code, 200, msg=response.data)
         new_annotation = Annotation.objects.filter(user=self.user).last()
@@ -782,7 +781,7 @@ class AnnotationAPITest(TestCase):
         response = self.client.patch(
             '{}/{}'.format(base_url, annotation.id),
             json.dumps(request_payload),
-            content_type='application/vnd.api+json')
+            content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200, msg=response.data)
         response_data = json.loads(response.content.decode('utf8'))
         self.assertEqual(
@@ -803,7 +802,7 @@ class AnnotationAPITest(TestCase):
         response = self.client.post(
             base_url,
             json.dumps(request_payload),
-            content_type='application/vnd.api+json')
+            content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200, msg=response.data)
         new_annotation = Annotation.objects.filter(user=self.user).last()
         self.assertIsNotNone(new_annotation)
@@ -822,7 +821,7 @@ class AnnotationAPITest(TestCase):
         response = self.client.patch(
             '{}/{}'.format(base_url, annotation.id),
             json.dumps(request_payload),
-            content_type='application/vnd.api+json')
+            content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200, msg=response.data)
         response_data = json.loads(response.content.decode('utf8'))
         self.assertEqual(
@@ -845,7 +844,7 @@ class AnnotationAPITest(TestCase):
         response = self.client.post(
             base_url,
             json.dumps(request_payload),
-            content_type='application/vnd.api+json')
+            content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
 
         if not is_valid:
             self.assertEqual(response.status_code, 400, msg=response.data)
@@ -876,7 +875,7 @@ class AnnotationAPITest(TestCase):
             response = self.client.patch(
                 '{}/{}'.format(base_url, annotation.id),
                 json.dumps(request_payload),
-                content_type='application/vnd.api+json')
+                content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
             self.assertEqual(response.status_code, 200, msg=response.data)
             self.assertEqual(
                 response_data['data']['attributes']['annotationLink'], annotation_link
@@ -899,7 +898,7 @@ class AnnotationAPITest(TestCase):
         response = self.client.post(
             base_url,
             json.dumps(request_payload),
-            content_type='application/vnd.api+json')
+            content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
         response_data = json.loads(response.content.decode('utf8'))
 
         self.assertEqual(response.status_code, 200, msg=response.data)
@@ -920,7 +919,7 @@ class AnnotationAPITest(TestCase):
         response = self.client.patch(
             '{}/{}'.format(base_url, annotation.id),
             json.dumps(request_payload),
-            content_type='application/vnd.api+json')
+            content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200, msg=response.data)
         self.assertEqual(
             response_data['data']['attributes']['comment'], comment or ""
@@ -948,7 +947,7 @@ class AnnotationAPITest(TestCase):
             }
         })
         response = self.client.patch(self.base_url.format(annotation.id), put_data,
-                                     content_type='application/vnd.api+json')
+                                     content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
         annotation = Annotation.objects.get(id=annotation.id)
 
         upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).exclude(user=self.user).count()
@@ -1026,7 +1025,7 @@ class AnnotationAPITest(TestCase):
             }
         })
         response = self.client.patch(self.base_url.format(annotation.id), put_data,
-                                     content_type='application/vnd.api+json')
+                                     content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 400)
 
     # TODO: do not hardcode data all the time, use helper to create valid annotation
@@ -1051,7 +1050,7 @@ class AnnotationAPITest(TestCase):
             }
         })
         response = self.client.patch(self.base_url.format(annotation.id), put_data,
-                                     content_type='application/vnd.api+json')
+                                     content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
         annotation = Annotation.objects.get(id=annotation.id)
         self.assertEqual(response.status_code, 403)
         self.assertNotEqual(annotation.comment, put_string)
@@ -1075,7 +1074,7 @@ class AnnotationAPITest(TestCase):
             }
         })
         response = self.client.patch(self.base_url.format(annotation.id), put_data,
-                                     content_type='application/vnd.api+json')
+                                     content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
         annotation = Annotation.objects.get(id=annotation.id)
         self.assertEqual(response.status_code, 403)
         self.assertNotEqual(annotation.comment, put_string)
@@ -1092,17 +1091,17 @@ class AnnotationAPITest(TestCase):
         good_id = annotation.id
         non_existing_id = good_id + 100000000
 
-        response = self.client.delete(self.base_url.format(good_id), content_type='application/vnd.api+json')
+        response = self.client.delete(self.base_url.format(good_id), content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200)
 
         # After removing is not accessible
-        response = self.client.get(self.base_url.format(good_id), content_type='application/vnd.api+json')
+        response = self.client.get(self.base_url.format(good_id), content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 404)
 
         # Removing again is still good
-        response = self.client.delete(self.base_url.format(good_id), content_type='application/vnd.api+json')
+        response = self.client.delete(self.base_url.format(good_id), content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200)
 
         # Removing never existing is bad
-        response = self.client.delete(self.base_url.format(non_existing_id), content_type='application/vnd.api+json')
+        response = self.client.delete(self.base_url.format(non_existing_id), content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 404)

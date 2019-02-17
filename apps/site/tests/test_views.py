@@ -7,7 +7,7 @@ from apps.annotation.models import AnnotationRequest
 from apps.annotation.tests.utils import create_test_user
 
 
-class SchemaViewsTest(TestCase):
+class SiteViewsTest(TestCase):
 
     def setUp(self):
         self.user, self.password = create_test_user()
@@ -27,6 +27,7 @@ class SchemaViewsTest(TestCase):
                              fetch_redirect_response=False)
 
     unsubscribe_url_base = '/site/annotation_request_unsubscribe/{}/{}/'
+
     def test_annotation_request_unsubscribe(self):
         notification_email = 'mock@mail.com'
         annotation_request = mommy.make('annotation.AnnotationRequest')
