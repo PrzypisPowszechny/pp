@@ -5,11 +5,6 @@ from .utils import update_locals
 
 update_locals(base.__dict__, locals())
 
-# Mailgun settings
-MAILGUN_API_KEY = os.environ.get('MAILGUN_API_KEY')
-PP_MAIL_DOMAIN = 'mail.przypispowszechny.pl'
-MAILGUN_API_URL = 'https://api.mailgun.net/v3/{}/messages'.format(PP_MAIL_DOMAIN)
-
 ALLOWED_HOSTS = [
     'przypispowszechny.pl', 'www.przypispowszechny.pl',
     'app.przypispowszechny.pl', 'www.app.przypispowszechny.pl',

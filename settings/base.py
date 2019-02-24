@@ -136,10 +136,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'wsgi.application'
 
+
 DATABASES = {
     # Get whole conf from DATABASE_URL in the form of db_engine://user:pass@host:port/db_name
-    'default': dj_database_url.config(conn_max_age=500)
+    'default': dj_database_url.config(conn_max_age=500) if _env.ENV != 'test' else
+            {'ENGINE': 'django.db.backends.sqlite3', 'NAME': 'test-db'}
 }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -251,6 +254,22 @@ USE_L10N = True
 
 USE_TZ = True
 
+
+if _env.ENV == 'test':
+    MAILGUN_API_KEY = 'mock-mailgun-api-key'
+    PP_MAIL_DOMAIN = 'mail.przypispowszechny.pl'
+    MAILGUN_API_URL = 'https://api.mailgun.net/v3/{}/messages'.format(PP_MAIL_DOMAIN)
+elif _env.ENV == 'dev':
+    MAILGUN_API_KEY = os.environ.get('MAILGUN_API_KEY')
+    PP_MAIL_DOMAIN = 'dev.mail.przypispowszechny.pl'
+    MAILGUN_API_URL = 'https://api.mailgun.net/v3/{}/messages'.format(PP_MAIL_DOMAIN)
+else:
+    MAILGUN_API_KEY = os.environ.get('MAILGUN_API_KEY')
+    PP_MAIL_DOMAIN = 'mail.przypispowszechny.pl'
+    MAILGUN_API_URL = 'https://api.mailgun.net/v3/{}/messages'.format(PP_MAIL_DOMAIN)
+
+
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -316,3 +335,10 @@ LOGGING = {
         },
     },
 }
+
+if _env.ENV == 'test':
+    LOGGING['loggers']['django']['level'] = 'CRITICAL'
+    LOGGING['loggers']['pp']['level'] = 'CRITICAL'
+    LOGGING['loggers']['pp.publisher']['level'] = 'CRITICAL'
+    LOGGING['loggers'].setdefault('celery', {})['level'] = 'CRITICAL'
+

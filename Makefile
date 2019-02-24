@@ -45,7 +45,7 @@ makemigrations-dry-run:   # Run django make migrations dry run
 
 test:                     # Run tests using django
 	${MAKE} generate-local-env
-	docker-compose run --rm --no-deps web python manage.py test
+	docker-compose run --rm --no-deps -e ENV=test web python manage.py test
 
 start:                    # Start services: web and worker
 	${MAKE} generate-local-env
