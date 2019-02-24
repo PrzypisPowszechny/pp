@@ -1,13 +1,14 @@
-from settings.base import *
+# TODO: merge this config into base.py settings
 import os
+from . import base
+from .utils import update_locals
 
-HOST = os.environ.get('HEROKU_HOST')
-SECRET_KEY = os.environ.get('PP_SECRET_KEY')
+update_locals(base.__dict__, locals())
 
 # Mailgun settings
-MAILGUN_API_KEY=os.environ.get('MAILGUN_API_KEY')
-PP_MAIL_DOMAIN='mail.przypispowszechny.pl'
-MAILGUN_API_URL='https://api.mailgun.net/v3/{}/messages'.format(PP_MAIL_DOMAIN)
+MAILGUN_API_KEY = os.environ.get('MAILGUN_API_KEY')
+PP_MAIL_DOMAIN = 'mail.przypispowszechny.pl'
+MAILGUN_API_URL = 'https://api.mailgun.net/v3/{}/messages'.format(PP_MAIL_DOMAIN)
 
 ALLOWED_HOSTS = [
     'przypispowszechny.pl', 'www.przypispowszechny.pl',
@@ -28,5 +29,3 @@ SESSION_COOKIE_DOMAIN = 'devdeploy1.przypispowszechny.pl'
 USE_X_FORWARDED_HOST = True
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-
-GA_TRACKING_ID = GA_TRACKING_ID_PROD

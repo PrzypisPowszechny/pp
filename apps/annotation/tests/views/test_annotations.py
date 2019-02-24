@@ -5,6 +5,7 @@ from mock import patch
 from model_mommy import mommy
 from parameterized import parameterized
 from rest_framework.test import APIRequestFactory
+from rest_framework_simplejwt.tokens import AccessToken
 
 from apps.annotation.models import Annotation
 from apps.annotation.tasks import notify_annotation_url_subscribers
@@ -20,15 +21,17 @@ class AnnotationViewTest(TestCase):
 
     def setUp(self):
         self.user, password = create_test_user()
+        self.token = str(AccessToken.for_user(self.user))
+        self.token_header = 'JWT %s' % self.token
         Annotation.objects.all().update(check_status=Annotation.UNVERIFIED)
 
     def request_to_generic_class_view(self, view_class, method, data=None, headers=None):
         factory = APIRequestFactory()
         # factory.post(...) / .get(...)
         request = getattr(factory, method)(self.mock_url, data)
-        # mock session since it is expected by some processors
-        request.session = self.client.session
+
         headers = headers or {}
+        headers['HTTP_AUTHORIZATION'] = self.token_header
         for key, val in headers.items():
             request.META[key] = val
         response = view_class.as_view()(request)
@@ -126,7 +129,6 @@ class AnnotationViewTest(TestCase):
         self.assertIsNotNone(results)
         self.assertEqual(len(results), expected_count)
 
-
     # Pagination is out of the box with DRF, but it is actually something important...
     def test_list_returns_limited(self):
         mommy.make('annotation.Annotation', 10)
@@ -139,8 +141,6 @@ class AnnotationViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(results)
         self.assertLess(len(results), all_count)
-
-
 
     def get_valid_annotation_attrs(self):
         return {

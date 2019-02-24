@@ -1,6 +1,7 @@
 import json
 
 from django.test import TransactionTestCase
+from rest_framework_simplejwt.tokens import AccessToken
 
 from apps.annotation.models import Annotation, AnnotationUpvote
 from apps.annotation.tests.utils import create_test_user, testserver_reverse
@@ -17,7 +18,8 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
     # IMPORTANT: we log in for each test, so self.user has already an open session with server
     def setUp(self):
         self.user, self.password = create_test_user()
-        self.client.login(username=self.user, password=self.password)
+        self.token = str(AccessToken.for_user(self.user))
+        self.token_header = 'JWT %s' % self.token
 
     # TODO: split this obsolete test to make it MORE UNIT
     def test_get_upvote(self):
@@ -25,7 +27,7 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
         upvote = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
 
         response = self.client.get(self.upvote_single_url.format(upvote.id),
-                                   content_type='application/vnd.api+json')
+                                   content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(
             json.loads(response.content.decode('utf8')),
@@ -46,7 +48,7 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
         )
 
         response = self.client.get(self.upvote_single_url.format(upvote.id + 1),
-                                   content_type='application/vnd.api+json')
+                                   content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 404)
 
     # TODO: split this obsolete test to make it MORE UNIT
@@ -55,7 +57,7 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
         upvote = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
 
         response = self.client.get(self.annotation_related_upvote_url.format(annotation.id),
-                                   content_type='application/vnd.api+json')
+                                   content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200)
         self.assertDictEqual(
             json.loads(response.content.decode('utf8')),
@@ -76,7 +78,7 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
         )
 
         response = self.client.get(self.annotation_related_upvote_url.format(annotation.id + 1),
-                                   content_type='application/vnd.api+json')
+                                   content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 404)
 
     # TODO: split this obsolete test to make it MORE UNIT
@@ -98,7 +100,7 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
 
         self.assertIsNone(AnnotationUpvote.objects.last())
         response = self.client.post(
-            self.upvote_url, content_type='application/vnd.api+json',
+            self.upvote_url, content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header,
             data=json.dumps(post_payload))
         self.assertEqual(response.status_code, 200)
         upvote = AnnotationUpvote.objects.last()
@@ -123,7 +125,7 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
 
         # Can't post second time for the same annotation
         response = self.client.post(
-            self.upvote_url, content_type='application/vnd.api+json',
+            self.upvote_url, content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header,
             data=json.dumps(post_payload))
         self.assertEqual(response.status_code, 400)
 
@@ -144,7 +146,7 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
         }
 
         response = self.client.post(
-            self.upvote_url, content_type='application/vnd.api+json',
+            self.upvote_url, content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header,
             data=json.dumps(post_payload))
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response['content-type'], 'application/vnd.api+json', msg=response.content.decode('utf8'))
@@ -158,7 +160,7 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
 
         post_payload['data']['relationships']['annotation']['data'] = None
         response = self.client.post(
-            self.upvote_url, content_type='application/vnd.api+json',
+            self.upvote_url, content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header,
             data=json.dumps(post_payload))
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response['content-type'], 'application/vnd.api+json', msg=response.content.decode('utf8'))
@@ -169,7 +171,7 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
 
         post_payload['data']['relationships']['annotation'] = None
         response = self.client.post(
-            self.upvote_url, content_type='application/vnd.api+json',
+            self.upvote_url, content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header,
             data=json.dumps(post_payload))
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response['content-type'], 'application/vnd.api+json', msg=response.content.decode('utf8'))
@@ -180,7 +182,7 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
 
         post_payload['data']['relationships'] = None
         response = self.client.post(
-            self.upvote_url, content_type='application/vnd.api+json',
+            self.upvote_url, content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header,
             data=json.dumps(post_payload))
         self.assertEqual(response.status_code, 400)
         self.assertIsNone(AnnotationUpvote.objects.last())
@@ -206,7 +208,7 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
         }
 
         response = self.client.post(
-            self.upvote_url, content_type='application/vnd.api+json',
+            self.upvote_url, content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header,
             data=json.dumps(post_payload))
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response['content-type'], 'application/vnd.api+json', msg=response.content.decode('utf8'))
@@ -222,7 +224,7 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
         upvote = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
 
         response = self.client.delete(self.upvote_single_url.format(upvote.id),
-                                      content_type='application/vnd.api+json')
+                                      content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200)
 
         upvotes = AnnotationUpvote.objects.filter(user=self.user, annotation=annotation).count()
@@ -230,5 +232,5 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
 
         # Can't delete when there are none
         response = self.client.delete(self.upvote_single_url.format(upvote.id),
-                                      content_type='application/vnd.api+json')
+                                      content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 404)

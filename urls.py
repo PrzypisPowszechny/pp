@@ -49,6 +49,7 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
 
     url(r'^api/', include('apps.annotation.urls', namespace='api')),
+    url(r'^api/auth/', include('apps.auth.urls', namespace='api')),
     url(r'^api/docs/swagger(?P<format>\.json|\.yaml)$',
         yasg_schema_view.without_ui(cache_timeout=None), name='schema_json'),
     url(r'^api/docs/$',
@@ -65,6 +66,7 @@ urlpatterns = [
     url(r'^site_test/', site_views.site_test_index, name='site_test'),
     url(r'^site/report/$', site_views.report_form),
     url(r'^site/about/$', site_views.about),
+    url(r'^site/social-login-demo/$', site_views.social_login_demo),
     url(r'^site/annotation_request_unsubscribe/(?P<annotation_request_id>[0-9]+)/(?P<token>[\w.:\-_=]+)/$',
         site_views.annotation_request_unsubscribe, name='annotation_request_unsubscribe'),
 

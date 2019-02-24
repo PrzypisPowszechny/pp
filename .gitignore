@@ -92,12 +92,14 @@ celerybeat.pid
 
 # dotenv
 .env
+dev-local.env
 
 # virtualenv
 .venv
 venv/
 env/
-docker-env/
+docker/venv/
+docker/data/
 
 # Spyder project settings
 .spyderproject
