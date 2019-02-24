@@ -2,11 +2,11 @@
 CURRENT_UID := $$(id -u):$$(id -g)
 
 
-generate-local-env:       # Generate from template .env file, it is meant to store credentials to external services
-	cp --update dev-local.env.template dev-local.env
-
 help:                     # Show this help
 	@grep '^[^#[:space:]].*:' Makefile
+
+generate-local-env:       # Generate from template .env file, it is meant to store credentials to external services
+	cp --update dev-local.env.template dev-local.env
 
 build-image:              # Build docker image
 	docker build -t pp/python-venv ./docker/image
@@ -25,7 +25,7 @@ shell:                    # Open bash shell in container
 
 dbshell:                  # Open database shell in container using django
 	${MAKE} generate-local-env
-	docker-compose run --rm --user=$(CURRENT_UID) web python manage.py dbsheel
+	docker-compose run --rm --user=$(CURRENT_UID) web python manage.py dbshell
 
 python-shell:             # Open in container ipython shell with initialized django
 	${MAKE} generate-local-env
