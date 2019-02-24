@@ -5,6 +5,7 @@ jobs:
       - image: python:3.6
     environment:
       PP_SECRET_KEY: dummy
+      ENV: test
 
     working_directory: ~/project
 

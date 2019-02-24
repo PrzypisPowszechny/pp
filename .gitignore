@@ -98,7 +98,7 @@ dev-local.env
 .venv
 venv/
 env/
-docker/venv/
+docker/venv*
 docker/data/
 
 # Spyder project settings
