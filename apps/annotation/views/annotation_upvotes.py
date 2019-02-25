@@ -1,12 +1,11 @@
 from django.db import IntegrityError
-from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.annotation import serializers
 from apps.annotation.models import AnnotationUpvote
-from apps.annotation.responses import ErrorResponse, NotFoundResponse, ValidationErrorResponse
+from apps.api.responses import ErrorResponse, NotFoundResponse, ValidationErrorResponse
 
 
 class AnnotationUpvoteSingle(APIView):
@@ -70,7 +69,7 @@ class AnnotationUpvoteList(APIView):
                 }
             },
             context={'request': request, 'root_resource_obj': feedback}).data
-        )
+                        )
 
 
 class AnnotationRelatedAnnotationUpvoteSingle(APIView):
@@ -91,4 +90,4 @@ class AnnotationRelatedAnnotationUpvoteSingle(APIView):
                 }
             },
             context={'request': request, 'root_resource_obj': feedback}).data
-        )
+                        )

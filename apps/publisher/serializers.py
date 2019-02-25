@@ -26,7 +26,6 @@ class StatementDeserializer(serializers.Serializer):
 
 class SourcesDeserializer(serializers.Serializer):
     class Attributes(serializers.Serializer):
-
         sources = serializers.ListField(child=serializers.CharField())
 
     attributes = Attributes()

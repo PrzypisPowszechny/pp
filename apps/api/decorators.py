@@ -7,7 +7,9 @@ def decorate_conditionally(condition, decorator):
             if condition(request, *args, **kwargs):
                 return decorator(func)(request, *args, **kwargs)
             return func(request, *args, **kwargs)
+
         return wraps(decorator(func))(wrapped)
+
     return decorate
 
 

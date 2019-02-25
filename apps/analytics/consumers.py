@@ -4,7 +4,6 @@ from apps.consumers import Consumer
 
 
 class GAConsumer(Consumer):
-
     VAR_TRACKING_ID = 'tid'
     VAR_CLIENT_ID = 'cid'
     VAR_VERSION = 'v'
@@ -31,10 +30,10 @@ class GAConsumer(Consumer):
             data=dict(
                 **data,
                 **{
-                   self.VAR_VERSION: self.VAL_VERSION_1,
-                   self.VAR_CLIENT_ID: self.cid_value,
-                   self.VAR_TRACKING_ID: settings.GA_TRACKING_ID,
-                   self.VAR_TYPE: type_value
+                    self.VAR_VERSION: self.VAL_VERSION_1,
+                    self.VAR_CLIENT_ID: self.cid_value,
+                    self.VAR_TRACKING_ID: settings.GA_TRACKING_ID,
+                    self.VAR_TYPE: type_value
                 }
             )
         )

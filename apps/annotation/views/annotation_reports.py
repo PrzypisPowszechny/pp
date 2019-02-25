@@ -1,12 +1,11 @@
 from django.db import IntegrityError
-from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.annotation import serializers
 from apps.annotation.models import Annotation, AnnotationReport
-from apps.annotation.responses import ValidationErrorResponse, NotFoundResponse, ErrorResponse
+from apps.api.responses import ValidationErrorResponse, NotFoundResponse, ErrorResponse
 
 
 class AnnotationReportSingle(APIView):
@@ -88,4 +87,3 @@ class AnnotationRelatedAnnotationReportList(APIView):
                 context={'request': request, 'root_resource_obj': report}
             ).data
             for report in reports])
-

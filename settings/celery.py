@@ -29,3 +29,6 @@ CELERYBEAT_SCHEDULE = {
         'schedule': crontab(minute=15),
     },
 }
+
+if _env.ENV == 'test':
+    CELERY_ALWAYS_EAGER = True

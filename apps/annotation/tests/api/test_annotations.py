@@ -9,7 +9,6 @@ from parameterized import parameterized
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import AccessToken
 
-from apps.annotation import consts
 from apps.annotation.models import Annotation, AnnotationUpvote, AnnotationReport
 from apps.annotation.tests.utils import create_test_user, testserver_reverse
 
@@ -77,28 +76,28 @@ class AnnotationAPITest(TestCase):
                     'relationships': {
                         'user': {
                             'links': {
-                                'related': testserver_reverse('api:annotation_related_user',
+                                'related': testserver_reverse('api:annotation:annotation_related_user',
                                                               kwargs={'annotation_id': annotation.id})
                             },
                             'data': {'type': 'users', 'id': str(self.user.id)}
                         },
                         'annotationUpvote': {
                             'links': {
-                                'related': testserver_reverse('api:annotation_related_upvote',
+                                'related': testserver_reverse('api:annotation:annotation_related_upvote',
                                                               kwargs={'annotation_id': annotation.id})
                             },
                             'data': {'id': str(urf.id), 'type': 'annotationUpvotes'}
                         },
                         'annotationReports': {
                             'links': {
-                                'related': testserver_reverse('api:annotation_related_reports',
+                                'related': testserver_reverse('api:annotation:annotation_related_reports',
                                                               kwargs={'annotation_id': annotation.id})
                             },
                             'data': []
                         },
                     },
                     'links': {
-                        'self': testserver_reverse('api:annotation', kwargs={'annotation_id': annotation.id})
+                        'self': testserver_reverse('api:annotation:annotation', kwargs={'annotation_id': annotation.id})
                     },
                 }
             }
@@ -128,7 +127,7 @@ class AnnotationAPITest(TestCase):
         self.assertIsNotNone(relationships)
         self.assertDictEqual(relationships.get('annotationUpvote'), {
             'links': {
-                'related': testserver_reverse('api:annotation_related_upvote',
+                'related': testserver_reverse('api:annotation:annotation_related_upvote',
                                               kwargs={'annotation_id': annotation.id})
             },
             'data': None
@@ -150,7 +149,7 @@ class AnnotationAPITest(TestCase):
         self.assertIsNotNone(relationships)
         self.assertDictEqual(relationships.get('annotationUpvote'), {
             'links': {
-                'related': testserver_reverse('api:annotation_related_upvote',
+                'related': testserver_reverse('api:annotation:annotation_related_upvote',
                                               kwargs={'annotation_id': annotation.id})
             },
             'data': {'id': str(urf.id), 'type': 'annotationUpvotes'}
@@ -176,7 +175,7 @@ class AnnotationAPITest(TestCase):
         self.assertIsNotNone(relationships)
         self.assertDictEqual(relationships.get('annotationUpvote'), {
             'links': {
-                'related': testserver_reverse('api:annotation_related_upvote',
+                'related': testserver_reverse('api:annotation:annotation_related_upvote',
                                               kwargs={'annotation_id': annotation.id})
             },
             'data': {'id': str(urf.id), 'type': 'annotationUpvotes'}
@@ -221,21 +220,21 @@ class AnnotationAPITest(TestCase):
                     'relationships': {
                         'user': {
                             'links': {
-                                'related': testserver_reverse('api:annotation_related_user',
+                                'related': testserver_reverse('api:annotation:annotation_related_user',
                                                               kwargs={'annotation_id': annotation.id})
                             },
                             'data': {'type': 'users', 'id': str(self.user.id)}
                         },
                         'annotationUpvote': {
                             'links': {
-                                'related': testserver_reverse('api:annotation_related_upvote',
+                                'related': testserver_reverse('api:annotation:annotation_related_upvote',
                                                               kwargs={'annotation_id': annotation.id})
                             },
                             'data': {'id': str(urf.id), 'type': 'annotationUpvotes'}
                         },
                         'annotationReports': {
                             'links': {
-                                'related': testserver_reverse('api:annotation_related_reports',
+                                'related': testserver_reverse('api:annotation:annotation_related_reports',
                                                               kwargs={'annotation_id': annotation.id})
                             },
                             'data': [
@@ -244,7 +243,7 @@ class AnnotationAPITest(TestCase):
                         },
                     },
                     'links': {
-                        'self': testserver_reverse('api:annotation', kwargs={'annotation_id': annotation.id})
+                        'self': testserver_reverse('api:annotation:annotation', kwargs={'annotation_id': annotation.id})
                     },
                 }
             }
@@ -289,21 +288,21 @@ class AnnotationAPITest(TestCase):
                     'relationships': {
                         'user': {
                             'links': {
-                                'related': testserver_reverse('api:annotation_related_user',
+                                'related': testserver_reverse('api:annotation:annotation_related_user',
                                                               kwargs={'annotation_id': annotation.id})
                             },
                             'data': {'type': 'users', 'id': str(self.user.id)}
                         },
                         'annotationUpvote': {
                             'links': {
-                                'related': testserver_reverse('api:annotation_related_upvote',
+                                'related': testserver_reverse('api:annotation:annotation_related_upvote',
                                                               kwargs={'annotation_id': annotation.id})
                             },
                             'data': {'id': str(upvote.id), 'type': 'annotationUpvotes'}
                         },
                         'annotationReports': {
                             'links': {
-                                'related': testserver_reverse('api:annotation_related_reports',
+                                'related': testserver_reverse('api:annotation:annotation_related_reports',
                                                               kwargs={'annotation_id': annotation.id})
                             },
                             'data': [
@@ -312,7 +311,7 @@ class AnnotationAPITest(TestCase):
                         },
                     },
                     'links': {
-                        'self': testserver_reverse('api:annotation', kwargs={'annotation_id': annotation.id})
+                        'self': testserver_reverse('api:annotation:annotation', kwargs={'annotation_id': annotation.id})
                     },
                 }
             }
@@ -465,28 +464,28 @@ class AnnotationAPITest(TestCase):
              'relationships': {
                  'user': {
                      'links': {
-                         'related': testserver_reverse('api:annotation_related_user',
+                         'related': testserver_reverse('api:annotation:annotation_related_user',
                                                        kwargs={'annotation_id': annotation.id})
                      },
                      'data': {'type': 'users', 'id': str(self.user.id)}
                  },
                  'annotationUpvote': {
                      'links': {
-                         'related': testserver_reverse('api:annotation_related_upvote',
+                         'related': testserver_reverse('api:annotation:annotation_related_upvote',
                                                        kwargs={'annotation_id': annotation.id})
                      },
                      'data': {'type': 'annotationUpvotes', 'id': str(urf.id)}
                  },
                  'annotationReports': {
                      'links': {
-                         'related': testserver_reverse('api:annotation_related_reports',
+                         'related': testserver_reverse('api:annotation:annotation_related_reports',
                                                        kwargs={'annotation_id': annotation.id})
                      },
                      'data': []
                  },
              },
              'links': {
-                 'self': testserver_reverse('api:annotation', kwargs={'annotation_id': annotation.id})
+                 'self': testserver_reverse('api:annotation:annotation', kwargs={'annotation_id': annotation.id})
              }
              })
 
@@ -512,28 +511,28 @@ class AnnotationAPITest(TestCase):
              'relationships': {
                  'user': {
                      'links': {
-                         'related': testserver_reverse('api:annotation_related_user',
+                         'related': testserver_reverse('api:annotation:annotation_related_user',
                                                        kwargs={'annotation_id': annotation2.id})
                      },
                      'data': {'type': 'users', 'id': str(self.user.id)}
                  },
                  'annotationUpvote': {
                      'links': {
-                         'related': testserver_reverse('api:annotation_related_upvote',
+                         'related': testserver_reverse('api:annotation:annotation_related_upvote',
                                                        kwargs={'annotation_id': annotation2.id})
                      },
                      'data': None
                  },
                  'annotationReports': {
                      'links': {
-                         'related': testserver_reverse('api:annotation_related_reports',
+                         'related': testserver_reverse('api:annotation:annotation_related_reports',
                                                        kwargs={'annotation_id': annotation2.id})
                      },
                      'data': []
                  },
              },
              'links': {
-                 'self': testserver_reverse('api:annotation', kwargs={'annotation_id': annotation2.id})
+                 'self': testserver_reverse('api:annotation:annotation', kwargs={'annotation_id': annotation2.id})
              },
              })
 
@@ -560,7 +559,7 @@ class AnnotationAPITest(TestCase):
         self.assertIsNotNone(relationships)
         self.assertDictEqual(relationships.get('annotationUpvote'), {
             'links': {
-                'related': testserver_reverse('api:annotation_related_upvote',
+                'related': testserver_reverse('api:annotation:annotation_related_upvote',
                                               kwargs={'annotation_id': annotation.id})
             },
             'data': None
@@ -582,7 +581,7 @@ class AnnotationAPITest(TestCase):
         self.assertIsNotNone(relationships)
         self.assertDictEqual(relationships.get('annotationUpvote'), {
             'links': {
-                'related': testserver_reverse('api:annotation_related_upvote',
+                'related': testserver_reverse('api:annotation:annotation_related_upvote',
                                               kwargs={'annotation_id': annotation.id})
             },
             'data': {'id': str(urf.id), 'type': 'annotationUpvotes'}
@@ -608,7 +607,7 @@ class AnnotationAPITest(TestCase):
         self.assertIsNotNone(relationships)
         self.assertDictEqual(relationships.get('annotationUpvote'), {
             'links': {
-                'related': testserver_reverse('api:annotation_related_upvote',
+                'related': testserver_reverse('api:annotation:annotation_related_upvote',
                                               kwargs={'annotation_id': annotation.id})
             },
             'data': {'id': str(urf.id), 'type': 'annotationUpvotes'}
@@ -673,28 +672,28 @@ class AnnotationAPITest(TestCase):
                     'relationships': {
                         'user': {
                             'links': {
-                                'related': testserver_reverse('api:annotation_related_user',
+                                'related': testserver_reverse('api:annotation:annotation_related_user',
                                                               kwargs={'annotation_id': annotation.id})
                             },
                             'data': {'type': 'users', 'id': str(self.user.id)}
                         },
                         'annotationUpvote': {
                             'links': {
-                                'related': testserver_reverse('api:annotation_related_upvote',
+                                'related': testserver_reverse('api:annotation:annotation_related_upvote',
                                                               kwargs={'annotation_id': annotation.id})
                             },
                             'data': None
                         },
                         'annotationReports': {
                             'links': {
-                                'related': testserver_reverse('api:annotation_related_reports',
+                                'related': testserver_reverse('api:annotation:annotation_related_reports',
                                                               kwargs={'annotation_id': annotation.id})
                             },
                             'data': []
                         },
                     },
                     'links': {
-                        'self': testserver_reverse('api:annotation', kwargs={'annotation_id': annotation.id})
+                        'self': testserver_reverse('api:annotation:annotation', kwargs={'annotation_id': annotation.id})
                     },
                 }
             }
@@ -977,28 +976,28 @@ class AnnotationAPITest(TestCase):
                 'relationships': {
                     'user': {
                         'links': {
-                            'related': testserver_reverse('api:annotation_related_user',
+                            'related': testserver_reverse('api:annotation:annotation_related_user',
                                                           kwargs={'annotation_id': annotation.id})
                         },
                         'data': {'type': 'users', 'id': str(self.user.id)}
                     },
                     'annotationUpvote': {
                         'links': {
-                            'related': testserver_reverse('api:annotation_related_upvote',
+                            'related': testserver_reverse('api:annotation:annotation_related_upvote',
                                                           kwargs={'annotation_id': annotation.id})
                         },
                         'data': {'id': str(urf.id), 'type': 'annotationUpvotes'}
                     },
                     'annotationReports': {
                         'links': {
-                            'related': testserver_reverse('api:annotation_related_reports',
+                            'related': testserver_reverse('api:annotation:annotation_related_reports',
                                                           kwargs={'annotation_id': annotation.id})
                         },
                         'data': []
                     },
                 },
                 'links': {
-                    'self': testserver_reverse('api:annotation', kwargs={'annotation_id': annotation.id})
+                    'self': testserver_reverse('api:annotation:annotation', kwargs={'annotation_id': annotation.id})
                 },
             }
 
@@ -1091,17 +1090,21 @@ class AnnotationAPITest(TestCase):
         good_id = annotation.id
         non_existing_id = good_id + 100000000
 
-        response = self.client.delete(self.base_url.format(good_id), content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
+        response = self.client.delete(self.base_url.format(good_id), content_type='application/vnd.api+json',
+                                      HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200)
 
         # After removing is not accessible
-        response = self.client.get(self.base_url.format(good_id), content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
+        response = self.client.get(self.base_url.format(good_id), content_type='application/vnd.api+json',
+                                   HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 404)
 
         # Removing again is still good
-        response = self.client.delete(self.base_url.format(good_id), content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
+        response = self.client.delete(self.base_url.format(good_id), content_type='application/vnd.api+json',
+                                      HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200)
 
         # Removing never existing is bad
-        response = self.client.delete(self.base_url.format(non_existing_id), content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
+        response = self.client.delete(self.base_url.format(non_existing_id), content_type='application/vnd.api+json',
+                                      HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 404)

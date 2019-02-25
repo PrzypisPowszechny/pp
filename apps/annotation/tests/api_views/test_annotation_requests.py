@@ -42,7 +42,7 @@ class AnnotationRequestsViewTest(TestCase):
         }
 
     @parameterized.expand([
-        ({'data': { 'attributes': {'url': 'http://www.xyz.pl'}}},),
+        ({'data': {'attributes': {'url': 'http://www.xyz.pl'}}},),
     ])
     @responses.activate
     def test_post_200(self, data):
@@ -64,7 +64,7 @@ class AnnotationRequestsViewTest(TestCase):
     @parameterized.expand([
         ({'data': {'attributes': {'url': 'http://www.xyz.pl/', 'notification_email': 'abc@test.pl'}}},),
         ({'data': {'attributes': {'url': 'http://www.xyz.pl/', 'comment': 'komentarz'}}},),
-        ({'data': { 'attributes': {'url': 'http://www.xyz.pl/', 'quote': 'fragment tekstu'}}},),
+        ({'data': {'attributes': {'url': 'http://www.xyz.pl/', 'quote': 'fragment tekstu'}}},),
     ])
     @responses.activate
     def test_post_optional_string_attributes(self, data):

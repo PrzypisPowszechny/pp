@@ -6,7 +6,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('pp', '0003_remove_useful_objection_counts'),
     ]

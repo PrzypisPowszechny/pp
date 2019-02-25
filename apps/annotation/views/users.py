@@ -1,13 +1,15 @@
 from django.contrib.auth import get_user_model
-from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.annotation.responses import NotFoundResponse
 from apps.annotation.serializers import UserSerializer
+from apps.api.responses import NotFoundResponse
 
 User = get_user_model()
+
+
+# TODO: move those views to seperate application, it should not be part of annotation
 
 
 class UserSingle(APIView):

@@ -1,6 +1,4 @@
-
 from django.conf import settings
-from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
 from simple_history.models import HistoricalRecords
@@ -46,6 +44,7 @@ class LocatedAnnotationBase(AnnotationBase):
     # The exact annotated text part
 
     quote_context = models.TextField(max_length=250, blank=True)
+
     # The annotated text with its surrounding
 
     class Meta:
@@ -53,7 +52,6 @@ class LocatedAnnotationBase(AnnotationBase):
 
 
 class AnnotationRequest(AnnotationBase):
-
     class JSONAPIMeta:
         resource_name = 'annotation_requests'
 
@@ -66,7 +64,6 @@ class AnnotationRequest(AnnotationBase):
 
 
 class Annotation(LocatedAnnotationBase):
-
     class JSONAPIMeta:
         resource_name = 'annotations'
 
@@ -163,7 +160,6 @@ class Annotation(LocatedAnnotationBase):
 
 
 class AnnotationReport(UserInput):
-
     class JSONAPIMeta:
         resource_name = 'annotation_reports'
 

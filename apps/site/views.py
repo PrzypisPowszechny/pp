@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.signing import Signer, BadSignature
 from django.http import HttpResponseBadRequest, Http404
 from django.shortcuts import render, redirect
@@ -38,4 +39,6 @@ def annotation_request_unsubscribe(request, annotation_request_id, token):
 
 
 def social_login_demo(request):
+    if settings.ENV == 'prod':
+        raise Http404()
     return render(request, 'site/social_login_demo.html')

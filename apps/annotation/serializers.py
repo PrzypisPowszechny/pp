@@ -2,9 +2,9 @@ from django.urls import reverse
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from apps.annotation import fields
 from apps.annotation.consts import SUGGESTED_CORRECTION
 from apps.annotation.models import AnnotationReport, AnnotationRequest
+from apps.api import fields
 from .models import Annotation, AnnotationUpvote
 
 
@@ -24,7 +24,6 @@ class ResourceLinksSerializer(serializers.Serializer):
 # Annotation
 
 class AnnotationSerializer(serializers.Serializer):
-
     class Attributes(serializers.ModelSerializer):
         url = fields.StandardizedRepresentationURLField()
         range = fields.ObjectField(json_internal_type=True)
@@ -60,22 +59,22 @@ class AnnotationSerializer(serializers.Serializer):
 
     class Relationships(serializers.Serializer):
         user = fields.RelationField(
-            related_link_url_name='api:annotation_related_user',
+            related_link_url_name='api:annotation:annotation_related_user',
             child=fields.ResourceField(resource_name='users')
         )
         annotation_upvote = fields.RelationField(
-            related_link_url_name='api:annotation_related_upvote',
+            related_link_url_name='api:annotation:annotation_related_upvote',
             child=fields.ResourceField(resource_name='annotation_upvotes'),
         )
         annotation_reports = fields.RelationField(
             many=True,
-            related_link_url_name='api:annotation_related_reports',
+            related_link_url_name='api:annotation:annotation_related_reports',
             child=fields.ResourceField(resource_name='annotation_reports')
         )
 
     id = fields.IDField()
     type = fields.CamelcaseConstField('annotations')
-    links = ResourceLinksSerializer(source='id', self_link_url_name='api:annotation')
+    links = ResourceLinksSerializer(source='id', self_link_url_name='api:annotation:annotation')
     attributes = Attributes()
     relationships = Relationships()
 
@@ -102,22 +101,22 @@ class AnnotationListSerializer(serializers.Serializer):
 
     class Relationships(serializers.Serializer):
         user = fields.RelationField(
-            related_link_url_name='api:annotation_related_user',
+            related_link_url_name='api:annotation:annotation_related_user',
             child=fields.ResourceField(resource_name='users')
         )
         annotation_upvote = fields.RelationField(
-            related_link_url_name='api:annotation_related_upvote',
+            related_link_url_name='api:annotation:annotation_related_upvote',
             child=fields.ResourceField(resource_name='annotation_upvotes'),
         )
         annotation_reports = fields.RelationField(
             many=True,
-            related_link_url_name='api:annotation_related_reports',
+            related_link_url_name='api:annotation:annotation_related_reports',
             child=fields.ResourceField(resource_name='annotation_reports')
         )
 
     id = fields.IDField()
     type = fields.CamelcaseConstField('annotations')
-    links = ResourceLinksSerializer(source='id', self_link_url_name='api:annotation')
+    links = ResourceLinksSerializer(source='id', self_link_url_name='api:annotation:annotation')
     attributes = Attributes()
     relationships = Relationships()
 
@@ -160,7 +159,6 @@ class AnnotationPatchDeserializer(serializers.Serializer):
 
 class AnnotationReportDeserializer(serializers.Serializer):
     class Attributes(serializers.ModelSerializer):
-
         class Meta:
             model = AnnotationReport
             fields = ('reason', 'comment')
@@ -175,7 +173,7 @@ class AnnotationReportDeserializer(serializers.Serializer):
 
     class Relationships(serializers.Serializer):
         annotation = fields.RelationField(
-            related_link_url_name='api:annotation_report_related_annotation',
+            related_link_url_name='api:annotation:annotation_report_related_annotation',
             child=fields.ResourceField('annotations')
         )
 
@@ -185,7 +183,6 @@ class AnnotationReportDeserializer(serializers.Serializer):
 
 
 class AnnotationReportSerializer(serializers.Serializer):
-
     class Attributes(serializers.ModelSerializer):
         class Meta:
             model = AnnotationReport
@@ -194,7 +191,7 @@ class AnnotationReportSerializer(serializers.Serializer):
 
     class Relationships(serializers.Serializer):
         annotation = fields.RelationField(
-            related_link_url_name='api:annotation_report_related_annotation',
+            related_link_url_name='api:annotation:annotation_report_related_annotation',
             child=fields.ResourceField('annotations')
         )
 
@@ -209,7 +206,7 @@ class AnnotationReportSerializer(serializers.Serializer):
 class AnnotationUpvoteDeserializer(serializers.Serializer):
     class Relationships(serializers.Serializer):
         annotation = fields.RelationField(
-            related_link_url_name='api:annotation_upvote_related_annotation',
+            related_link_url_name='api:annotation:annotation_upvote_related_annotation',
             child=fields.ResourceField('annotations')
         )
 
@@ -220,7 +217,7 @@ class AnnotationUpvoteDeserializer(serializers.Serializer):
 class AnnotationUpvoteSerializer(serializers.Serializer):
     class Relationships(serializers.Serializer):
         annotation = fields.RelationField(
-            related_link_url_name='api:annotation_upvote_related_annotation',
+            related_link_url_name='api:annotation:annotation_upvote_related_annotation',
             child=fields.ResourceField('annotations')
         )
 
@@ -256,7 +253,6 @@ class AnnotationRequestDeserializer(serializers.Serializer):
 
 
 class AnnotationRequestSerializer(serializers.Serializer):
-
     class Attributes(serializers.ModelSerializer):
         url = fields.StandardizedRepresentationURLField()
 

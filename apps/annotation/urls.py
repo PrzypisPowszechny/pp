@@ -3,7 +3,6 @@ from django.conf.urls import url, include
 from apps.annotation.views import users, annotation_requests
 from .views import annotations, annotation_reports, annotation_upvotes
 
-
 app_name = 'annotation'
 
 urlpatterns = [

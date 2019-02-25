@@ -6,12 +6,11 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils.text import Truncator
 
-from worker import celery_app
 from apps.annotation.models import Annotation
+from worker import celery_app
 from .consumers import DemagogConsumer
 
 logger = logging.getLogger('pp.publisher')
-
 
 UNCHANGED = 'unchanged'
 CREATED = 'created'

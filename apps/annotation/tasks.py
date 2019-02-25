@@ -6,7 +6,6 @@ from django.urls import reverse
 
 from apps.annotation.mailgun import send_mail, MailSendException
 from apps.annotation.models import Annotation, AnnotationRequest
-
 from worker import celery_app
 
 logger = logging.getLogger('pp.annotation')
@@ -24,7 +23,7 @@ def notify_annotation_url_subscribers(annotation_id):
         if instance.notification_email:
             notification_emails.append((instance.notification_email, None))
             token = Signer().sign(instance.id).split(':')[1]
-            unsubscribe_reverse = reverse('annotation_request_unsubscribe',
+            unsubscribe_reverse = reverse('site:annotation_request_unsubscribe',
                                           kwargs={'annotation_request_id': instance.id, 'token': token})
             unsubscribe_link = '{}{}'.format(settings.HOST, unsubscribe_reverse)
             recipient_variables[instance.notification_email] = {'unsubscribe_link': unsubscribe_link}

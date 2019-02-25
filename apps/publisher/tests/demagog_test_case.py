@@ -16,7 +16,7 @@ class DemagogTestCase(TestCase):
         return {
             'sources': [self.SOURCE_URL],
             'text': "it's an interesting article",
-            'timestamp_factcheck':  timezone.now(),
+            'timestamp_factcheck': timezone.now(),
             'rating': 'true',
             'rating_text': 'true statement',
             'explanation': 'this statement is a statement that says something that is true',

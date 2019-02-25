@@ -3,7 +3,6 @@
 from __future__ import unicode_literals
 
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.db import migrations
 
 ADDITIONAL_INFO = 'ADDITIONAL_INFO'
@@ -45,7 +44,6 @@ def insert_mock_annotation(apps, schema):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('annotation', '0003_remove_priority'),
     ]

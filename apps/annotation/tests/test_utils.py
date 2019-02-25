@@ -36,7 +36,6 @@ class StandardizeURLTest(SimpleTestCase):
     def test_standardize_url(self, input_url, expected_url):
         self.assertEqual(standardize_url(input_url), expected_url)
 
-
     @parameterized.expand([
         # Accepts empty, returns empty
         ("",

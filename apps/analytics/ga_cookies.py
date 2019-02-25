@@ -1,9 +1,8 @@
-import re
 from datetime import timedelta
 from logging import getLogger
 
+import re
 from django.utils import timezone
-
 
 CID_PARAM = 'ga_cookie'
 GID_PARAM = 'gid_cookie'
@@ -21,7 +20,7 @@ def set_cookies(request_data):
     # Limit the length but beside that accept any value (this is just cookie used as local id)
     cid = request_data.get(CID_PARAM)[:64]
     gid = request_data.get(GID_PARAM)[:64]
-    cookie_base = {'expires': timezone.now() + timedelta(days=360*100), 'httponly': False}
+    cookie_base = {'expires': timezone.now() + timedelta(days=360 * 100), 'httponly': False}
     cookies = []
     if cid:
         cookies.append(dict(key=CID_COOKIE, value=cid, **cookie_base))

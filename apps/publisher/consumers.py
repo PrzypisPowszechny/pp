@@ -66,7 +66,7 @@ class DemagogConsumer(JSONConsumer):
         if invalid_sources:
             logging.warning(self.request_deserialize_error(
                 '{invalid}/{all} of loaded sources are not valid urls: \n {sources}'.format(
-                    invalid=len(invalid_sources), all=len(invalid_sources)+len(valid_sources), sources=invalid_sources
+                    invalid=len(invalid_sources), all=len(invalid_sources) + len(valid_sources), sources=invalid_sources
                 ), for_endpoint=endpoint
             ))
         return valid_sources

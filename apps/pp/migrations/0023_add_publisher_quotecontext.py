@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('pp', '0022_annotation_report_blank_comment'),
     ]
@@ -15,7 +14,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='annotation',
             name='publisher',
-            field=models.CharField(choices=[('PP', 'Przypis Powszechny'), ('DEMAGOG', 'Demagog')], default='PP', max_length=10),
+            field=models.CharField(choices=[('PP', 'Przypis Powszechny'), ('DEMAGOG', 'Demagog')], default='PP',
+                                   max_length=10),
         ),
         migrations.AddField(
             model_name='annotation',
@@ -30,7 +30,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='historicalannotation',
             name='publisher',
-            field=models.CharField(choices=[('PP', 'Przypis Powszechny'), ('DEMAGOG', 'Demagog')], default='PP', max_length=10),
+            field=models.CharField(choices=[('PP', 'Przypis Powszechny'), ('DEMAGOG', 'Demagog')], default='PP',
+                                   max_length=10),
         ),
         migrations.AddField(
             model_name='historicalannotation',
@@ -45,7 +46,10 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='annotationreport',
             name='reason',
-            field=models.CharField(choices=[('BIASED', 'nieobiektywny'), ('UNRELIABLE', 'nierzetelne źródło'), ('USELESS', 'niepotrzebny'), ('SPAM', 'spam'), ('OTHER', 'inne'), ('SUGGESTED_CORRECTION', 'sugerowana poprawka')], max_length=100),
+            field=models.CharField(
+                choices=[('BIASED', 'nieobiektywny'), ('UNRELIABLE', 'nierzetelne źródło'), ('USELESS', 'niepotrzebny'),
+                         ('SPAM', 'spam'), ('OTHER', 'inne'), ('SUGGESTED_CORRECTION', 'sugerowana poprawka')],
+                max_length=100),
         ),
         migrations.AlterField(
             model_name='annotationrequest',

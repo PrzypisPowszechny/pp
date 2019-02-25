@@ -2,11 +2,9 @@ from datetime import timedelta
 import os
 import dj_database_url
 
-from . import _env, partial_celery, partial_internal
-from .utils import update_locals
+from . import _env
 
-update_locals(partial_celery.__dict__, locals())
-update_locals(partial_internal.__dict__, locals())
+ENV = _env.ENV
 
 DEBUG = _env.DEBUG
 
@@ -37,11 +35,13 @@ INSTALLED_APPS = [
     'drf_yasg',
 
     # Main project apps
+    'apps.api',
+    'apps.auth',
     'apps.annotation',
+    'apps.analytics',
     'apps.publisher',
     'apps.pp',
     'apps.site',
-    'apps.analytics',
 
     # Additional authentication views and social providers
 
@@ -52,6 +52,39 @@ INSTALLED_APPS = [
 ]
 
 SITE_ID = 1
+
+ALLOWED_HOSTS = []
+if _env.ENV == 'dev':
+    ALLOWED_HOSTS.extend([
+        'devdeploy1.przypispowszechny.pl', 'www.devdeploy1.przypispowszechny.pl',
+        'devdeploy2.przypispowszechny.pl', 'www.devdeploy2.przypispowszechny.pl',
+    ])
+    if _env.DEBUG:
+        ALLOWED_HOSTS.append('localhost')
+elif _env.ENV == 'prod':
+    ALLOWED_HOSTS.extend([
+        'przypispowszechny.pl', 'www.przypispowszechny.pl',
+        'app.przypispowszechny.pl', 'www.app.przypispowszechny.pl',
+    ])
+
+
+CORS_ALLOW_CREDENTIALS = True
+
+if _env.ENV == 'dev' and _env.DEBUG:
+    # This allows the regular pp-client scripts to access API in development.
+    # Chrome extension is allowed access as it explicitly defines allowed resource domains in manifest.json permissions
+    CORS_ORIGIN_ALLOW_ALL = True
+else:
+    CORS_ORIGIN_WHITELIST = ()
+    CORS_ORIGIN_REGEX_WHITELIST = (
+        r'https?://([0-9a-zA-Z_.-]+\.)?przypispowszechny\.pl(/.*)?'
+    )
+
+
+USE_X_FORWARDED_HOST = True
+# Honor the 'X-Forwarded-Proto' header for request.is_secure()
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 
 # Set PPUser as Django user model
 AUTH_USER_MODEL = 'pp.User'
@@ -136,10 +169,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'wsgi.application'
 
+
 DATABASES = {
     # Get whole conf from DATABASE_URL in the form of db_engine://user:pass@host:port/db_name
-    'default': dj_database_url.config(conn_max_age=500)
+    'default': dj_database_url.config(conn_max_age=500) if _env.ENV != 'test' else
+            {'ENGINE': 'django.db.backends.sqlite3', 'NAME': 'test-db'}
 }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -167,18 +203,18 @@ REST_FRAMEWORK = {
     'ORDERING_PARAM': 'sort',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework_json_api.pagination.LimitOffsetPagination',
     'DEFAULT_PARSER_CLASSES': (
-        'apps.annotation.parsers.JSONAPIParser',
+        'apps.api.parsers.JSONAPIParser',
         'rest_framework.parsers.FormParser',
         'rest_framework.parsers.MultiPartParser'
     ),
     'DEFAULT_RENDERER_CLASSES': (
-        'apps.annotation.renderers.JSONAPIRenderer',
+        'apps.api.renderers.JSONAPIRenderer',
     ),
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',
     ),
     'TEST_REQUEST_RENDERER_CLASSES': (
-        'apps.annotation.renderers.JSONAPIRenderer',
+        'apps.api.renderers.JSONAPIRenderer',
     ),
     'TEST_REQUEST_DEFAULT_FORMAT': 'vnd.api+json',
 }
@@ -192,19 +228,19 @@ JSON_CAMEL_CASE = {
 SWAGGER_SETTINGS = {
     'DEFAULT_FIELD_INSPECTORS': [
         'drf_yasg.inspectors.CamelCaseJSONFilter',
-        'apps.annotation.inspectors.AppendWriteOnlyFilter',
+        'apps.api.inspectors.AppendWriteOnlyFilter',
 
-        'apps.annotation.inspectors.RootSerializerInspector',
+        'apps.api.inspectors.RootSerializerInspector',
         # ReferencingS... replaced with InlineS... which does not create serializers definitions index,
         # but does not require serializers class names to be unique across whole application
         # 'drf_yasg.inspectors.ReferencingSerializerInspector',
         'drf_yasg.inspectors.InlineSerializerInspector',
 
-        'apps.annotation.inspectors.IDFieldInspector',
-        'apps.annotation.inspectors.ConstFieldInspector',
-        'apps.annotation.inspectors.ResourceFieldInspector',
-        'apps.annotation.inspectors.RelationFieldInspector',
-        'apps.annotation.inspectors.ObjectFieldInspector',
+        'apps.api.inspectors.IDFieldInspector',
+        'apps.api.inspectors.ConstFieldInspector',
+        'apps.api.inspectors.ResourceFieldInspector',
+        'apps.api.inspectors.RelationFieldInspector',
+        'apps.api.inspectors.ObjectFieldInspector',
 
         'drf_yasg.inspectors.RelatedFieldInspector',
         'drf_yasg.inspectors.ChoiceFieldInspector',
@@ -250,6 +286,22 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+
+if _env.ENV == 'test':
+    MAILGUN_API_KEY = 'mock-mailgun-api-key'
+    PP_MAIL_DOMAIN = 'mail.przypispowszechny.pl'
+    MAILGUN_API_URL = 'https://api.mailgun.net/v3/{}/messages'.format(PP_MAIL_DOMAIN)
+elif _env.ENV == 'dev':
+    MAILGUN_API_KEY = os.environ.get('MAILGUN_API_KEY')
+    PP_MAIL_DOMAIN = 'dev.mail.przypispowszechny.pl'
+    MAILGUN_API_URL = 'https://api.mailgun.net/v3/{}/messages'.format(PP_MAIL_DOMAIN)
+else:
+    MAILGUN_API_KEY = os.environ.get('MAILGUN_API_KEY')
+    PP_MAIL_DOMAIN = 'mail.przypispowszechny.pl'
+    MAILGUN_API_URL = 'https://api.mailgun.net/v3/{}/messages'.format(PP_MAIL_DOMAIN)
+
+
 
 LOGGING = {
     'version': 1,
@@ -316,3 +368,10 @@ LOGGING = {
         },
     },
 }
+
+if _env.ENV == 'test':
+    LOGGING['loggers']['django']['level'] = 'CRITICAL'
+    LOGGING['loggers']['pp']['level'] = 'CRITICAL'
+    LOGGING['loggers']['pp.publisher']['level'] = 'CRITICAL'
+    LOGGING['loggers'].setdefault('celery', {})['level'] = 'CRITICAL'
+

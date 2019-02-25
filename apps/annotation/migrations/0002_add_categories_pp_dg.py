@@ -35,7 +35,6 @@ def reverse_init_fact_category(apps, schema):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('annotation', '0001_initial'),
     ]
@@ -71,23 +70,31 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='annotation',
             name='demagog_category',
-            field=models.CharField(blank=True, choices=[('TRUE', 'Prawda'), ('PTRUE', 'Prawda'), ('FALSE', 'Fałsz'), ('PFALSE', 'Fałsz'), ('LIE', 'Manipulacja'), ('UNKNOWN', 'Nieweryfikowalne')], max_length=20, null=True),
+            field=models.CharField(blank=True, choices=[('TRUE', 'Prawda'), ('PTRUE', 'Prawda'), ('FALSE', 'Fałsz'),
+                                                        ('PFALSE', 'Fałsz'), ('LIE', 'Manipulacja'),
+                                                        ('UNKNOWN', 'Nieweryfikowalne')], max_length=20, null=True),
         ),
         migrations.AddField(
             model_name='annotation',
             name='pp_category',
-            field=models.CharField(choices=[('ADDITIONAL_INFO', 'Dodatkowa Informacja'), ('CLARIFICATION', 'Doprecyzowanie'), ('ERROR', 'Sprostowanie błędu')], default='non', max_length=20),
+            field=models.CharField(
+                choices=[('ADDITIONAL_INFO', 'Dodatkowa Informacja'), ('CLARIFICATION', 'Doprecyzowanie'),
+                         ('ERROR', 'Sprostowanie błędu')], default='non', max_length=20),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='historicalannotation',
             name='demagog_category',
-            field=models.CharField(blank=True, choices=[('TRUE', 'Prawda'), ('PTRUE', 'Prawda'), ('FALSE', 'Fałsz'), ('PFALSE', 'Fałsz'), ('LIE', 'Manipulacja'), ('UNKNOWN', 'Nieweryfikowalne')], max_length=20, null=True),
+            field=models.CharField(blank=True, choices=[('TRUE', 'Prawda'), ('PTRUE', 'Prawda'), ('FALSE', 'Fałsz'),
+                                                        ('PFALSE', 'Fałsz'), ('LIE', 'Manipulacja'),
+                                                        ('UNKNOWN', 'Nieweryfikowalne')], max_length=20, null=True),
         ),
         migrations.AddField(
             model_name='historicalannotation',
             name='pp_category',
-            field=models.CharField(choices=[('ADDITIONAL_INFO', 'Dodatkowa Informacja'), ('CLARIFICATION', 'Doprecyzowanie'), ('ERROR', 'Sprostowanie błędu')], default='non', max_length=20),
+            field=models.CharField(
+                choices=[('ADDITIONAL_INFO', 'Dodatkowa Informacja'), ('CLARIFICATION', 'Doprecyzowanie'),
+                         ('ERROR', 'Sprostowanie błędu')], default='non', max_length=20),
             preserve_default=False,
         ),
 

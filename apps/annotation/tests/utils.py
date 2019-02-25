@@ -1,9 +1,9 @@
-import random
 import string
 
+import random
+from deepmerge import Merger
 from django.contrib.auth import get_user_model
 from django.urls import reverse
-from deepmerge import Merger
 
 
 def create_test_user(unique=False):
@@ -20,6 +20,7 @@ def testserver_reverse(*args, **kwargs):
     Prepend to reverse() prefix "http://testserver" which is default domain (+protocol) used by Django test Client.
     """
     return 'http://testserver%s' % reverse(*args, **kwargs)
+
 
 merge = Merger(
     # pass in a list of tuple, with the

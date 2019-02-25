@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('pp', '0020_set_url_length_2048'),
     ]
@@ -25,7 +24,9 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='annotation',
             name='priority',
-            field=models.CharField(choices=[('NORMAL', 'normalny'), ('WARNING', 'ostrzegawczy'), ('ALERT', 'niebezpieczny')], max_length=10),
+            field=models.CharField(
+                choices=[('NORMAL', 'normalny'), ('WARNING', 'ostrzegawczy'), ('ALERT', 'niebezpieczny')],
+                max_length=10),
         ),
         migrations.AlterField(
             model_name='historicalannotation',
@@ -40,6 +41,8 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='historicalannotation',
             name='priority',
-            field=models.CharField(choices=[('NORMAL', 'normalny'), ('WARNING', 'ostrzegawczy'), ('ALERT', 'niebezpieczny')], max_length=10),
+            field=models.CharField(
+                choices=[('NORMAL', 'normalny'), ('WARNING', 'ostrzegawczy'), ('ALERT', 'niebezpieczny')],
+                max_length=10),
         ),
     ]

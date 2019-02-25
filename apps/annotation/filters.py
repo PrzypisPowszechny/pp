@@ -14,9 +14,8 @@ class ConflictingFilterValueError(Exception):
 
 
 class StandardizedURLFilterBackend(BaseFilterBackend):
-
-    secret_url_header = 'PP-SITE-URL' # the actual HTTP key
-    secret_url_meta_key = 'HTTP_PP_SITE_URL' # the key after Django middleware processing
+    secret_url_header = 'PP-SITE-URL'  # the actual HTTP key
+    secret_url_meta_key = 'HTTP_PP_SITE_URL'  # the key after Django middleware processing
 
     url_data_query_param = 'url'
 
@@ -27,7 +26,7 @@ class StandardizedURLFilterBackend(BaseFilterBackend):
         param_value = request.query_params.get(self.url_data_query_param)
         if header_value and param_value and header_value != param_value:
             raise ConflictingFilterValueError({'url': 'Different URLs specified via header and via params; '
-                                              'please use only one of these'})
+                                                      'please use only one of these'})
 
         filter_value = header_value or param_value
         if filter_value:
