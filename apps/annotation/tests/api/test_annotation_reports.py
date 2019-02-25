@@ -43,7 +43,7 @@ class AnnotationReportAPITest(TestCase):
                     'annotation': {
                         'data': {'id': str(annotation.id), 'type': 'annotations'},
                         'links': {
-                            'related': testserver_reverse('api:annotation_report_related_annotation',
+                            'related': testserver_reverse('api:annotation:annotation_report_related_annotation',
                                                           kwargs={'report_id': report.id})
                         }
                     }
@@ -84,7 +84,7 @@ class AnnotationReportAPITest(TestCase):
                         'annotation': {
                             'data': {'id': str(annotation.id), 'type': 'annotations'},
                             'links': {
-                                'related': testserver_reverse('api:annotation_report_related_annotation',
+                                'related': testserver_reverse('api:annotation:annotation_report_related_annotation',
                                                               kwargs={'report_id': report.id})
                             }
                         }
@@ -146,7 +146,7 @@ class AnnotationReportAPITest(TestCase):
                         'annotation': {
                             'data': {'id': str(annotation.id), 'type': 'annotations'},
                             'links': {
-                                'related': testserver_reverse('api:annotation_report_related_annotation',
+                                'related': testserver_reverse('api:annotation:annotation_report_related_annotation',
                                                               kwargs={'report_id': report.id})
                             }
                         }

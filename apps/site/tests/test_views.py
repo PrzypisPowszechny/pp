@@ -14,7 +14,7 @@ class SiteViewsTest(TestCase):
         self.client.login(username=self.user, password=self.password)
 
     def test_site_test(self):
-        response = self.client.get(reverse('site_test'))
+        response = self.client.get(reverse('site:site_test'))
         self.assertEqual(response.status_code, 200)
 
     def test_report(self):

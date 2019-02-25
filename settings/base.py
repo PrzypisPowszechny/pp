@@ -37,11 +37,13 @@ INSTALLED_APPS = [
     'drf_yasg',
 
     # Main project apps
+    'apps.api',
+    'apps.auth',
     'apps.annotation',
+    'apps.analytics',
     'apps.publisher',
     'apps.pp',
     'apps.site',
-    'apps.analytics',
 
     # Additional authentication views and social providers
 
@@ -170,18 +172,18 @@ REST_FRAMEWORK = {
     'ORDERING_PARAM': 'sort',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework_json_api.pagination.LimitOffsetPagination',
     'DEFAULT_PARSER_CLASSES': (
-        'apps.annotation.parsers.JSONAPIParser',
+        'apps.api.parsers.JSONAPIParser',
         'rest_framework.parsers.FormParser',
         'rest_framework.parsers.MultiPartParser'
     ),
     'DEFAULT_RENDERER_CLASSES': (
-        'apps.annotation.renderers.JSONAPIRenderer',
+        'apps.api.renderers.JSONAPIRenderer',
     ),
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',
     ),
     'TEST_REQUEST_RENDERER_CLASSES': (
-        'apps.annotation.renderers.JSONAPIRenderer',
+        'apps.api.renderers.JSONAPIRenderer',
     ),
     'TEST_REQUEST_DEFAULT_FORMAT': 'vnd.api+json',
 }
@@ -195,19 +197,19 @@ JSON_CAMEL_CASE = {
 SWAGGER_SETTINGS = {
     'DEFAULT_FIELD_INSPECTORS': [
         'drf_yasg.inspectors.CamelCaseJSONFilter',
-        'apps.annotation.inspectors.AppendWriteOnlyFilter',
+        'apps.api.inspectors.AppendWriteOnlyFilter',
 
-        'apps.annotation.inspectors.RootSerializerInspector',
+        'apps.api.inspectors.RootSerializerInspector',
         # ReferencingS... replaced with InlineS... which does not create serializers definitions index,
         # but does not require serializers class names to be unique across whole application
         # 'drf_yasg.inspectors.ReferencingSerializerInspector',
         'drf_yasg.inspectors.InlineSerializerInspector',
 
-        'apps.annotation.inspectors.IDFieldInspector',
-        'apps.annotation.inspectors.ConstFieldInspector',
-        'apps.annotation.inspectors.ResourceFieldInspector',
-        'apps.annotation.inspectors.RelationFieldInspector',
-        'apps.annotation.inspectors.ObjectFieldInspector',
+        'apps.api.inspectors.IDFieldInspector',
+        'apps.api.inspectors.ConstFieldInspector',
+        'apps.api.inspectors.ResourceFieldInspector',
+        'apps.api.inspectors.RelationFieldInspector',
+        'apps.api.inspectors.ObjectFieldInspector',
 
         'drf_yasg.inspectors.RelatedFieldInspector',
         'drf_yasg.inspectors.ChoiceFieldInspector',

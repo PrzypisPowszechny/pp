@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 
 from apps.annotation import serializers
 from apps.annotation.models import AnnotationUpvote
-from apps.annotation.responses import ErrorResponse, NotFoundResponse, ValidationErrorResponse
+from apps.api.responses import ErrorResponse, NotFoundResponse, ValidationErrorResponse
 
 
 class AnnotationUpvoteSingle(APIView):

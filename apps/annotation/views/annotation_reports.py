@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 
 from apps.annotation import serializers
 from apps.annotation.models import Annotation, AnnotationReport
-from apps.annotation.responses import ValidationErrorResponse, NotFoundResponse, ErrorResponse
+from apps.api.responses import ValidationErrorResponse, NotFoundResponse, ErrorResponse
 
 
 class AnnotationReportSingle(APIView):

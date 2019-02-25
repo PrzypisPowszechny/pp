@@ -4,10 +4,12 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.annotation.responses import NotFoundResponse
+from apps.api.responses import NotFoundResponse
 from apps.annotation.serializers import UserSerializer
 
 User = get_user_model()
+
+# TODO: move those views to seperate application, it should not be part of annotation
 
 
 class UserSingle(APIView):

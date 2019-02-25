@@ -37,7 +37,7 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
                 'relationships': {
                     'annotation': {
                         'links': {
-                            'related': testserver_reverse('api:annotation_upvote_related_annotation', args=(upvote.id,))
+                            'related': testserver_reverse('api:annotation:annotation_upvote_related_annotation', args=(upvote.id,))
                         },
                         'data': {
                             'type': 'annotations', 'id': str(annotation.id)
@@ -67,7 +67,7 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
                 'relationships': {
                     'annotation': {
                         'links': {
-                            'related': testserver_reverse('api:annotation_upvote_related_annotation', args=(upvote.id,))
+                            'related': testserver_reverse('api:annotation:annotation_upvote_related_annotation', args=(upvote.id,))
                         },
                         'data': {
                             'type': 'annotations', 'id': str(annotation.id)
@@ -113,7 +113,7 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
                 'relationships': {
                     'annotation': {
                         'links': {
-                            'related': testserver_reverse('api:annotation_upvote_related_annotation', args=(upvote.id,))
+                            'related': testserver_reverse('api:annotation:annotation_upvote_related_annotation', args=(upvote.id,))
                         },
                         'data': {
                             'type': 'annotations', 'id': str(annotation.id)

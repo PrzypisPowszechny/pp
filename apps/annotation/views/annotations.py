@@ -15,7 +15,7 @@ from rest_framework_json_api.pagination import LimitOffsetPagination
 from apps.annotation import serializers
 from apps.annotation.filters import StandardizedURLFilterBackend, ConflictingFilterValueError, ListORFilter
 from apps.annotation.models import Annotation, AnnotationUpvote, AnnotationReport, AnnotationRequest
-from apps.annotation.responses import PermissionDenied, ValidationErrorResponse, ErrorResponse, NotFoundResponse, \
+from apps.api.responses import PermissionDenied, ValidationErrorResponse, ErrorResponse, NotFoundResponse, \
     Forbidden
 
 logger = logging.getLogger('pp.annotation')
