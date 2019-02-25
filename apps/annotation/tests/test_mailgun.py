@@ -45,7 +45,6 @@ class MailgunTest(TestCase):
 
         self.assertEqual(len(responses.calls), 1)
 
-
     @responses.activate
     def test_400_exception_raised(self):
         responses.add(responses.Response(

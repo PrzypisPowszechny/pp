@@ -1,6 +1,5 @@
 import logging
 
-from django.utils.decorators import method_decorator
 from django.utils.text import Truncator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.generics import GenericAPIView
@@ -8,9 +7,8 @@ from rest_framework.response import Response
 
 from apps.annotation.mailgun import send_mail, MailSendException
 from apps.annotation.models import AnnotationRequest
-from apps.api.responses import ValidationErrorResponse
 from apps.annotation.serializers import AnnotationRequestDeserializer, AnnotationRequestSerializer
-
+from apps.api.responses import ValidationErrorResponse
 
 logger = logging.getLogger('pp.annotation')
 

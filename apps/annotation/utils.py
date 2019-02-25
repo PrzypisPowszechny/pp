@@ -1,6 +1,5 @@
 from urllib.parse import urlencode, parse_qsl, urlsplit
 
-
 OMITTED_QUERY_VARS = (
     # Universal Tracking Module convention names
     'utm_campaign',

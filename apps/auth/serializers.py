@@ -1,9 +1,8 @@
+from django.utils.six import text_type
 from requests import HTTPError
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.utils.six import text_type
 from social_core import exceptions
-
 from social_django.utils import load_backend, load_strategy
 
 

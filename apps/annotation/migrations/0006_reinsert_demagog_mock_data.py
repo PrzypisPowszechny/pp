@@ -3,8 +3,8 @@
 from __future__ import unicode_literals
 
 from urllib.parse import urlencode, parse_qsl, urlsplit
+
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.db import migrations
 
 ADDITIONAL_INFO = 'ADDITIONAL_INFO'
@@ -61,11 +61,13 @@ def standardize_url_id(data):
         query='?' + urlencode(new_query_tuples) if new_query_tuples else ''
     )
 
+
 # Actual migration content
 
 def delete_broken_mock_annotation(apps, schema):
     annotation_model = apps.get_model('annotation.Annotation')
     annotation_model.objects.filter(annotation_link=annotation_link, publisher=DEMAGOG_PUBLISHER).delete()
+
 
 def insert_mock_annotation(apps, schema):
     annotation_model = apps.get_model('annotation.Annotation')
@@ -87,12 +89,13 @@ def insert_mock_annotation(apps, schema):
     )
     model.save()
 
+
 def reinsert_mock_annotation(apps, schema):
     delete_broken_mock_annotation(apps, schema)
     insert_mock_annotation(apps, schema)
 
-class Migration(migrations.Migration):
 
+class Migration(migrations.Migration):
     dependencies = [
         ('annotation', '0005_annotation_date_publisher_id'),
     ]

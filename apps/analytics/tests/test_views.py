@@ -18,14 +18,12 @@ class AnalyticsViewsTEST(TestCase):
         pass
 
     def test_extension_uninstalled_hook(self):
-
         cid = "{}.{}".format(mommy.random_gen.gen_integer(0), mommy.random_gen.gen_integer(0))
         cid_cookie_val = "{}.{}".format(CID_COOKIE_PREFIX, cid)
         self.client.cookies = SimpleCookie({ga_cookies.CID_COOKIE: cid_cookie_val})
 
         mocked_consumer_instance = MagicMock()
         with patch('apps.analytics.views.GAConsumer', return_value=mocked_consumer_instance) as MockGAConsumer:
-
             response = self.client.get(self.extension_installed_url)
             self.assertEqual(response.status_code, 200)
             MockGAConsumer.assert_called_once_with(cid)

@@ -1,8 +1,8 @@
+from django.conf import settings
 from django.core.signing import Signer, BadSignature
 from django.http import HttpResponseBadRequest, Http404
 from django.shortcuts import render, redirect
 from django.shortcuts import render_to_response
-from django.conf import settings
 
 from apps.annotation.models import AnnotationRequest
 from .http_basicauth import logged_in_or_basicauth

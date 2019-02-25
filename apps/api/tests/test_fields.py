@@ -1,9 +1,9 @@
 import inflection
 from django.test import TestCase
+from mock import patch, MagicMock
 from rest_framework import serializers
 
 from apps.api import fields
-from mock import patch, MagicMock
 
 
 class RelationSerializerTest(TestCase):
@@ -20,6 +20,7 @@ class RelationSerializerTest(TestCase):
                 child=serializers.CharField(**(kwargs_child if kwargs_child is not None else {})),
                 **(kwargs if kwargs is not None else {})
             )
+
         return Relations
 
     # Serializer Single
@@ -95,7 +96,7 @@ class RelationSerializerTest(TestCase):
                     'root_resource_obj': self.my_root_id
                 }
             )
-            self.assertDictEqual(serializer.data,  {})
+            self.assertDictEqual(serializer.data, {})
 
     def test_single__key_missing__default(self):
         serializer_class = self.get_serializer_class(kwargs={'default': fields.custom_none})

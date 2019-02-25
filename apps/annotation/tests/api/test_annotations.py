@@ -9,7 +9,6 @@ from parameterized import parameterized
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import AccessToken
 
-from apps.annotation import consts
 from apps.annotation.models import Annotation, AnnotationUpvote, AnnotationReport
 from apps.annotation.tests.utils import create_test_user, testserver_reverse
 
@@ -1091,17 +1090,21 @@ class AnnotationAPITest(TestCase):
         good_id = annotation.id
         non_existing_id = good_id + 100000000
 
-        response = self.client.delete(self.base_url.format(good_id), content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
+        response = self.client.delete(self.base_url.format(good_id), content_type='application/vnd.api+json',
+                                      HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200)
 
         # After removing is not accessible
-        response = self.client.get(self.base_url.format(good_id), content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
+        response = self.client.get(self.base_url.format(good_id), content_type='application/vnd.api+json',
+                                   HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 404)
 
         # Removing again is still good
-        response = self.client.delete(self.base_url.format(good_id), content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
+        response = self.client.delete(self.base_url.format(good_id), content_type='application/vnd.api+json',
+                                      HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200)
 
         # Removing never existing is bad
-        response = self.client.delete(self.base_url.format(non_existing_id), content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
+        response = self.client.delete(self.base_url.format(non_existing_id), content_type='application/vnd.api+json',
+                                      HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 404)

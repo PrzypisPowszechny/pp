@@ -6,7 +6,6 @@ from django.urls import reverse
 
 from apps.annotation.mailgun import send_mail, MailSendException
 from apps.annotation.models import Annotation, AnnotationRequest
-
 from worker import celery_app
 
 logger = logging.getLogger('pp.annotation')

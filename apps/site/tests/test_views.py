@@ -51,4 +51,3 @@ class SiteViewsTest(TestCase):
         self.assertGreaterEqual(response.status_code, 400)
         annotation_request = AnnotationRequest.objects.get(id=annotation_request.id)
         self.assertEqual(annotation_request.notification_email, notification_email)
-

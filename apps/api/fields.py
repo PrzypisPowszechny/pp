@@ -83,9 +83,9 @@ response_data = serializer(instance=MyModel).data
 
                 return value
 """
-import copy
 import json
 
+import copy
 import inflection
 from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _

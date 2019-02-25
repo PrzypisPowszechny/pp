@@ -2,9 +2,9 @@ from django.urls import reverse
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from apps.api import fields
 from apps.annotation.consts import SUGGESTED_CORRECTION
 from apps.annotation.models import AnnotationReport, AnnotationRequest
+from apps.api import fields
 from .models import Annotation, AnnotationUpvote
 
 
@@ -24,7 +24,6 @@ class ResourceLinksSerializer(serializers.Serializer):
 # Annotation
 
 class AnnotationSerializer(serializers.Serializer):
-
     class Attributes(serializers.ModelSerializer):
         url = fields.StandardizedRepresentationURLField()
         range = fields.ObjectField(json_internal_type=True)
@@ -160,7 +159,6 @@ class AnnotationPatchDeserializer(serializers.Serializer):
 
 class AnnotationReportDeserializer(serializers.Serializer):
     class Attributes(serializers.ModelSerializer):
-
         class Meta:
             model = AnnotationReport
             fields = ('reason', 'comment')
@@ -185,7 +183,6 @@ class AnnotationReportDeserializer(serializers.Serializer):
 
 
 class AnnotationReportSerializer(serializers.Serializer):
-
     class Attributes(serializers.ModelSerializer):
         class Meta:
             model = AnnotationReport
@@ -256,7 +253,6 @@ class AnnotationRequestDeserializer(serializers.Serializer):
 
 
 class AnnotationRequestSerializer(serializers.Serializer):
-
     class Attributes(serializers.ModelSerializer):
         url = fields.StandardizedRepresentationURLField()
 

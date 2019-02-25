@@ -3,7 +3,6 @@ import logging
 import django_filters
 from django.apps import apps
 from django.db.models import Prefetch, Count
-from django.utils.decorators import method_decorator
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.filters import OrderingFilter
@@ -14,7 +13,7 @@ from rest_framework_json_api.pagination import LimitOffsetPagination
 
 from apps.annotation import serializers
 from apps.annotation.filters import StandardizedURLFilterBackend, ConflictingFilterValueError, ListORFilter
-from apps.annotation.models import Annotation, AnnotationUpvote, AnnotationReport, AnnotationRequest
+from apps.annotation.models import Annotation, AnnotationUpvote, AnnotationReport
 from apps.api.responses import PermissionDenied, ValidationErrorResponse, ErrorResponse, NotFoundResponse, \
     Forbidden
 
@@ -55,7 +54,7 @@ class AnnotationSingle(APIView):
         if annotation.user_id != request.user.id:
             return PermissionDenied()
         deserializer = serializers.AnnotationPatchDeserializer(data=request.data, context={'request': request},
-                                                                partial=True)
+                                                               partial=True)
         if not deserializer.is_valid():
             return ValidationErrorResponse(deserializer.errors)
         if 'relationships' in request.data:

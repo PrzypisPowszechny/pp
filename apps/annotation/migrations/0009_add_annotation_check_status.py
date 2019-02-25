@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('annotation', '0008_alter_annotation_request_blank'),
     ]
@@ -15,11 +14,23 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='annotation',
             name='check_status',
-            field=models.CharField(choices=[('UNVERIFIED', 'niesprawdzony (wyświetlany)'), ('CONFIRMED', 'potwierdzony'), ('UNLOCATED', 'nie lokalizuje się (a mógłby)'), ('UNLOCATABLE', 'nielokalizowalny (video/audio/...)'), ('ARTICLE_DOES_NOT_EXIST', 'artykuł nie istnieje'), ('PAGE_404', 'strona nie istnieje'), ('OTHER_FATAL', 'inne -- nie można wyświetlić')], default='UNVERIFIED', max_length=30, null=True),
+            field=models.CharField(
+                choices=[('UNVERIFIED', 'niesprawdzony (wyświetlany)'), ('CONFIRMED', 'potwierdzony'),
+                         ('UNLOCATED', 'nie lokalizuje się (a mógłby)'),
+                         ('UNLOCATABLE', 'nielokalizowalny (video/audio/...)'),
+                         ('ARTICLE_DOES_NOT_EXIST', 'artykuł nie istnieje'), ('PAGE_404', 'strona nie istnieje'),
+                         ('OTHER_FATAL', 'inne -- nie można wyświetlić')], default='UNVERIFIED', max_length=30,
+                null=True),
         ),
         migrations.AddField(
             model_name='historicalannotation',
             name='check_status',
-            field=models.CharField(choices=[('UNVERIFIED', 'niesprawdzony (wyświetlany)'), ('CONFIRMED', 'potwierdzony'), ('UNLOCATED', 'nie lokalizuje się (a mógłby)'), ('UNLOCATABLE', 'nielokalizowalny (video/audio/...)'), ('ARTICLE_DOES_NOT_EXIST', 'artykuł nie istnieje'), ('PAGE_404', 'strona nie istnieje'), ('OTHER_FATAL', 'inne -- nie można wyświetlić')], default='UNVERIFIED', max_length=30, null=True),
+            field=models.CharField(
+                choices=[('UNVERIFIED', 'niesprawdzony (wyświetlany)'), ('CONFIRMED', 'potwierdzony'),
+                         ('UNLOCATED', 'nie lokalizuje się (a mógłby)'),
+                         ('UNLOCATABLE', 'nielokalizowalny (video/audio/...)'),
+                         ('ARTICLE_DOES_NOT_EXIST', 'artykuł nie istnieje'), ('PAGE_404', 'strona nie istnieje'),
+                         ('OTHER_FATAL', 'inne -- nie można wyświetlić')], default='UNVERIFIED', max_length=30,
+                null=True),
         ),
     ]

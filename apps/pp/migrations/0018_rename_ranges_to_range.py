@@ -6,6 +6,7 @@ import json
 
 from django.db import migrations
 
+
 def string_to_json_string(apps, schema):
     annotation_class = apps.get_model('pp.Annotation')
     for annotation in annotation_class.objects.all():
@@ -14,6 +15,7 @@ def string_to_json_string(apps, schema):
         except ValueError:
             annotation.range = '"%s"' % annotation.range
             annotation.save()
+
 
 def json_string_to__string(apps, schema):
     annotation_class = apps.get_model('pp.Annotation')
@@ -24,7 +26,6 @@ def json_string_to__string(apps, schema):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('pp', '0017_rename_all_annotation_related_fields'),
     ]

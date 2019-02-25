@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('pp', '0021_annotation_texts_lengths'),
     ]
@@ -20,6 +19,9 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='annotationreport',
             name='reason',
-            field=models.CharField(choices=[('BIASED', 'nieobiektywny'), ('UNRELIABLE', 'nierzetelne źródło'), ('USELESS', 'niepotrzebny'), ('SPAM', 'spam'), ('OTHER', 'inne'), ('SUGGESTED_CORRECTION', 'sugerowana poprawka')], max_length=100),
+            field=models.CharField(
+                choices=[('BIASED', 'nieobiektywny'), ('UNRELIABLE', 'nierzetelne źródło'), ('USELESS', 'niepotrzebny'),
+                         ('SPAM', 'spam'), ('OTHER', 'inne'), ('SUGGESTED_CORRECTION', 'sugerowana poprawka')],
+                max_length=100),
         ),
     ]

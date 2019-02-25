@@ -22,7 +22,7 @@ class JSONConsumerTest(TestCase):
         pass
 
     @parameterized.expand([
-        (TEST_URL, 200,  json.dumps({'test_key': 'test_value'}),
+        (TEST_URL, 200, json.dumps({'test_key': 'test_value'}),
          True),
         (TEST_URL, 200, json.dumps({}),
          True),
@@ -54,5 +54,6 @@ class JSONConsumerTest(TestCase):
             json_data = run_get()
             self.assertEqual(json.loads(body), json_data, msg='Error for args: {}'.format(json.dumps(args)))
         else:
-            with self.assertRaises(JSONConsumer.ConsumingResponseError, msg='Error for args: {}'.format(json.dumps(args))):
+            with self.assertRaises(JSONConsumer.ConsumingResponseError,
+                                   msg='Error for args: {}'.format(json.dumps(args))):
                 run_get()

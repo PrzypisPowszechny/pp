@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('annotation', '0006_reinsert_demagog_mock_data'),
     ]

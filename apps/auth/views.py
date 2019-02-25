@@ -1,8 +1,8 @@
 from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework.generics import CreateAPIView
 from rest_framework import permissions, status, serializers
+from rest_framework.generics import CreateAPIView
 from rest_framework_simplejwt import views as jwt_views
 
 from .serializers import SocialLoginSerializer, TokenReadOnlyMixin

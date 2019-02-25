@@ -18,7 +18,6 @@ from django.conf.urls import url
 from apps.analytics import views as analytics_views
 from apps.site import views as site_views
 
-
 app_name = 'site'
 
 urlpatterns = [

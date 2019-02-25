@@ -7,7 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('pp', '0002_reference_add_count_fields'),
     ]
@@ -24,6 +23,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='userreferencefeedback',
             name='reference',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='feedbacks', to='pp.Reference'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='feedbacks',
+                                    to='pp.Reference'),
         ),
     ]

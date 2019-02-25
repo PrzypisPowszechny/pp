@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
-from drf_yasg import openapi
 from drf_yasg import inspectors
+from drf_yasg import openapi
 from rest_framework import serializers
 
 from .fields import IDField, ObjectField, RelationField, ResourceField, ConstField

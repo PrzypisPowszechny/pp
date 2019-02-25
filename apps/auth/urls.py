@@ -2,7 +2,6 @@ from django.conf.urls import url
 
 from apps.auth.views import FacebookLogin, GoogleLogin, TokenRefreshView, TokenVerifyView
 
-
 app_name = 'api_auth'
 
 urlpatterns = [
