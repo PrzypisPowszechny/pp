@@ -29,10 +29,10 @@ yasg_schema_view = get_schema_view(
 app_name = 'docs'
 
 urlpatterns = [
-    url(r'^docs/swagger(?P<format>\.json|\.yaml)$',
+    url(r'^swagger(?P<format>\.json|\.yaml)$',
         yasg_schema_view.without_ui(cache_timeout=None), name='schema_json'),
-    url(r'^docs/$',
+    url(r'^$',
         yasg_schema_view.with_ui('swagger', cache_timeout=None), name='schema_swagger'),
-    url(r'^docs-redoc/$',
+    url(r'^redoc/$',
         yasg_schema_view.with_ui('redoc', cache_timeout=None), name='schema_redoc'),
 ]

@@ -1,4 +1,7 @@
 # Initialize celery before anything else
 # noinspection PyUnresolvedReferences
 import worker
-from .base import *
+
+from .django import *
+from .celery import *
+from .pp import *

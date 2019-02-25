@@ -2,11 +2,9 @@ from datetime import timedelta
 import os
 import dj_database_url
 
-from . import _env, partial_celery, partial_internal
-from .utils import update_locals
+from . import _env
 
-update_locals(partial_celery.__dict__, locals())
-update_locals(partial_internal.__dict__, locals())
+ENV = _env.ENV
 
 DEBUG = _env.DEBUG
 
@@ -54,6 +52,39 @@ INSTALLED_APPS = [
 ]
 
 SITE_ID = 1
+
+ALLOWED_HOSTS = []
+if _env.ENV == 'dev':
+    ALLOWED_HOSTS.extend([
+        'devdeploy1.przypispowszechny.pl', 'www.devdeploy1.przypispowszechny.pl',
+        'devdeploy2.przypispowszechny.pl', 'www.devdeploy2.przypispowszechny.pl',
+    ])
+    if _env.DEBUG:
+        ALLOWED_HOSTS.append('localhost')
+elif _env.ENV == 'prod':
+    ALLOWED_HOSTS.extend([
+        'przypispowszechny.pl', 'www.przypispowszechny.pl',
+        'app.przypispowszechny.pl', 'www.app.przypispowszechny.pl',
+    ])
+
+
+CORS_ALLOW_CREDENTIALS = True
+
+if _env.ENV == 'dev' and _env.DEBUG:
+    # This allows the regular pp-client scripts to access API in development.
+    # Chrome extension is allowed access as it explicitly defines allowed resource domains in manifest.json permissions
+    CORS_ORIGIN_ALLOW_ALL = True
+else:
+    CORS_ORIGIN_WHITELIST = ()
+    CORS_ORIGIN_REGEX_WHITELIST = (
+        r'https?://([0-9a-zA-Z_.-]+\.)?przypispowszechny\.pl(/.*)?'
+    )
+
+
+USE_X_FORWARDED_HOST = True
+# Honor the 'X-Forwarded-Proto' header for request.is_secure()
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 
 # Set PPUser as Django user model
 AUTH_USER_MODEL = 'pp.User'
