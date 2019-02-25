@@ -19,6 +19,7 @@ mock==2.0.0
 model-mommy==1.5.1
 parameterized==0.6.1
 pip-tools==3.3.2
+psycopg2==2.7.4
 psycopg2-binary==2.7.4
 redis==2.10.6
 requests==2.20.0

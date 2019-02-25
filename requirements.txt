@@ -45,6 +45,7 @@ oauthlib==3.0.1           # via requests-oauthlib, social-auth-core
 parameterized==0.6.1
 pbr==5.1.2                # via mock
 pip-tools==3.3.2
+psycopg2==2.7.4
 psycopg2-binary==2.7.4
 pyjwt==1.7.1              # via djangorestframework-simplejwt, social-auth-core
 python3-openid==3.1.0     # via social-auth-core
