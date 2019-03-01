@@ -30,11 +30,11 @@ class TokenRefreshView(jwt_views.TokenRefreshView):
 
     @swagger_auto_schema(responses={status.HTTP_200_OK: TokenReadOnlyMixin})
     def post(self, *args, **kwargs):
-        super().post(*args, **kwargs)
+        return super().post(*args, **kwargs)
 
 
 class TokenVerifyView(jwt_views.TokenVerifyView):
 
     @swagger_auto_schema(responses={status.HTTP_200_OK: serializers.Serializer})
     def post(self, *args, **kwargs):
-        super().post(*args, **kwargs)
+        return super().post(*args, **kwargs)
