@@ -52,8 +52,6 @@ class LocatedAnnotationBase(AnnotationBase):
 
 
 class AnnotationRequest(AnnotationBase):
-    class JSONAPIMeta:
-        resource_name = 'annotation_requests'
 
     quote = models.TextField(max_length=250, blank=True)
     # The exact annotated text part
@@ -64,8 +62,6 @@ class AnnotationRequest(AnnotationBase):
 
 
 class Annotation(LocatedAnnotationBase):
-    class JSONAPIMeta:
-        resource_name = 'annotations'
 
     PP_PUBLISHER = 'PP'
     DEMAGOG_PUBLISHER = 'DEMAGOG'
@@ -160,8 +156,6 @@ class Annotation(LocatedAnnotationBase):
 
 
 class AnnotationReport(UserInput):
-    class JSONAPIMeta:
-        resource_name = 'annotation_reports'
 
     annotation = models.ForeignKey(Annotation, on_delete=models.CASCADE, related_name='annotation_reports')
     reason = models.CharField(choices=consts.annotation_report_reasons, max_length=100)
@@ -172,18 +166,12 @@ class AnnotationUpvote(UserInput):
     class Meta:
         unique_together = [('user', 'annotation')]
 
-    class JSONAPIMeta:
-        resource_name = 'annotation_upvotes'
-
     annotation = models.ForeignKey(Annotation, on_delete=models.CASCADE, related_name='feedbacks')
 
 
 class AnnotationRequestFeedback(models.Model):
     class Meta:
         unique_together = [('user', 'annotation_request')]
-
-    class JSONAPIMeta:
-        resource_name = 'annotation_request_feedbacks'
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     annotation_request = models.ForeignKey(AnnotationRequest, on_delete=models.CASCADE)

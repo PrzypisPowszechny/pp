@@ -5,8 +5,6 @@ from parameterized import parameterized
 
 from apps.annotation.utils import standardize_url, standardize_url_id
 
-JSONAPIMeta = namedtuple('JSONAPIMeta', ('resource_name',))
-
 
 class StandardizeURLTest(SimpleTestCase):
 
