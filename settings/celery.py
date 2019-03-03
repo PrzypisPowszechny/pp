@@ -24,7 +24,7 @@ CELERYD_TASK_LOG_FORMAT = "[%(asctime)s: %(levelname)s/%(processName)s][%(proces
 CELERYBEAT_SCHEDULE = {
     'sync_with_demagog': {
         'task':
-            'apps.publisher.demagog.sync_using_sources_list',
+            'apps.publisher.tasks.demagog_sync',
         # 15 minutes past every hour
         'schedule': crontab(minute=15),
     },

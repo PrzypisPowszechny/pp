@@ -3,6 +3,8 @@ from datetime import timedelta
 from urllib.parse import urlencode
 
 import responses
+
+from worker import celery_app
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import timezone
@@ -17,6 +19,9 @@ class DemagogTasksTest(DemagogTestCase):
     get_all_statements_path = '/statements'
     get_statements_path = '/statements'
     get_sources_list_path = '/sources_list'
+
+    def test_using_source_list_imported(self):
+        self.assertIn('apps.publisher.tasks.demagog_sync', celery_app.tasks)
 
     @responses.activate
     def test_sync_using_sources_list__one(self):
