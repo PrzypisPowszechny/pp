@@ -57,7 +57,7 @@ def sync_using_sources_list():
     annotation_stats = defaultdict(int)
     consuming_errors = 0
     demagog_user = get_user_model().objects.get(username=settings.DEMAGOG_USERNAME)
-    log_every = (len(sources_list) / 10) + 1
+    log_every = int(len(sources_list) / 10) + 1
     i = 0
     for source_url in sources_list:
         try:
@@ -71,7 +71,7 @@ def sync_using_sources_list():
                 annotation_stats[action_applied] += 1
         i += 1
         if i % log_every == log_every - 1:
-            logging.info('Completed {i}/{all} sources'.format(i=i, all=len(sources_list)))
+            logger.info('Completed {i}/{all} sources'.format(i=i, all=len(sources_list)))
     logger.info('Consumed {sources_num} sources with {errors_num} errors, annotations created/updated: {stats}'.format(
         sources_num=len(sources_list),
         errors_num=consuming_errors,
