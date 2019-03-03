@@ -18,7 +18,6 @@ UPDATED = 'updated'
 FAILED = 'failed'
 
 
-@celery_app.task
 def sync_using_all_statements():
     consumer = DemagogConsumer()
 
@@ -41,7 +40,6 @@ def sync_using_all_statements():
             break
 
 
-@celery_app.task
 def sync_using_sources_list():
     consumer = DemagogConsumer()
 

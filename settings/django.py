@@ -77,7 +77,7 @@ if _env.ENV == 'dev' and _env.DEBUG:
 else:
     CORS_ORIGIN_WHITELIST = ()
     CORS_ORIGIN_REGEX_WHITELIST = (
-        r'https?://([0-9a-zA-Z_.-]+\.)?przypispowszechny\.pl(/.*)?'
+        r'https?://([0-9a-zA-Z_.-]+\.)?przypispowszechny\.pl(/.*)?',
     )
 
 

@@ -11,6 +11,7 @@ from apps.annotation.models import Annotation
 from apps.annotation.tasks import notify_annotation_url_subscribers
 from apps.annotation.tests.utils import create_test_user
 from apps.annotation.views.annotations import AnnotationList
+from worker import celery_app
 
 
 class AnnotationViewTest(TestCase):
@@ -162,6 +163,12 @@ class AnnotationViewTest(TestCase):
                 'attributes': self.get_valid_annotation_attrs()
             }
         }
+
+
+class AnnotationTaskTest(AnnotationViewTest):
+
+    def test_notify_subscribers_scheduled_imported(self):
+        self.assertIn('apps.annotation.tasks.notify_annotation_url_subscribers', celery_app.tasks)
 
     @responses.activate
     def test_notify_subscribers_scheduled(self):

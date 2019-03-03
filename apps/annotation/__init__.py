@@ -1,1 +1,1 @@
-default_app_config = 'apps.annotation.apps.AnnotationConfig'
+default_app_config = 'apps.annotation.apps.Config'

@@ -2,8 +2,6 @@
 
 set -e
 
-echo "$(ls -nd /home/user | cut -f3 -d' ')"
-
 if [ -z ${VENV_PATH} ]; then
     echo "Variable ENV_PATH for python virtual env is not defined! It should be set in docker image"
     return 1
@@ -14,16 +12,16 @@ EXTERNAL_UID=$(ls -nd /code | cut -f3 -d' ')
 EXTERNAL_GID=$(ls -nd /code | cut -f4 -d' ')
 
 if [ ! -z "$EXTERNAL_UID" -a ! -z "$EXTERNAL_GID" ]; then
-    echo "You user uid:gid is ${EXTERNAL_UID}:${EXTERNAL_GID}"
-
     # get the uid/gid of docker "user"
     INTERNAL_UID=$(getent passwd user | cut -f3 -d: || true)
     INTERNAL_GID=$(getent group user | cut -f3 -d: || true)
-    echo "Internal user uid:gid is ${INTERNAL_UID}:${INTERNAL_GID}"
+
+    echo "Your user's (repo's dir owner) uid:gid==${EXTERNAL_UID}:${EXTERNAL_GID}," \
+          "internal uid:gid==${INTERNAL_UID}:${INTERNAL_GID}"
 
     if [ "$EXTERNAL_GID" != "$INTERNAL_GID" ] || [ "$EXTERNAL_UID" != "$INTERNAL_UID"]; then
         if [ "$(ls -nd /home/user | cut -f3 -d' ')" != "$EXTERNAL_UID" ]; then
-            echo "Updating files ownership from ${INTERNAL_UID} to ${EXTERNAL_UID}"
+            echo "Updating files ownership from ${INTERNAL_UID}:${INTERNAL_GID} to ${EXTERNAL_UID}:${EXTERNAL_GID}"
             find / -mount -uid ${INTERNAL_UID} -exec chown ${EXTERNAL_UID}:${EXTERNAL_GID} {} \;
         fi
 

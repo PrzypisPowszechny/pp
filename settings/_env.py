@@ -1,4 +1,5 @@
 import logging
+from distutils.util import strtobool
 from os import environ
 
 logger = logging.getLogger(__name__)
@@ -7,7 +8,7 @@ logger = logging.getLogger(__name__)
 ENV = environ.get('ENV', 'dev')
 assert ENV in ('dev', 'test', 'prod')
 
-DEBUG = bool(environ.get('DEBUG'))
+DEBUG = strtobool(environ.get('DEBUG') or 'FALSE')
 assert not (DEBUG and ENV == 'prod'), "DEBUG can't be set in prod"
 if DEBUG and ENV == 'test':
     logger.warning('DEBUG value is ignored in test env and always set to False')
