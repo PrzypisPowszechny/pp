@@ -8,6 +8,16 @@ from apps.api import fields
 from .models import Annotation, AnnotationUpvote
 
 
+class RequestMixin:
+    def _assert_request(self):
+        assert 'request' in self.context, f"No request in context of {self.__class__.__name__}"
+
+    @property
+    def request_user(self):
+        self._assert_request()
+        return self.context['request'].user
+
+
 class ResourceLinksSerializer(serializers.Serializer):
     self = fields.LinkSerializerMethodField(read_only=True)
 
@@ -24,7 +34,7 @@ class ResourceLinksSerializer(serializers.Serializer):
 # Annotation
 
 class AnnotationSerializer(serializers.Serializer):
-    class Attributes(serializers.ModelSerializer):
+    class Attributes(serializers.ModelSerializer, RequestMixin):
         url = fields.StandardizedRepresentationURLField()
         range = fields.ObjectField(json_internal_type=True)
         quote = serializers.CharField()
@@ -45,22 +55,19 @@ class AnnotationSerializer(serializers.Serializer):
 
                       'publisher', 'create_date', 'upvote_count_except_user', 'does_belong_to_user')
 
-        @property
-        def request_user(self):
-            return self.context['request'].user if self.context.get('request') else None
-
         def get_upvote_count_except_user(self, instance):
-            assert self.request_user is not None
             return AnnotationUpvote.objects.filter(annotation=instance).exclude(user=self.request_user).count()
 
         def get_does_belong_to_user(self, instance):
-            assert self.request_user is not None
             return self.request_user.id == instance.user_id
 
     class Relationships(serializers.Serializer):
         user = fields.RelationField(
             related_link_url_name='api:annotation:annotation_related_user',
             child=fields.ResourceField(resource_name='users')
+        )
+        annotation_request = fields.RelationField(
+            child=fields.ResourceField('annotation_requests'),
         )
         annotation_upvote = fields.RelationField(
             related_link_url_name='api:annotation:annotation_related_upvote',
@@ -104,6 +111,9 @@ class AnnotationListSerializer(serializers.Serializer):
             related_link_url_name='api:annotation:annotation_related_user',
             child=fields.ResourceField(resource_name='users')
         )
+        annotation_request = fields.RelationField(
+            child=fields.ResourceField('annotation_requests'),
+        )
         annotation_upvote = fields.RelationField(
             related_link_url_name='api:annotation:annotation_related_upvote',
             child=fields.ResourceField(resource_name='annotation_upvotes'),
@@ -136,8 +146,15 @@ class AnnotationDeserializer(serializers.Serializer):
                       'pp_category', 'demagog_category', 'comment',
                       'annotation_link', 'annotation_link_title')
 
+    class Relationships(serializers.Serializer):
+        annotation_request = fields.RelationField(
+            child=fields.ResourceField('annotation_requests'),
+            required=False
+        )
+
     type = fields.CamelcaseConstField('annotations')
     attributes = Attributes()
+    relationships = Relationships(required=False)
 
 
 class AnnotationPatchDeserializer(serializers.Serializer):
@@ -253,13 +270,25 @@ class AnnotationRequestDeserializer(serializers.Serializer):
 
 
 class AnnotationRequestSerializer(serializers.Serializer):
-    class Attributes(serializers.ModelSerializer):
+    class Attributes(serializers.ModelSerializer, RequestMixin):
         url = fields.StandardizedRepresentationURLField()
+        requested_by_user = serializers.SerializerMethodField()
 
         class Meta:
             model = AnnotationRequest
-            fields = ('url', 'quote', 'comment', 'notification_email')
+            fields = ('url', 'quote', 'comment', 'notification_email', 'create_date', 'requested_by_user')
+
+        def get_requested_by_user(self, instance) -> bool:
+            return self.request_user.id == instance.user_id
+
+    class Relationships(serializers.Serializer):
+        annotations = fields.RelationField(
+            child=fields.ResourceField('annotations'),
+            many=True,
+            required=False
+        )
 
     id = fields.IDField()
     type = fields.CamelcaseConstField('annotation_requests')
     attributes = Attributes()
+    relationships = Relationships()

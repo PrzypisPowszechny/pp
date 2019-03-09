@@ -95,6 +95,9 @@ class AnnotationAPITest(TestCase):
                             },
                             'data': []
                         },
+                        'annotationRequest': {
+                            'data': None
+                        },
                     },
                     'links': {
                         'self': testserver_reverse('api:annotation:annotation', kwargs={'annotation_id': annotation.id})
@@ -241,6 +244,9 @@ class AnnotationAPITest(TestCase):
                                 {'type': 'annotationReports', 'id': str(report.id)}
                             ]
                         },
+                        'annotationRequest': {
+                            'data': None
+                        },
                     },
                     'links': {
                         'self': testserver_reverse('api:annotation:annotation', kwargs={'annotation_id': annotation.id})
@@ -308,6 +314,9 @@ class AnnotationAPITest(TestCase):
                             'data': [
                                 {'type': 'annotationReports', 'id': str(report.id)}
                             ]
+                        },
+                        'annotationRequest': {
+                            'data': None
                         },
                     },
                     'links': {
@@ -483,6 +492,9 @@ class AnnotationAPITest(TestCase):
                      },
                      'data': []
                  },
+                 'annotationRequest': {
+                     'data': None
+                 },
              },
              'links': {
                  'self': testserver_reverse('api:annotation:annotation', kwargs={'annotation_id': annotation.id})
@@ -529,6 +541,9 @@ class AnnotationAPITest(TestCase):
                                                        kwargs={'annotation_id': annotation2.id})
                      },
                      'data': []
+                 },
+                 'annotationRequest': {
+                     'data': None
                  },
              },
              'links': {
@@ -690,6 +705,9 @@ class AnnotationAPITest(TestCase):
                                                               kwargs={'annotation_id': annotation.id})
                             },
                             'data': []
+                        },
+                        'annotationRequest': {
+                            'data': None
                         },
                     },
                     'links': {
@@ -994,6 +1012,9 @@ class AnnotationAPITest(TestCase):
                                                           kwargs={'annotation_id': annotation.id})
                         },
                         'data': []
+                    },
+                    'annotationRequest': {
+                        'data': None
                     },
                 },
                 'links': {

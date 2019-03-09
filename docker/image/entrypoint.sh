@@ -19,7 +19,7 @@ if [ ! -z "$EXTERNAL_UID" -a ! -z "$EXTERNAL_GID" ]; then
     echo "Your user's (repo's dir owner) uid:gid==${EXTERNAL_UID}:${EXTERNAL_GID}," \
           "internal uid:gid==${INTERNAL_UID}:${INTERNAL_GID}"
 
-    if [ "$EXTERNAL_GID" != "$INTERNAL_GID" ] || [ "$EXTERNAL_UID" != "$INTERNAL_UID"]; then
+    if [ "$EXTERNAL_GID" != "$INTERNAL_GID" ] || [ "$EXTERNAL_UID" != "$INTERNAL_UID" ]; then
         if [ "$(ls -nd /home/user | cut -f3 -d' ')" != "$EXTERNAL_UID" ]; then
             echo "Updating files ownership from ${INTERNAL_UID}:${INTERNAL_GID} to ${EXTERNAL_UID}:${EXTERNAL_GID}"
             find / -mount -uid ${INTERNAL_UID} -exec chown ${EXTERNAL_UID}:${EXTERNAL_GID} {} \;

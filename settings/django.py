@@ -257,7 +257,9 @@ SWAGGER_SETTINGS = {
             'name': 'Authorization',
             'in': 'header',
         }
-    }
+    },
+
+    'PERSIST_AUTH': True,
 
 }
 
