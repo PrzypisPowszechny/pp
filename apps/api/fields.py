@@ -272,7 +272,7 @@ class RelationField(serializers.Field):
         'not_a_dict': _('Expected a dictionary of items but got type "{input_type}".'),
     }
 
-    def __init__(self, related_link_url_name, many=False, **kwargs):
+    def __init__(self, related_link_url_name=None, many=False, **kwargs):
         self.related_link_url_name = related_link_url_name
         self.child = kwargs.pop('child', copy.deepcopy(self.child))
         self.link_child = self.link_child_class(url_name=related_link_url_name)
@@ -318,12 +318,15 @@ class RelationField(serializers.Field):
 
         data_value = self.child.to_representation(instance)
 
-        return {
+        representation = {
             'data': data_value,
-            'links': {
+        }
+        if self.related_link_url_name:
+            representation['links'] = {
                 'related': self.link_child.to_representation(root_obj_id)
             }
-        }
+
+        return representation
 
     def to_custom_none(self, value):
         return custom_none if value is None else value

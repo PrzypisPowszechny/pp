@@ -62,6 +62,9 @@ class AnnotationSerializer(serializers.Serializer):
             related_link_url_name='api:annotation:annotation_related_user',
             child=fields.ResourceField(resource_name='users')
         )
+        annotation_request = fields.RelationField(
+            child=fields.ResourceField('annotation_requests'),
+        )
         annotation_upvote = fields.RelationField(
             related_link_url_name='api:annotation:annotation_related_upvote',
             child=fields.ResourceField(resource_name='annotation_upvotes'),
@@ -104,6 +107,9 @@ class AnnotationListSerializer(serializers.Serializer):
             related_link_url_name='api:annotation:annotation_related_user',
             child=fields.ResourceField(resource_name='users')
         )
+        annotation_request = fields.RelationField(
+            child=fields.ResourceField('annotation_requests'),
+        )
         annotation_upvote = fields.RelationField(
             related_link_url_name='api:annotation:annotation_related_upvote',
             child=fields.ResourceField(resource_name='annotation_upvotes'),
@@ -136,8 +142,15 @@ class AnnotationDeserializer(serializers.Serializer):
                       'pp_category', 'demagog_category', 'comment',
                       'annotation_link', 'annotation_link_title')
 
+    class Relationships(serializers.Serializer):
+        annotation_request = fields.RelationField(
+            child=fields.ResourceField('annotation_requests'),
+            required=False
+        )
+
     type = fields.CamelcaseConstField('annotations')
     attributes = Attributes()
+    relationships = Relationships(required=False)
 
 
 class AnnotationPatchDeserializer(serializers.Serializer):
@@ -255,11 +268,28 @@ class AnnotationRequestDeserializer(serializers.Serializer):
 class AnnotationRequestSerializer(serializers.Serializer):
     class Attributes(serializers.ModelSerializer):
         url = fields.StandardizedRepresentationURLField()
+        requested_by_user = serializers.SerializerMethodField()
 
         class Meta:
             model = AnnotationRequest
-            fields = ('url', 'quote', 'comment', 'notification_email')
+            fields = ('url', 'quote', 'comment', 'notification_email', 'create_date', 'requested_by_user')
+
+        @property
+        def request_user(self):
+            return self.context['request'].user if self.context.get('request') else None
+
+        def get_requested_by_user(self, instance) -> bool:
+            assert self.request_user is not None
+            return self.request_user.id == instance.user_id
+
+    class Relationships(serializers.Serializer):
+        annotations = fields.RelationField(
+            child=fields.ResourceField('annotations'),
+            many=True,
+            required=False
+        )
 
     id = fields.IDField()
     type = fields.CamelcaseConstField('annotation_requests')
     attributes = Attributes()
+    relationships = Relationships()

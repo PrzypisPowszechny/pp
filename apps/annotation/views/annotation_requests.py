@@ -1,20 +1,19 @@
-import logging
-
-from django.utils.text import Truncator
+from django_filters import OrderingFilter
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.generics import GenericAPIView
-from rest_framework.response import Response
+from rest_framework_json_api.pagination import LimitOffsetPagination
 
-from apps.annotation.mailgun import send_mail, MailSendException
+from apps.annotation.mails import notify_editors_about_annotation_request
 from apps.annotation.models import AnnotationRequest
 from apps.annotation.serializers import AnnotationRequestDeserializer, AnnotationRequestSerializer
 from apps.api.responses import ValidationErrorResponse
 
-logger = logging.getLogger('pp.annotation')
-
 
 class AnnotationRequests(GenericAPIView):
-    resource_name = 'annotation_requests'
+    pagination_class = LimitOffsetPagination
+    filter_backends = [OrderingFilter]
+    ordering_fields = ('create_date', 'id')
+    ordering = "-create_date"
 
     @swagger_auto_schema(request_body=AnnotationRequestDeserializer,
                          responses={200: AnnotationRequestSerializer})
@@ -28,30 +27,20 @@ class AnnotationRequests(GenericAPIView):
         annotation_request.user_id = request.user.pk
         annotation_request.save()
 
-        # Send e-mail to Przypis Powszechny postbox
-        subject = 'Prośba o przypis w tekście' if data.get('quote') else 'Prośba o przypis'
-        text = '''
-Użytkownik zgłosił prośbę o przypis!
-URL: {}
-Fragment: {}
-        '''.format(data['url'], data.get('quote'))
+        notify_editors_about_annotation_request(annotation_request)
 
-        try:
-            send_mail(
-                sender='prosba-o-przypis',
-                receiver='przypispowszechny@gmail.com',
-                subject=subject,
-                text=text,
-            )
-        except MailSendException as e:
-            logger.error('Annotation request (url: {}, quote: {}) could not be sent by e-mail: {}'.format(
-                data['url'],
-                Truncator(data.get('quote', '')).chars(20),
-                str(e))
-            )
+    @swagger_auto_schema(responses={200: AnnotationRequestSerializer(many=True)})
+    def get(self, request):
+        queryset = AnnotationRequest.objects.filter(active=True).prefetch_related('annotation_set')
 
-        return Response(AnnotationRequestSerializer(
-            instance={
+        queryset = self.paginator.paginate_queryset(queryset, request)
+
+        return self.get_paginated_response([
+            AnnotationRequestSerializer(instance={
                 'id': annotation_request,
-                'attributes': annotation_request
-            }).data)
+                'attributes': annotation_request,
+                'relationships': {
+                    'annotations': list(annotation_request.annotation_set.all())
+                }
+            }, context={'request': request, 'root_resource_obj': annotation_request}).data
+            for annotation_request in queryset])
