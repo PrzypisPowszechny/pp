@@ -10,13 +10,14 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.filters import OrderingFilter
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_json_api.pagination import LimitOffsetPagination
 
 from apps.annotation.filters import ConflictingFilterValueError
 from apps.annotation.mails import notify_editors_about_annotation_request
 from apps.annotation.models import AnnotationRequest
 from apps.annotation.serializers import AnnotationRequestDeserializer, AnnotationRequestSerializer
-from apps.api.responses import ValidationErrorResponse
+from apps.api.responses import ValidationErrorResponse, NotFoundResponse, PermissionDenied
 
 
 class NullBooleanField(CharField):
@@ -61,7 +62,7 @@ class AnnotationRequestFilterSet(django_filters.FilterSet):
         fields = []
 
 
-class AnnotationRequests(GenericAPIView):
+class AnnotationRequestList(GenericAPIView):
     pagination_class = LimitOffsetPagination
     filter_backends = [OrderingFilter, DjangoFilterBackend]
     ordering_fields = ('create_date',)
@@ -114,3 +115,48 @@ class AnnotationRequests(GenericAPIView):
                 }
             }, context={'request': request, 'root_resource_obj': annotation_request}).data
             for annotation_request in queryset])
+
+    @swagger_auto_schema(request_body=AnnotationRequestDeserializer,
+                         responses={200: AnnotationRequestSerializer})
+    def post(self, request):
+        deserializer = AnnotationRequestDeserializer(data=request.data)
+        if not deserializer.is_valid():
+            return ValidationErrorResponse(deserializer.errors)
+        data = deserializer.validated_data['attributes']
+
+        annotation_request = AnnotationRequest(**data)
+        annotation_request.user_id = request.user.pk
+        annotation_request.save()
+
+        notify_editors_about_annotation_request(annotation_request)
+
+        return Response(AnnotationRequestSerializer(
+            instance={
+                'id': annotation_request,
+                'attributes': annotation_request,
+                'relationships': {
+                    'annotations': ()
+                }
+            },
+            context={'request': request, 'root_resource_obj': annotation_request}
+        ).data)
+
+
+class AnnotationRequestSingle(APIView):
+
+    def delete(self, request, annotation_request_id):
+        try:
+            annotation_request = AnnotationRequest.objects.get(id=annotation_request_id, active=True)
+        except AnnotationRequest.DoesNotExist:
+            return NotFoundResponse()
+
+        # Check permissions
+        if annotation_request.user_id != request.user.id:
+            return PermissionDenied()
+
+        if annotation_request.active:
+            annotation_request.active = False
+            annotation_request.save()
+        return Response()
+
+

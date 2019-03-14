@@ -87,7 +87,7 @@ class AnnotationSingle(APIView):
 
     def delete(self, request, annotation_id):
         try:
-            annotation = Annotation.objects.get(id=annotation_id)
+            annotation = Annotation.objects.get(id=annotation_id, active=True)
         except Annotation.DoesNotExist:
             return NotFoundResponse()
 

@@ -6,7 +6,7 @@ from rest_framework.test import APIRequestFactory
 from rest_framework_simplejwt.tokens import AccessToken
 
 from apps.annotation.tests.utils import create_test_user, merge
-from apps.annotation.views.annotation_requests import AnnotationRequests
+from apps.annotation.views.annotation_requests import AnnotationRequestList
 
 
 class AnnotationRequestsViewTest(TestCase):
@@ -57,7 +57,7 @@ class AnnotationRequestsViewTest(TestCase):
         request_data = self.request_template()
         merge(request_data, data)
 
-        response = self.request_to_class_view(AnnotationRequests, 'post', data=request_data)
+        response = self.request_to_class_view(AnnotationRequestList, 'post', data=request_data)
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(response)
 
@@ -79,7 +79,7 @@ class AnnotationRequestsViewTest(TestCase):
         request_data = self.request_template()
         merge(request_data, data)
 
-        response = self.request_to_class_view(AnnotationRequests, 'post', data=request_data)
+        response = self.request_to_class_view(AnnotationRequestList, 'post', data=request_data)
         for send_attr, send_value in data['data']['attributes'].items():
             self.assertEqual(send_value, response.data['attributes'].get(send_attr, ''))
 
@@ -100,7 +100,7 @@ class AnnotationRequestsViewTest(TestCase):
         request_data = self.request_template()
         merge(request_data, data)
 
-        response = self.request_to_class_view(AnnotationRequests, 'post', data=request_data)
+        response = self.request_to_class_view(AnnotationRequestList, 'post', data=request_data)
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(response)
         self.assertEqual(response.data['attributes']['url'], expected_response_url)
@@ -122,7 +122,7 @@ class AnnotationRequestsViewTest(TestCase):
         merge(request_data, data)
 
         with self.assertLogs('pp.annotation', level='ERROR') as cm:
-            response = self.request_to_class_view(AnnotationRequests, 'post', data=request_data)
+            response = self.request_to_class_view(AnnotationRequestList, 'post', data=request_data)
             self.assertEqual(response.status_code, 200)
             self.assertIsNotNone(response)
             self.assertEqual(len(cm.output), 1)

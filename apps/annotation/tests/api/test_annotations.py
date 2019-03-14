@@ -1120,10 +1120,10 @@ class AnnotationAPITest(TestCase):
                                    HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 404)
 
-        # Removing again is still good
+        # Removing again is bad
         response = self.client.delete(self.base_url.format(good_id), content_type='application/vnd.api+json',
                                       HTTP_AUTHORIZATION=self.token_header)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 404)
 
         # Removing never existing is bad
         response = self.client.delete(self.base_url.format(non_existing_id), content_type='application/vnd.api+json',
