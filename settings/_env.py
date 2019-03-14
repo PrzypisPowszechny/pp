@@ -5,7 +5,7 @@ from os import environ
 logger = logging.getLogger(__name__)
 
 
-ENV = environ.get('ENV', 'dev')
+ENV = environ.get('ENV', 'dev').lower()
 assert ENV in ('dev', 'test', 'prod')
 
 DEBUG = strtobool(environ.get('DEBUG') or 'FALSE')
