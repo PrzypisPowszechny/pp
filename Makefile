@@ -51,7 +51,7 @@ start: dev-local.env  # Start services: web and worker
 	docker-compose up web worker
 
 web: dev-local.env  # Start web service
-	docker-compose up web 2>&1
+	docker-compose up web
 
 worker: dev-local.env  # Start worker service
 	docker-compose up worker
