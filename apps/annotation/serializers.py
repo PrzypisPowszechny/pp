@@ -73,11 +73,6 @@ class AnnotationSerializer(serializers.Serializer):
             related_link_url_name='api:annotation:annotation_related_upvote',
             child=fields.ResourceField(resource_name='annotation_upvotes'),
         )
-        annotation_reports = fields.RelationField(
-            many=True,
-            related_link_url_name='api:annotation:annotation_related_reports',
-            child=fields.ResourceField(resource_name='annotation_reports')
-        )
 
     id = fields.IDField()
     type = fields.CamelcaseConstField('annotations')
@@ -117,11 +112,6 @@ class AnnotationListSerializer(serializers.Serializer):
         annotation_upvote = fields.RelationField(
             related_link_url_name='api:annotation:annotation_related_upvote',
             child=fields.ResourceField(resource_name='annotation_upvotes'),
-        )
-        annotation_reports = fields.RelationField(
-            many=True,
-            related_link_url_name='api:annotation:annotation_related_reports',
-            child=fields.ResourceField(resource_name='annotation_reports')
         )
 
     id = fields.IDField()
@@ -173,6 +163,23 @@ class AnnotationPatchDeserializer(serializers.Serializer):
 
 # Report
 
+class AnnotationReportSerializer(serializers.Serializer):
+    class Attributes(serializers.ModelSerializer):
+        class Meta:
+            model = AnnotationReport
+            fields = ('reason', 'comment')
+            extra_kwargs = {'comment': {'required': False, 'allow_blank': True}}
+
+    class Relationships(serializers.Serializer):
+        annotation = fields.RelationField(
+            child=fields.ResourceField('annotations')
+        )
+
+    id = fields.IDField()
+    type = fields.CamelcaseConstField('annotation_reports')
+    attributes = Attributes()
+    relationships = Relationships()
+
 
 class AnnotationReportDeserializer(serializers.Serializer):
     class Attributes(serializers.ModelSerializer):
@@ -190,29 +197,9 @@ class AnnotationReportDeserializer(serializers.Serializer):
 
     class Relationships(serializers.Serializer):
         annotation = fields.RelationField(
-            related_link_url_name='api:annotation:annotation_report_related_annotation',
             child=fields.ResourceField('annotations')
         )
 
-    type = fields.CamelcaseConstField('annotation_reports')
-    attributes = Attributes()
-    relationships = Relationships()
-
-
-class AnnotationReportSerializer(serializers.Serializer):
-    class Attributes(serializers.ModelSerializer):
-        class Meta:
-            model = AnnotationReport
-            fields = ('reason', 'comment')
-            extra_kwargs = {'comment': {'required': False, 'allow_blank': True}}
-
-    class Relationships(serializers.Serializer):
-        annotation = fields.RelationField(
-            related_link_url_name='api:annotation:annotation_report_related_annotation',
-            child=fields.ResourceField('annotations')
-        )
-
-    id = fields.IDField()
     type = fields.CamelcaseConstField('annotation_reports')
     attributes = Attributes()
     relationships = Relationships()
@@ -223,7 +210,6 @@ class AnnotationReportSerializer(serializers.Serializer):
 class AnnotationUpvoteDeserializer(serializers.Serializer):
     class Relationships(serializers.Serializer):
         annotation = fields.RelationField(
-            related_link_url_name='api:annotation:annotation_upvote_related_annotation',
             child=fields.ResourceField('annotations')
         )
 
@@ -234,7 +220,6 @@ class AnnotationUpvoteDeserializer(serializers.Serializer):
 class AnnotationUpvoteSerializer(serializers.Serializer):
     class Relationships(serializers.Serializer):
         annotation = fields.RelationField(
-            related_link_url_name='api:annotation:annotation_upvote_related_annotation',
             child=fields.ResourceField('annotations')
         )
 

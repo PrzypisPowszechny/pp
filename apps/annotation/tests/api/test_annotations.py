@@ -15,8 +15,6 @@ from apps.annotation.tests.utils import create_test_user, testserver_reverse
 
 class AnnotationAPITest(TestCase):
     base_url = "/api/annotations/{}"
-    report_related_url = "/api/annotationReports/{}/annotation"
-    upvote_related_url = "/api/annotationUpvotes/{}/annotation"
     maxDiff = None
 
     # IMPORTANT: we log in for each test, so self.user has already an open session with server
@@ -87,13 +85,6 @@ class AnnotationAPITest(TestCase):
                                                               kwargs={'annotation_id': annotation.id})
                             },
                             'data': {'id': str(urf.id), 'type': 'annotationUpvotes'}
-                        },
-                        'annotationReports': {
-                            'links': {
-                                'related': testserver_reverse('api:annotation:annotation_related_reports',
-                                                              kwargs={'annotation_id': annotation.id})
-                            },
-                            'data': []
                         },
                         'annotationRequest': {
                             'data': None
@@ -183,148 +174,6 @@ class AnnotationAPITest(TestCase):
             },
             'data': {'id': str(urf.id), 'type': 'annotationUpvotes'}
         })
-
-    # TODO: split this obsolete test to make it MORE UNIT
-    # TODO: do not hardcode data all the time, use helper to create valid annotation
-    def test_get_annotation_report_related_annotation(self):
-        annotation = Annotation.objects.create(user=self.user,
-                                               pp_category=Annotation.ADDITIONAL_INFO,
-                                               comment="good job",
-                                               range='{}', url='http://localhost/',
-                                               annotation_link="www.przypispowszechny.com",
-                                               annotation_link_title="very nice")
-        report = mommy.make(AnnotationReport, annotation=annotation, user=self.user)
-        urf = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
-        upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).exclude(user=self.user).count()
-
-        response = self.client.get(self.report_related_url.format(report.id), HTTP_AUTHORIZATION=self.token_header)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            json.loads(response.content.decode('utf8')),
-            {
-                'data': {
-                    'id': str(annotation.id),
-                    'type': 'annotations',
-                    'attributes': {
-                        'url': annotation.url,
-                        'range': json.loads(annotation.range),
-                        'quote': annotation.quote,
-                        'quoteContext': annotation.quote_context,
-                        'publisher': annotation.publisher,
-                        'ppCategory': annotation.pp_category,
-                        'demagogCategory': None,
-                        'comment': annotation.comment,
-                        'annotationLink': annotation.annotation_link,
-                        'annotationLinkTitle': annotation.annotation_link_title,
-                        'createDate': serializers.DateTimeField().to_representation(annotation.create_date),
-                        'upvoteCountExceptUser': upvote_count,
-                        'doesBelongToUser': True,
-                    },
-                    'relationships': {
-                        'user': {
-                            'links': {
-                                'related': testserver_reverse('api:annotation:annotation_related_user',
-                                                              kwargs={'annotation_id': annotation.id})
-                            },
-                            'data': {'type': 'users', 'id': str(self.user.id)}
-                        },
-                        'annotationUpvote': {
-                            'links': {
-                                'related': testserver_reverse('api:annotation:annotation_related_upvote',
-                                                              kwargs={'annotation_id': annotation.id})
-                            },
-                            'data': {'id': str(urf.id), 'type': 'annotationUpvotes'}
-                        },
-                        'annotationReports': {
-                            'links': {
-                                'related': testserver_reverse('api:annotation:annotation_related_reports',
-                                                              kwargs={'annotation_id': annotation.id})
-                            },
-                            'data': [
-                                {'type': 'annotationReports', 'id': str(report.id)}
-                            ]
-                        },
-                        'annotationRequest': {
-                            'data': None
-                        },
-                    },
-                    'links': {
-                        'self': testserver_reverse('api:annotation:annotation', kwargs={'annotation_id': annotation.id})
-                    },
-                }
-            }
-        )
-
-    # TODO: split this obsolete test to make it MORE UNIT
-    # TODO: do not hardcode data all the time, use helper to create valid annotation
-    def test_get_annotation_upvote_related_annotation(self):
-        annotation = Annotation.objects.create(user=self.user,
-                                               pp_category=Annotation.ADDITIONAL_INFO,
-                                               comment="good job",
-                                               range='{}', url='http://localhost/',
-                                               annotation_link="www.przypispowszechny.com",
-                                               annotation_link_title="very nice")
-        report = mommy.make(AnnotationReport, annotation=annotation, user=self.user)
-        upvote = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
-        upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).exclude(user=self.user).count()
-
-        response = self.client.get(self.upvote_related_url.format(upvote.id), HTTP_AUTHORIZATION=self.token_header)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            json.loads(response.content.decode('utf8')),
-            {
-                'data': {
-                    'id': str(annotation.id),
-                    'type': 'annotations',
-                    'attributes': {
-                        'url': annotation.url,
-                        'range': json.loads(annotation.range),
-                        'quote': annotation.quote,
-                        'quoteContext': annotation.quote_context,
-                        'publisher': annotation.publisher,
-                        'ppCategory': annotation.pp_category,
-                        'demagogCategory': None,
-                        'comment': annotation.comment,
-                        'annotationLink': annotation.annotation_link,
-                        'annotationLinkTitle': annotation.annotation_link_title,
-                        'createDate': serializers.DateTimeField().to_representation(annotation.create_date),
-                        'upvoteCountExceptUser': upvote_count,
-                        'doesBelongToUser': True,
-                    },
-                    'relationships': {
-                        'user': {
-                            'links': {
-                                'related': testserver_reverse('api:annotation:annotation_related_user',
-                                                              kwargs={'annotation_id': annotation.id})
-                            },
-                            'data': {'type': 'users', 'id': str(self.user.id)}
-                        },
-                        'annotationUpvote': {
-                            'links': {
-                                'related': testserver_reverse('api:annotation:annotation_related_upvote',
-                                                              kwargs={'annotation_id': annotation.id})
-                            },
-                            'data': {'id': str(upvote.id), 'type': 'annotationUpvotes'}
-                        },
-                        'annotationReports': {
-                            'links': {
-                                'related': testserver_reverse('api:annotation:annotation_related_reports',
-                                                              kwargs={'annotation_id': annotation.id})
-                            },
-                            'data': [
-                                {'type': 'annotationReports', 'id': str(report.id)}
-                            ]
-                        },
-                        'annotationRequest': {
-                            'data': None
-                        },
-                    },
-                    'links': {
-                        'self': testserver_reverse('api:annotation:annotation', kwargs={'annotation_id': annotation.id})
-                    },
-                }
-            }
-        )
 
     def test_list_annotations_empty_return_json_200(self):
         search_base_url = "/api/annotations?url={}"
@@ -485,13 +334,6 @@ class AnnotationAPITest(TestCase):
                      },
                      'data': {'type': 'annotationUpvotes', 'id': str(urf.id)}
                  },
-                 'annotationReports': {
-                     'links': {
-                         'related': testserver_reverse('api:annotation:annotation_related_reports',
-                                                       kwargs={'annotation_id': annotation.id})
-                     },
-                     'data': []
-                 },
                  'annotationRequest': {
                      'data': None
                  },
@@ -534,13 +376,6 @@ class AnnotationAPITest(TestCase):
                                                        kwargs={'annotation_id': annotation2.id})
                      },
                      'data': None
-                 },
-                 'annotationReports': {
-                     'links': {
-                         'related': testserver_reverse('api:annotation:annotation_related_reports',
-                                                       kwargs={'annotation_id': annotation2.id})
-                     },
-                     'data': []
                  },
                  'annotationRequest': {
                      'data': None
@@ -698,13 +533,6 @@ class AnnotationAPITest(TestCase):
                                                               kwargs={'annotation_id': annotation.id})
                             },
                             'data': None
-                        },
-                        'annotationReports': {
-                            'links': {
-                                'related': testserver_reverse('api:annotation:annotation_related_reports',
-                                                              kwargs={'annotation_id': annotation.id})
-                            },
-                            'data': []
                         },
                         'annotationRequest': {
                             'data': None
@@ -1005,13 +833,6 @@ class AnnotationAPITest(TestCase):
                                                           kwargs={'annotation_id': annotation.id})
                         },
                         'data': {'id': str(urf.id), 'type': 'annotationUpvotes'}
-                    },
-                    'annotationReports': {
-                        'links': {
-                            'related': testserver_reverse('api:annotation:annotation_related_reports',
-                                                          kwargs={'annotation_id': annotation.id})
-                        },
-                        'data': []
                     },
                     'annotationRequest': {
                         'data': None

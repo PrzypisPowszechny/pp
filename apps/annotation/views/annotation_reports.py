@@ -8,27 +8,6 @@ from apps.annotation.models import Annotation, AnnotationReport
 from apps.api.responses import ValidationErrorResponse, NotFoundResponse, ErrorResponse
 
 
-class AnnotationReportSingle(APIView):
-
-    @swagger_auto_schema(responses={200: serializers.AnnotationReportSerializer})
-    def get(self, request, report_id):
-        try:
-            report = AnnotationReport.objects.get(id=report_id, user=request.user)
-        except AnnotationReport.DoesNotExist:
-            return NotFoundResponse()
-
-        return Response(serializers.AnnotationReportSerializer(
-            instance={
-                'id': report,
-                'attributes': report,
-                'relationships': {
-                    'annotation': report.annotation_id,
-                }
-            },
-            context={'request': request, 'root_resource_obj': report}
-        ).data)
-
-
 class AnnotationReportList(APIView):
 
     @swagger_auto_schema(request_body=serializers.AnnotationReportDeserializer,
@@ -62,28 +41,3 @@ class AnnotationReportList(APIView):
             },
             context={'request': request, 'root_resource_obj': report}
         ).data)
-
-
-# TODO: add test
-class AnnotationRelatedAnnotationReportList(APIView):
-
-    @swagger_auto_schema(responses={200: serializers.AnnotationReportSerializer(many=True)})
-    def get(self, request, annotation_id):
-        try:
-            Annotation.objects.get(active=True, id=annotation_id)
-        except Annotation.DoesNotExist:
-            return NotFoundResponse()
-        reports = AnnotationReport.objects.filter(annotation_id=annotation_id, user=request.user)
-
-        return Response([
-            serializers.AnnotationReportSerializer(
-                instance={
-                    'id': report,
-                    'attributes': report,
-                    'relationships': {
-                        'annotation': report.annotation_id,
-                    }
-                },
-                context={'request': request, 'root_resource_obj': report}
-            ).data
-            for report in reports])
