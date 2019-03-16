@@ -232,28 +232,37 @@ JSON_CAMEL_CASE = {
     'RENDERER_CLASS': 'rest_framework.renderers.JSONRenderer',
 }
 
+JSON_API_FORMAT_KEYS = 'camelize'
+JSON_API_FORMAT_TYPES = 'camelize'
+JSON_API_PLURALIZE_TYPES = True
+
 SWAGGER_SETTINGS = {
     'DEFAULT_FIELD_INSPECTORS': [
         'drf_yasg.inspectors.CamelCaseJSONFilter',
-        'apps.api.inspectors.AppendWriteOnlyFilter',
-
         'apps.api.inspectors.RootSerializerInspector',
-        # ReferencingS... replaced with InlineS... which does not create serializers definitions index,
-        # but does not require serializers class names to be unique across whole application
-        # 'drf_yasg.inspectors.ReferencingSerializerInspector',
+
+        'apps.docs.inspectors.JSONAPIFormatFilter',
+        'apps.docs.inspectors.AttributesEnhancingFilter',
+        'apps.docs.inspectors.JSONAPISerializerInspector',
+        'drf_yasg.inspectors.RecursiveFieldInspector',
         'drf_yasg.inspectors.InlineSerializerInspector',
 
+        # Legacy inspectors
         'apps.api.inspectors.IDFieldInspector',
         'apps.api.inspectors.ConstFieldInspector',
         'apps.api.inspectors.ResourceFieldInspector',
         'apps.api.inspectors.RelationFieldInspector',
         'apps.api.inspectors.ObjectFieldInspector',
 
-        'drf_yasg.inspectors.RelatedFieldInspector',
         'drf_yasg.inspectors.ChoiceFieldInspector',
+        'apps.docs.inspectors.Base64FileFieldInspector',
         'drf_yasg.inspectors.FileFieldInspector',
         'drf_yasg.inspectors.DictFieldInspector',
         'drf_yasg.inspectors.HiddenFieldInspector',
+        'apps.docs.inspectors.JSONAPIIDFieldInspector',
+        'apps.docs.inspectors.JSONAPIM2MFieldInspector',
+        'drf_yasg.inspectors.RelatedFieldInspector',
+        'drf_yasg.inspectors.SerializerMethodFieldInspector',
         'drf_yasg.inspectors.SimpleFieldInspector',
         'drf_yasg.inspectors.StringDefaultFieldInspector',
     ],
@@ -263,12 +272,13 @@ SWAGGER_SETTINGS = {
             'type': 'apiKey',
             'name': 'Authorization',
             'in': 'header',
-        }
+        },
     },
-
+    'DEFAULT_AUTO_SCHEMA_CLASS': 'apps.docs.view_inspectors.SwaggerJSONAPISchema',
+    'USE_SESSION_AUTH': False,
     'PERSIST_AUTH': True,
-
 }
+
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=10) if _env.ENV == 'prod' else timedelta(days=7),
