@@ -4,6 +4,7 @@ from drf_yasg import inspectors
 from drf_yasg import openapi
 from rest_framework import serializers
 
+from apps.docs.utils import is_json_api_response
 from .fields import IDField, ObjectField, RelationField, ResourceField, ConstField
 
 
@@ -86,7 +87,8 @@ class RootSerializerInspector(inspectors.FieldInspector):
         if (
                 isinstance(obj, serializers.BaseSerializer) and
                 obj.parent is None and
-                method_name == 'field_to_swagger_object'
+                method_name == 'field_to_swagger_object' and
+                not is_json_api_response(self.view.renderer_classes)
         ):
             return self.decorate_with_data(result)
         return result
@@ -107,7 +109,3 @@ class AppendWriteOnlyFilter(inspectors.FieldInspector):
     WriteOnly is OpenAPI 3.0 feature, while drf_yasg supports 2.0, so use extra "x-" attribute.
     """
 
-    def process_result(self, result, method_name, obj, **kwargs):
-        if obj.write_only:
-            setattr(result, 'x-write_only', True)
-        return result
