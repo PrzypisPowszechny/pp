@@ -1,9 +1,15 @@
 from django.conf.urls import url, include
+from django.urls import path
+from rest_framework.routers import DefaultRouter
 
 from apps.annotation.views import users, annotation_requests
 from .views import annotations, annotation_reports, annotation_upvotes
 
 app_name = 'annotation'
+
+upvotes_router = DefaultRouter(trailing_slash=False)
+upvotes_router.register('annotationUpvotes', annotation_upvotes.AnnotationUpvote)
+
 
 urlpatterns = [
     url(r'^annotations', include([
@@ -14,15 +20,8 @@ urlpatterns = [
         # Related
         url(r'^/(?P<annotation_id>[0-9]+)/user$', users.AnnotationRelatedUserSingle.as_view(),
             name='annotation_related_user'),
-        url(r'^/(?P<annotation_id>[0-9]+)/upvote$',
-            annotation_upvotes.AnnotationRelatedAnnotationUpvoteSingle.as_view(),
-            name='annotation_related_upvote'),
-    ])),
-    url(r'^annotationUpvotes', include([
-        url(r'^/(?P<feedback_id>[0-9]+)$', annotation_upvotes.AnnotationUpvoteSingle.as_view(),
-            name='annotation_upvote'),
-        url(r'^$', annotation_upvotes.AnnotationUpvoteList.as_view(),
-            name='annotation_upvote'),
+        path('/<int:annotation_id>/upvote', annotation_upvotes.AnnotationRelatedAnnotationUpvote.as_view(),
+             name='annotation_related_upvote'),
     ])),
     url(r'^annotationReports', include([
         url(r'^$', annotation_reports.AnnotationReportList.as_view(),
@@ -38,4 +37,5 @@ urlpatterns = [
         url(r'^(?P<user_id>[0-9]+)$', users.UserSingle.as_view(),
             name='user'),
     ])),
-]
+] + upvotes_router.urls
+

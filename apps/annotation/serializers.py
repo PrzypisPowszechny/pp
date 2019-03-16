@@ -1,6 +1,8 @@
 from django.urls import reverse
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from rest_framework.fields import empty
+from rest_framework_json_api.serializers import ModelSerializer
 
 from apps.annotation.consts import SUGGESTED_CORRECTION
 from apps.annotation.models import AnnotationReport, AnnotationRequest
@@ -163,69 +165,33 @@ class AnnotationPatchDeserializer(serializers.Serializer):
 
 # Report
 
-class AnnotationReportSerializer(serializers.Serializer):
-    class Attributes(serializers.ModelSerializer):
-        class Meta:
-            model = AnnotationReport
-            fields = ('reason', 'comment')
-            extra_kwargs = {'comment': {'required': False, 'allow_blank': True}}
 
-    class Relationships(serializers.Serializer):
-        annotation = fields.RelationField(
-            child=fields.ResourceField('annotations')
-        )
+class AnnotationReportSerializer(ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
-    id = fields.IDField()
-    type = fields.CamelcaseConstField('annotation_reports')
-    attributes = Attributes()
-    relationships = Relationships()
+    class Meta:
+        model = AnnotationReport
+        fields = ('id', 'reason', 'comment', 'annotation', 'user')
+        extra_kwargs = {
+            'comment': {'required': False, 'allow_blank': True}
+        }
 
-
-class AnnotationReportDeserializer(serializers.Serializer):
-    class Attributes(serializers.ModelSerializer):
-        class Meta:
-            model = AnnotationReport
-            fields = ('reason', 'comment')
-            extra_kwargs = {'comment': {'required': False, 'allow_blank': True}}
-
-        def validate(self, data):
-            if data.get('reason') is SUGGESTED_CORRECTION and not data.get('comment'):
-                raise ValidationError({
-                    'comment': 'Comment is required for report "%s" reason' % SUGGESTED_CORRECTION}
-                )
-            return data
-
-    class Relationships(serializers.Serializer):
-        annotation = fields.RelationField(
-            child=fields.ResourceField('annotations')
-        )
-
-    type = fields.CamelcaseConstField('annotation_reports')
-    attributes = Attributes()
-    relationships = Relationships()
+    def validate(self, data):
+        if data.get('reason') is SUGGESTED_CORRECTION and not data.get('comment'):
+            raise ValidationError({
+                'comment': 'Comment is required for report "%s" reason' % SUGGESTED_CORRECTION}
+            )
+        return data
 
 
 # Upvote
 
-class AnnotationUpvoteDeserializer(serializers.Serializer):
-    class Relationships(serializers.Serializer):
-        annotation = fields.RelationField(
-            child=fields.ResourceField('annotations')
-        )
+class AnnotationUpvoteSerializer(ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
-    type = fields.CamelcaseConstField('annotation_upvotes')
-    relationships = Relationships()
-
-
-class AnnotationUpvoteSerializer(serializers.Serializer):
-    class Relationships(serializers.Serializer):
-        annotation = fields.RelationField(
-            child=fields.ResourceField('annotations')
-        )
-
-    id = fields.IDField()
-    type = fields.CamelcaseConstField('annotation_upvotes')
-    relationships = Relationships()
+    class Meta:
+        model = AnnotationUpvote
+        fields = ('id', 'annotation', 'user')
 
 
 # User

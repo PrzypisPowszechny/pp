@@ -7,7 +7,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from apps.annotation.consts import SUGGESTED_CORRECTION
 from apps.annotation.models import Annotation
 from apps.annotation.models import AnnotationReport
-from apps.annotation.tests.utils import create_test_user, testserver_reverse
+from apps.annotation.tests.utils import create_test_user
 
 
 class AnnotationReportAPITest(TestCase):
@@ -21,9 +21,9 @@ class AnnotationReportAPITest(TestCase):
         self.token_header = 'JWT %s' % self.token
 
     @parameterized.expand([
-        ('SPAM', 'komentarz', 200),
-        ('SPAM', '', 200),
-        (SUGGESTED_CORRECTION, 'komentarz', 200),
+        ('SPAM', 'komentarz', 201),
+        ('SPAM', '', 201),
+        (SUGGESTED_CORRECTION, 'komentarz', 201),
         (SUGGESTED_CORRECTION, '', 400),
 
     ])
@@ -51,8 +51,8 @@ class AnnotationReportAPITest(TestCase):
 
         response = self.client.post(self.report_url.format(annotation.id), body,
                                     content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
-        self.assertEqual(response.status_code, response_code)
-        if response_code == 200:
+        self.assertEqual(response.status_code, response_code, response.content)
+        if 200 <= response_code < 300:
             response_data = json.loads(response.content.decode('utf8'))
 
             # Get first annotation report there is
