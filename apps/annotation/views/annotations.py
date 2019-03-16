@@ -2,7 +2,7 @@ import logging
 
 import django_filters
 from django.apps import apps
-from django.db.models import Prefetch, Count
+from django.db.models import Count
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.filters import OrderingFilter
@@ -13,7 +13,7 @@ from rest_framework_json_api.pagination import LimitOffsetPagination
 
 from apps.annotation import serializers
 from apps.annotation.filters import StandardizedURLFilterBackend, ConflictingFilterValueError, ListORFilter
-from apps.annotation.models import Annotation, AnnotationUpvote, AnnotationReport, AnnotationRequest
+from apps.annotation.models import Annotation, AnnotationUpvote, AnnotationRequest
 from apps.api.responses import PermissionDenied, ValidationErrorResponse, ErrorResponse, NotFoundResponse, \
     Forbidden
 
@@ -27,7 +27,6 @@ class AnnotationSingle(APIView):
         try:
             annotation = Annotation.objects.get(active=True, id=annotation_id)
             upvote = AnnotationUpvote.objects.filter(annotation=annotation, user=request.user).first()
-            reports = AnnotationReport.objects.filter(annotation_id=annotation.id, user=request.user)
         except (AnnotationUpvote.DoesNotExist, Annotation.DoesNotExist):
             return NotFoundResponse()
 
@@ -38,7 +37,6 @@ class AnnotationSingle(APIView):
                 'relationships': {
                     'user': annotation.user_id,
                     'annotation_upvote': upvote,
-                    'annotation_reports': reports,
                     'annotation_request': annotation.annotation_request_id,
                 }},
             context={'request': request, 'root_resource_obj': annotation}
@@ -69,7 +67,6 @@ class AnnotationSingle(APIView):
         annotation.save()
 
         feedback = AnnotationUpvote.objects.filter(annotation=annotation, user=request.user).first()
-        reports = AnnotationReport.objects.filter(annotation_id=annotation.id, user=request.user)
 
         return Response(serializers.AnnotationSerializer(
             instance={
@@ -78,7 +75,6 @@ class AnnotationSingle(APIView):
                 'relationships': {
                     'user': annotation.user_id,
                     'annotation_upvote': feedback,
-                    'annotation_reports': reports,
                     'annotation_request': annotation.annotation_request_id,
                 }
             },
@@ -138,7 +134,6 @@ class AnnotationList(GenericAPIView):
                 'relationships': {
                     'user': annotation.user_id,
                     'annotation_upvote': None,
-                    'annotation_reports': (),
                     'annotation_request': annotation.annotation_request_id
                 }
             },
@@ -150,9 +145,6 @@ class AnnotationList(GenericAPIView):
             total_upvote_count=Count('feedbacks__id')
         ).select_related(
             'user', 'annotation_request'
-        ).prefetch_related(
-            Prefetch('annotation_reports', queryset=AnnotationReport.objects.filter(user=self.request.user),
-                     to_attr='user_annotation_reports')
         )
         return queryset
 
@@ -194,60 +186,7 @@ class AnnotationList(GenericAPIView):
                 'relationships': {
                     'user': annotation.user_id,
                     'annotation_upvote': annotation.user_feedback,
-                    'annotation_reports': annotation.user_annotation_reports,
                     'annotation_request': annotation.annotation_request_id,
                 }
             }, context={'request': request, 'root_resource_obj': annotation}).data
             for annotation in queryset])
-
-
-class AnnotationUpvoteRelatedAnnotationSingle(APIView):
-
-    @swagger_auto_schema(responses={200: serializers.AnnotationSerializer})
-    def get(self, request, feedback_id):
-        try:
-            feedback = AnnotationUpvote.objects.get(id=feedback_id, user=request.user)
-            annotation = Annotation.objects.get(active=True, feedbacks=feedback_id, feedbacks__user=request.user)
-            reports = AnnotationReport.objects.filter(annotation_id=annotation.id, user=request.user)
-        except (AnnotationUpvote.DoesNotExist, Annotation.DoesNotExist):
-            return NotFoundResponse()
-        return Response(serializers.AnnotationSerializer(
-            instance={
-                'id': annotation,
-                'attributes': annotation,
-                'relationships': {
-                    'user': annotation.user_id,
-                    'annotation_upvote': feedback,
-                    'annotation_reports': reports,
-                    'annotation_request': annotation.annotation_request_id,
-                }
-            },
-            context={'request': request, 'root_resource_obj': annotation}
-        ).data)
-
-
-class AnnotationReportRelatedAnnotationSingle(APIView):
-
-    @swagger_auto_schema(responses={200: serializers.AnnotationSerializer})
-    def get(self, request, report_id):
-        try:
-            AnnotationReport.objects.get(id=report_id, user=request.user)
-            annotation = Annotation.objects.get(annotation_reports=report_id, active=True,
-                                                annotation_reports__user=request.user)
-            feedback = AnnotationUpvote.objects.get(annotation_id=annotation.id, user=request.user)
-            reports = AnnotationReport.objects.filter(annotation_id=annotation.id, user=request.user)
-        except (AnnotationUpvote.DoesNotExist, Annotation.DoesNotExist, AnnotationReport.DoesNotExist):
-            return NotFoundResponse()
-        return Response(serializers.AnnotationSerializer(
-            instance={
-                'id': annotation,
-                'attributes': annotation,
-                'relationships': {
-                    'user': annotation.user_id,
-                    'annotation_upvote': feedback,
-                    'annotation_reports': reports,
-                    'annotation_request': annotation.annotation_request_id,
-                }
-            },
-            context={'request': request, 'root_resource_obj': annotation}
-        ).data)

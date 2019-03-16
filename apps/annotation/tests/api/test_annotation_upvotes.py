@@ -22,37 +22,6 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
         self.token_header = 'JWT %s' % self.token
 
     # TODO: split this obsolete test to make it MORE UNIT
-    def test_get_upvote(self):
-        annotation = Annotation.objects.create(user=self.user)
-        upvote = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
-
-        response = self.client.get(self.upvote_single_url.format(upvote.id),
-                                   content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
-        self.assertEqual(response.status_code, 200)
-        self.assertDictEqual(
-            json.loads(response.content.decode('utf8')),
-            {'data': {
-                'id': str(upvote.id),
-                'type': 'annotationUpvotes',
-                'relationships': {
-                    'annotation': {
-                        'links': {
-                            'related': testserver_reverse('api:annotation:annotation_upvote_related_annotation',
-                                                          args=(upvote.id,))
-                        },
-                        'data': {
-                            'type': 'annotations', 'id': str(annotation.id)
-                        }
-                    }
-                }
-            }}
-        )
-
-        response = self.client.get(self.upvote_single_url.format(upvote.id + 1),
-                                   content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
-        self.assertEqual(response.status_code, 404)
-
-    # TODO: split this obsolete test to make it MORE UNIT
     def test_get_annotation_related_upvote(self):
         annotation = Annotation.objects.create(user=self.user)
         upvote = AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
@@ -67,10 +36,6 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
                 'type': 'annotationUpvotes',
                 'relationships': {
                     'annotation': {
-                        'links': {
-                            'related': testserver_reverse('api:annotation:annotation_upvote_related_annotation',
-                                                          args=(upvote.id,))
-                        },
                         'data': {
                             'type': 'annotations', 'id': str(annotation.id)
                         }
@@ -114,10 +79,6 @@ class AnnotationUpvoteAPITest(TransactionTestCase):
                 'type': 'annotationUpvotes',
                 'relationships': {
                     'annotation': {
-                        'links': {
-                            'related': testserver_reverse('api:annotation:annotation_upvote_related_annotation',
-                                                          args=(upvote.id,))
-                        },
                         'data': {
                             'type': 'annotations', 'id': str(annotation.id)
                         }

@@ -12,23 +12,6 @@ class AnnotationUpvoteSingle(APIView):
     resource_attr = None
     serializer_class = serializers.AnnotationUpvoteSerializer
 
-    @swagger_auto_schema(responses={200: serializers.AnnotationUpvoteSerializer})
-    def get(self, request, feedback_id):
-        try:
-            feedback = AnnotationUpvote.objects.get(id=feedback_id, user=request.user,
-                                                    **({self.resource_attr: True} if self.resource_attr else {}))
-        except AnnotationUpvote.DoesNotExist:
-            return NotFoundResponse('Resource not found')
-
-        return Response(self.serializer_class(
-            instance={
-                'id': feedback,
-                'relationships': {
-                    'annotation': feedback.annotation_id
-                }
-            },
-            context={'request': request, 'root_resource_obj': feedback}).data)
-
     def delete(self, request, feedback_id):
         try:
             feedback = AnnotationUpvote.objects.get(id=feedback_id, user=request.user,

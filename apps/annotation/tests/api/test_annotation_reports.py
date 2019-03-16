@@ -1,7 +1,6 @@
 import json
 
 from django.test import TestCase
-from model_mommy import mommy
 from parameterized import parameterized
 from rest_framework_simplejwt.tokens import AccessToken
 
@@ -13,8 +12,6 @@ from apps.annotation.tests.utils import create_test_user, testserver_reverse
 
 class AnnotationReportAPITest(TestCase):
     report_url = "/api/annotationReports"
-    report_single_url = "/api/annotationReports/{}"
-    annotation_related_reports_url = "/api/annotations/{}/reports"
     maxDiff = None
 
     # IMPORTANT: we log in for each test, so self.user has already an open session with server
@@ -22,80 +19,6 @@ class AnnotationReportAPITest(TestCase):
         self.user, self.password = create_test_user()
         self.token = str(AccessToken.for_user(self.user))
         self.token_header = 'JWT %s' % self.token
-
-    # TODO: split this obsolete test to make it MORE UNIT
-    def test_get_annotation_report(self):
-        annotation = Annotation.objects.create(user=self.user)
-        report = mommy.make(AnnotationReport, annotation=annotation, user=self.user)
-        response = self.client.get(self.report_single_url.format(report.id), content_type='application/vnd.api+json',
-                                   HTTP_AUTHORIZATION=self.token_header)
-        self.assertEqual(response.status_code, 200)
-        self.assertDictEqual(
-            json.loads(response.content.decode('utf8')),
-            {'data': {
-                'id': str(report.id),
-                'type': 'annotationReports',
-                'attributes': {
-                    'reason': report.reason,
-                    'comment': report.comment,
-                },
-                'relationships': {
-                    'annotation': {
-                        'data': {'id': str(annotation.id), 'type': 'annotations'},
-                        'links': {
-                            'related': testserver_reverse('api:annotation:annotation_report_related_annotation',
-                                                          kwargs={'report_id': report.id})
-                        }
-                    }
-                }
-            }}
-        )
-
-        response = self.client.get(self.report_single_url.format(report.id + 1),
-                                   content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
-        self.assertEqual(response.status_code, 404)
-
-    def test_get_annotation_report__deny_other_user(self):
-        owner_user, owner_user_password = create_test_user(unique=True)
-        annotation = Annotation.objects.create(user=owner_user)
-        report = mommy.make(AnnotationReport, annotation=annotation, user=owner_user)
-        response = self.client.get(self.report_single_url.format(report.id), content_type='application/vnd.api+json',
-                                   HTTP_AUTHORIZATION=self.token_header)
-        self.assertEqual(response.status_code, 404)
-
-    # TODO: split this obsolete test to make it MORE UNIT
-    def test_get_annotation_related_annotation_report(self):
-        annotation = Annotation.objects.create(user=self.user)
-        report = mommy.make(AnnotationReport, annotation=annotation, user=self.user)
-        response = self.client.get(self.annotation_related_reports_url.format(annotation.id),
-                                   content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
-        self.assertEqual(response.status_code, 200)
-        self.assertDictEqual(
-            json.loads(response.content.decode('utf8')),
-            {'data':
-                [{
-                    'id': str(report.id),
-                    'type': 'annotationReports',
-                    'attributes': {
-                        'reason': report.reason,
-                        'comment': report.comment,
-                    },
-                    'relationships': {
-                        'annotation': {
-                            'data': {'id': str(annotation.id), 'type': 'annotations'},
-                            'links': {
-                                'related': testserver_reverse('api:annotation:annotation_report_related_annotation',
-                                                              kwargs={'report_id': report.id})
-                            }
-                        }
-                    }
-                }]
-            }
-        )
-
-        response = self.client.get(self.report_single_url.format(report.id + 1),
-                                   content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
-        self.assertEqual(response.status_code, 404)
 
     @parameterized.expand([
         ('SPAM', 'komentarz', 200),
@@ -145,10 +68,6 @@ class AnnotationReportAPITest(TestCase):
                     'relationships': {
                         'annotation': {
                             'data': {'id': str(annotation.id), 'type': 'annotations'},
-                            'links': {
-                                'related': testserver_reverse('api:annotation:annotation_report_related_annotation',
-                                                              kwargs={'report_id': report.id})
-                            }
                         }
                     }
                 }
