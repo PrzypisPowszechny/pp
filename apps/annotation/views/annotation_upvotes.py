@@ -1,76 +1,28 @@
-from django.db import IntegrityError
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework.response import Response
-from rest_framework.views import APIView
+import rest_framework_json_api.parsers
+import rest_framework_json_api.renderers
+from rest_framework import mixins, viewsets, generics
 
+from apps.annotation import models
 from apps.annotation import serializers
-from apps.annotation.models import AnnotationUpvote
-from apps.api.responses import ErrorResponse, NotFoundResponse, ValidationErrorResponse
+from apps.api.permissions import IsUserOwner
 
 
-class AnnotationUpvoteSingle(APIView):
-    resource_attr = None
+class AnnotationUpvote(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.DestroyModelMixin):
+    queryset = models.AnnotationUpvote.objects.all()
     serializer_class = serializers.AnnotationUpvoteSerializer
-
-    def delete(self, request, feedback_id):
-        try:
-            feedback = AnnotationUpvote.objects.get(id=feedback_id, user=request.user,
-                                                    **({self.resource_attr: True} if self.resource_attr else {}))
-        except AnnotationUpvote.DoesNotExist:
-            return NotFoundResponse()
-
-        feedback.delete()
-        return Response()
+    renderer_classes = [rest_framework_json_api.renderers.JSONRenderer]
+    parser_classes = [rest_framework_json_api.parsers.JSONParser]
+    permission_classes = [IsUserOwner]
+    owner_field = 'user'
 
 
-class AnnotationUpvoteList(APIView):
-    resource_attr = None
+class AnnotationRelatedAnnotationUpvote(generics.RetrieveAPIView):
+    queryset = models.AnnotationUpvote.objects.all()
     serializer_class = serializers.AnnotationUpvoteSerializer
-    deserializer_class = serializers.AnnotationUpvoteDeserializer
+    renderer_classes = [rest_framework_json_api.renderers.JSONRenderer]
+    parser_classes = [rest_framework_json_api.parsers.JSONParser]
+    permission_classes = [IsUserOwner]
+    lookup_url_kwarg = 'annotation_id'
+    lookup_field = 'annotation'
+    owner_field = 'user'
 
-    @swagger_auto_schema(request_body=serializers.AnnotationUpvoteDeserializer,
-                         responses={200: serializers.AnnotationUpvoteSerializer})
-    def post(self, request):
-        deserializer = self.deserializer_class(data=request.data)
-        if not deserializer.is_valid():
-            return ValidationErrorResponse(deserializer.errors)
-
-        feedback = AnnotationUpvote(user=request.user,
-                                    **({self.resource_attr: True} if self.resource_attr else {}))
-        feedback.annotation_id = deserializer.validated_data['relationships']['annotation']
-
-        try:
-            feedback.save()
-        except IntegrityError:
-            return ErrorResponse('Failed to create object')
-
-        return Response(self.serializer_class(
-            instance={
-                'id': feedback,
-                'relationships': {
-                    'annotation': feedback.annotation_id
-                }
-            },
-            context={'request': request, 'root_resource_obj': feedback}).data
-                        )
-
-
-class AnnotationRelatedAnnotationUpvoteSingle(APIView):
-    serializer_class = serializers.AnnotationUpvoteSerializer
-
-    @swagger_auto_schema(responses={200: serializers.AnnotationUpvoteSerializer})
-    def get(self, request, annotation_id):
-        try:
-            feedback = AnnotationUpvote.objects.get(annotation_id=annotation_id, user=request.user)
-        except AnnotationUpvote.DoesNotExist:
-            return NotFoundResponse('Resource not found')
-
-        return Response(self.serializer_class(
-            instance={
-                'id': feedback,
-                'relationships': {
-                    'annotation': feedback.annotation_id
-                }
-            },
-            context={'request': request, 'root_resource_obj': feedback}).data
-                        )
