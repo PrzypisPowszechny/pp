@@ -10,9 +10,12 @@ class ObjectFieldInspector(inspectors.SimpleFieldInspector):
             return inspectors.NotHandled
 
         SwaggerType, ChildSwaggerType = self._get_partial_types(field, **kwargs)
-        return SwaggerType(
+        swagger_object = SwaggerType(
             type=openapi.TYPE_OBJECT,
             additional_properties=True,
             description='any valid object',
         )
+        if field.read_only:
+            swagger_object.read_only = True
+        return swagger_object
 

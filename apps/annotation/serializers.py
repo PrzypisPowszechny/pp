@@ -78,7 +78,9 @@ class AnnotationSerializer(ModelSerializer, RequestUserMixin):
 
 
 class AnnotationPatchSerializer(AnnotationSerializer):
+    # Add read_only in not DRY way
     range = fields.ObjectField(json_internal_type=True, read_only=True)
+    url = fields.StandardizedRepresentationURLField(read_only=True)
 
     class Meta:
         model = Annotation

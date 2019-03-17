@@ -139,24 +139,26 @@ class JSONAPISerializerInspector(inspectors.InlineSerializerInspector):
             else:
                 swagger_id_field = self.probe_field_inspectors(id_field, ChildSwaggerType, use_references)
 
-            relation_record = openapi.Schema(
+            relation_record = openapi.Schema(**filter_none(OrderedDict(
                 type=openapi.TYPE_OBJECT,
                 properties={
                     'type': openapi.Schema(type=openapi.TYPE_STRING, pattern=resource_name),
                     'id': swagger_id_field
                 },
-                required=['id', 'type'],
-            )
+                required=['id', 'type'] if not field.read_only else None,
+            )))
 
             if many:
                 relation_record = openapi.Schema(type=openapi.TYPE_ARRAY, items=relation_record)
 
-            relationships[field_name] = openapi.Schema(
+            relationships[field_name] = openapi.Schema(**filter_none(OrderedDict(
                 type=openapi.TYPE_OBJECT,
                 properties={
                     'data': relation_record
-                }
-            )
+                },
+                read_only=field.read_only or None,
+                x_read_only=field.read_only or None,
+            )))
             if field.required and not field.read_only:
                 required_relationships.append(field_name)
 
@@ -262,13 +264,16 @@ class AttributesEnhancingFilter(inspectors.FieldInspector):
 
     def add_write_only(self, result, obj):
         if obj.write_only:
-            setattr(result, 'x-write_only', True)
+            result.x_write_only = True
 
     def fix_read_only(self, result, obj):
         # drf_yasg is very cautious about setting read_only, only leaves are allowed to be read only,
         # but in some cases it misbehaves and obvious leaf cases are omitted too, so we fix this
         if result.type in (openapi.TYPE_STRING, openapi.TYPE_INTEGER, openapi.TYPE_BOOLEAN) and obj.read_only:
-            setattr(result, 'read_only', True)
+            result.read_only = True
+        elif obj.read_only:
+            # in other cases make read only visible by adding x prefix to avoid conflict with OpenApi 2 validation
+            result.x_read_only = True
 
     def process_result(self, result, method_name, obj, **kwargs):
         if result is not None:
