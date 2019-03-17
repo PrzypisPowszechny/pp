@@ -1,12 +1,16 @@
 import logging
 from distutils.util import strtobool
 
+import rest_framework_json_api.parsers
+import rest_framework_json_api.renderers
+
 import django_filters
 from django.apps import apps
 from django.forms import NullBooleanSelect, BooleanField, CharField
 from django_filters.constants import EMPTY_VALUES
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework import mixins, viewsets
 from rest_framework.filters import OrderingFilter
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
@@ -17,6 +21,7 @@ from apps.annotation.filters import ConflictingFilterValueError
 from apps.annotation.mails import notify_editors_about_annotation_request
 from apps.annotation.models import AnnotationRequest
 from apps.annotation.serializers import AnnotationRequestDeserializer, AnnotationRequestSerializer
+from apps.api.permissions import OnlyOwnerCanChange
 from apps.api.responses import ValidationErrorResponse, NotFoundResponse, PermissionDenied
 
 
@@ -62,101 +67,30 @@ class AnnotationRequestFilterSet(django_filters.FilterSet):
         fields = []
 
 
-class AnnotationRequestList(GenericAPIView):
+class AnnotationRequestViewSet(mixins.CreateModelMixin,
+                               mixins.RetrieveModelMixin,
+                               mixins.ListModelMixin,
+                               mixins.DestroyModelMixin,
+                               viewsets.GenericViewSet):
+
+    serializer_class = AnnotationRequestSerializer
+    queryset = AnnotationRequest.objects.filter(active=True).prefetch_related('annotation_set')
+    renderer_classes = [rest_framework_json_api.renderers.JSONRenderer]
+    parser_classes = [rest_framework_json_api.parsers.JSONParser]
+    permission_classes = [OnlyOwnerCanChange]
+    owner_field = 'user'
+
     pagination_class = LimitOffsetPagination
     filter_backends = [OrderingFilter, DjangoFilterBackend]
     ordering_fields = ('create_date',)
     ordering = "-create_date"
     filterset_class = AnnotationRequestFilterSet
 
-    @swagger_auto_schema(request_body=AnnotationRequestDeserializer,
-                         responses={200: AnnotationRequestSerializer})
-    def post(self, request):
-        deserializer = AnnotationRequestDeserializer(data=request.data)
-        if not deserializer.is_valid():
-            return ValidationErrorResponse(deserializer.errors)
-        data = deserializer.validated_data['attributes']
+    def perform_create(self, serializer):
+        instance = serializer.save(user=self.request.user)
+        notify_editors_about_annotation_request(instance)
 
-        annotation_request = AnnotationRequest(**data)
-        annotation_request.user_id = request.user.pk
-        annotation_request.save()
-
-        notify_editors_about_annotation_request(annotation_request)
-
-        return Response(AnnotationRequestSerializer(
-            instance={
-                'id': annotation_request,
-                'attributes': annotation_request,
-                'relationships': {
-                    'annotations': ()
-                }
-            },
-            context={'request': request, 'root_resource_obj': annotation_request}
-        ).data)
-
-    def get_queryset(self):
-        return AnnotationRequest.objects.filter(active=True).prefetch_related('annotation_set')
-
-    @swagger_auto_schema(responses={200: AnnotationRequestSerializer(many=True)})
-    def get(self, request):
-        try:
-            queryset = self.filter_queryset(self.get_queryset())
-        except ConflictingFilterValueError as e:
-            return ValidationErrorResponse(e.errors)
-
-        queryset = self.paginator.paginate_queryset(queryset, request)
-
-        return self.get_paginated_response([
-            AnnotationRequestSerializer(instance={
-                'id': annotation_request,
-                'attributes': annotation_request,
-                'relationships': {
-                    'annotations': list(annotation_request.annotation_set.all())
-                }
-            }, context={'request': request, 'root_resource_obj': annotation_request}).data
-            for annotation_request in queryset])
-
-    @swagger_auto_schema(request_body=AnnotationRequestDeserializer,
-                         responses={200: AnnotationRequestSerializer})
-    def post(self, request):
-        deserializer = AnnotationRequestDeserializer(data=request.data)
-        if not deserializer.is_valid():
-            return ValidationErrorResponse(deserializer.errors)
-        data = deserializer.validated_data['attributes']
-
-        annotation_request = AnnotationRequest(**data)
-        annotation_request.user_id = request.user.pk
-        annotation_request.save()
-
-        notify_editors_about_annotation_request(annotation_request)
-
-        return Response(AnnotationRequestSerializer(
-            instance={
-                'id': annotation_request,
-                'attributes': annotation_request,
-                'relationships': {
-                    'annotations': ()
-                }
-            },
-            context={'request': request, 'root_resource_obj': annotation_request}
-        ).data)
-
-
-class AnnotationRequestSingle(APIView):
-
-    def delete(self, request, annotation_request_id):
-        try:
-            annotation_request = AnnotationRequest.objects.get(id=annotation_request_id, active=True)
-        except AnnotationRequest.DoesNotExist:
-            return NotFoundResponse()
-
-        # Check permissions
-        if annotation_request.user_id != request.user.id:
-            return PermissionDenied()
-
-        if annotation_request.active:
-            annotation_request.active = False
-            annotation_request.save()
-        return Response()
-
+    def perform_destroy(self, instance):
+        instance.active = False
+        instance.save()
 

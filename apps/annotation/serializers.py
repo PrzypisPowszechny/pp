@@ -1,7 +1,10 @@
+from typing import List
+
+from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from rest_framework_json_api.relations import SerializerMethodResourceRelatedField
+from rest_framework_json_api.relations import SerializerMethodResourceRelatedField, ResourceRelatedField
 from rest_framework_json_api.serializers import ModelSerializer
 
 from apps.annotation.consts import SUGGESTED_CORRECTION
@@ -75,7 +78,7 @@ class AnnotationSerializer(ModelSerializer, RequestUserMixin):
                 'read_only': True,
                 'related_link_view_name': 'api:annotation:annotation_related_user',
                 'related_link_url_kwarg': 'annotation_id'
-             }
+            }
         }
 
     def get_upvote_count_except_user(self, instance):
@@ -97,7 +100,7 @@ class AnnotationPatchSerializer(AnnotationSerializer):
         model = Annotation
         fields = AnnotationSerializer.Meta.fields
         read_only_fields = list(set(fields) - {
-            'annotation_link', 'annotation_link_title',  'comment', 'pp_category'
+            'annotation_link', 'annotation_link_title', 'comment', 'pp_category'
         })
         extra_kwargs = AnnotationSerializer.Meta.extra_kwargs
 
@@ -135,14 +138,10 @@ class AnnotationUpvoteSerializer(ModelSerializer):
 
 # User
 
-class UserSerializer(serializers.Serializer):
-    class Attributes(serializers.Serializer):
-        pass
-
-    attributes = Attributes()
-
-    id = fields.IDField()
-    type = fields.CamelcaseConstField('users')
+class UserSerializer(ModelSerializer):
+    class Meta:
+        model = get_user_model()
+        fields = ('id', 'date_joined')
 
 
 # Annotation request
@@ -159,26 +158,22 @@ class AnnotationRequestDeserializer(serializers.Serializer):
     attributes = Attributes()
 
 
-class AnnotationRequestSerializer(serializers.Serializer):
-    class Attributes(serializers.ModelSerializer, RequestUserMixin):
-        url = fields.StandardizedRepresentationURLField()
-        requested_by_user = serializers.SerializerMethodField()
+class AnnotationRequestSerializer(ModelSerializer, RequestUserMixin):
+    url = fields.StandardizedRepresentationURLField()
+    requested_by_user = serializers.SerializerMethodField()
+    annotations = SerializerMethodResourceRelatedField(read_only=True, model=Annotation, source='get_annotations')
 
-        class Meta:
-            model = AnnotationRequest
-            fields = ('url', 'quote', 'comment', 'notification_email', 'create_date', 'requested_by_user')
+    class Meta:
+        model = AnnotationRequest
+        fields = (
+            'id', 'url', 'quote', 'comment', 'notification_email', 'create_date', 'requested_by_user',
 
-        def get_requested_by_user(self, instance) -> bool:
-            return self.request_user.id == instance.user_id
-
-    class Relationships(serializers.Serializer):
-        annotations = fields.RelationField(
-            child=fields.ResourceField('annotations'),
-            many=True,
-            required=False
+            'annotations'
         )
+        read_only_fields = ('create_date',)
 
-    id = fields.IDField()
-    type = fields.CamelcaseConstField('annotation_requests')
-    attributes = Attributes()
-    relationships = Relationships()
+    def get_requested_by_user(self, instance) -> bool:
+        return self.request_user.id == instance.user_id
+
+    def get_annotations(self, instance) -> List[Annotation]:
+        return instance.annotation_set.all()
