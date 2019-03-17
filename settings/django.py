@@ -220,7 +220,7 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
     ),
     'TEST_REQUEST_RENDERER_CLASSES': (
-        'apps.api.renderers.JSONAPIRenderer',
+        'rest_framework_json_api.renderers.JSONRenderer',
     ),
     'TEST_REQUEST_DEFAULT_FORMAT': 'vnd.api+json',
 
@@ -244,9 +244,7 @@ SWAGGER_SETTINGS = {
         'apps.docs.inspectors.JSONAPISerializerInspector',
         'drf_yasg.inspectors.RecursiveFieldInspector',
         'drf_yasg.inspectors.InlineSerializerInspector',
-
-        'apps.api.inspectors.ObjectFieldInspector',  # TODO: consider moving/removing
-
+        'apps.api.inspectors.ObjectFieldInspector',
         'drf_yasg.inspectors.ChoiceFieldInspector',
         'apps.docs.inspectors.Base64FileFieldInspector',
         'drf_yasg.inspectors.FileFieldInspector',
