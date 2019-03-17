@@ -110,12 +110,11 @@ class JSONAPISerializerInspector(inspectors.InlineSerializerInspector):
                 id_field = id_field.child_relation
                 many = True
 
-            target_field = getattr(id_field, 'slug_field', 'pk')
-
             # Get model
-            if hasattr('id_field', 'get_queryset'):
-                field_queryset = get_resource_type_from_queryset(id_field.get_queryset())
-                model, model_field = get_queryset_field(field_queryset, target_field)
+            if hasattr(id_field, 'model'):
+                model = id_field.model
+            elif hasattr(id_field, 'get_queryset') and id_field.get_queryset():
+                model = id_field.get_queryset().model
             else:
                 # if the RelatedField has a queryset, try to get the related model field from there
                 parent_serializer = get_parent_serializer(id_field)

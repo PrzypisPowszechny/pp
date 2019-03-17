@@ -11,7 +11,11 @@ def unless_swagger(view, expression, default=()):
 
 
 def get_related_model(model, source):
+    if source == '*':
+        return model
+
     descriptor = getattr(model, source)
+
     try:
         return descriptor.rel.related_model if descriptor.reverse else descriptor.rel.model
     except Exception:

@@ -1,22 +1,19 @@
 from django.conf.urls import url, include
 from django.urls import path
-from rest_framework.routers import DefaultRouter
 
 from apps.annotation.views import users, annotation_requests
+from apps.annotation.views.routers import RouterWithoutPut
 from .views import annotations, annotation_reports, annotation_upvotes
 
 app_name = 'annotation'
 
-upvotes_router = DefaultRouter(trailing_slash=False)
-upvotes_router.register('annotationUpvotes', annotation_upvotes.AnnotationUpvote)
+router = RouterWithoutPut(trailing_slash=False)
+router.register('annotationUpvotes', annotation_upvotes.AnnotationUpvote)
+router.register('annotations', annotations.AnnotationViewSet)
 
 
 urlpatterns = [
     url(r'^annotations', include([
-        url(r'^/(?P<annotation_id>[0-9]+)$', annotations.AnnotationSingle.as_view(),
-            name='annotation'),
-        url(r'^$', annotations.AnnotationList.as_view(),
-            name='annotation'),
         # Related
         url(r'^/(?P<annotation_id>[0-9]+)/user$', users.AnnotationRelatedUserSingle.as_view(),
             name='annotation_related_user'),
@@ -37,5 +34,4 @@ urlpatterns = [
         url(r'^(?P<user_id>[0-9]+)$', users.UserSingle.as_view(),
             name='user'),
     ])),
-] + upvotes_router.urls
-
+] + router.urls

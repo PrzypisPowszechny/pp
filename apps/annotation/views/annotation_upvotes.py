@@ -22,7 +22,11 @@ class AnnotationRelatedAnnotationUpvote(generics.RetrieveAPIView):
     renderer_classes = [rest_framework_json_api.renderers.JSONRenderer]
     parser_classes = [rest_framework_json_api.parsers.JSONParser]
     permission_classes = [IsUserOwner]
-    lookup_url_kwarg = 'annotation_id'
-    lookup_field = 'annotation'
     owner_field = 'user'
 
+    # Router
+    lookup_url_kwarg = 'annotation_id'
+    lookup_field = 'annotation'
+
+    def get_queryset(self):
+        return super().get_queryset().filter(user=self.request.user)

@@ -224,6 +224,8 @@ REST_FRAMEWORK = {
         'apps.api.renderers.JSONAPIRenderer',
     ),
     'TEST_REQUEST_DEFAULT_FORMAT': 'vnd.api+json',
+
+    'URL_FIELD_NAME': 'self_link'
 }
 
 # djangorestframework_camel_case app used by our JSONAPIRenderer and JSONAPIRenderer
