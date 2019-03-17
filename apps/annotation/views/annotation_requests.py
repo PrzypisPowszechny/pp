@@ -1,51 +1,15 @@
-from distutils.util import strtobool
-
 import django_filters
 from django.apps import apps
-from django.forms import CharField
-from django_filters.constants import EMPTY_VALUES
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets
 from rest_framework.filters import OrderingFilter
 from rest_framework_json_api.pagination import LimitOffsetPagination
 
-from apps.annotation.mails import notify_editors_about_annotation_request
-from apps.annotation.models import AnnotationRequest
-from apps.annotation.serializers import AnnotationRequestSerializer
 from apps.api.permissions import OnlyOwnerCanChange
-
-
-class NullBooleanField(CharField):
-    def to_python(self, value):
-        if value is None:
-            return None
-        try:
-            return bool(strtobool(value))
-        except ValueError:
-            return None
-
-    def validate(self, value):
-        pass
-
-
-class BooleanFilter(django_filters.Filter):
-    field_class = NullBooleanField
-
-
-class RequestUserBooleanFilter(django_filters.Filter):
-    field_class = NullBooleanField
-
-    def get_method_based_on_value(self, qs, value):
-        return qs.filter if value else qs.exclude
-
-    def filter(self, qs, value):
-        if value in EMPTY_VALUES:
-            return qs
-        if self.distinct:
-            qs = qs.distinct()
-        lookup = '%s__%s' % (self.field_name, self.lookup_expr)
-        qs = self.get_method_based_on_value(qs, value)(**{lookup: self.parent.request.user})
-        return qs
+from ..filters import BooleanFilter, RequestUserBooleanFilter
+from ..mails import notify_editors_about_annotation_request
+from ..models import AnnotationRequest
+from ..serializers import AnnotationRequestSerializer
 
 
 class AnnotationRequestFilterSet(django_filters.FilterSet):
