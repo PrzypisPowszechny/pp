@@ -10,7 +10,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from apps.annotation.models import Annotation
 from apps.annotation.tasks import notify_annotation_url_subscribers
 from apps.annotation.tests.utils import create_test_user
-from apps.annotation.views.annotations import AnnotationList
+from apps.annotation.views.annotations import AnnotationViewSet
 from worker import celery_app
 
 
@@ -19,6 +19,11 @@ class AnnotationViewTest(TestCase):
 
     # We do not test request URL here and it should not play a role, so we use a fake URL for all requests
     mock_url = 'mock-url'
+
+    actions = {
+        'get': 'list',
+        'post': 'create',
+    }
 
     def setUp(self):
         self.user, password = create_test_user()
@@ -35,7 +40,7 @@ class AnnotationViewTest(TestCase):
         headers['HTTP_AUTHORIZATION'] = self.token_header
         for key, val in headers.items():
             request.META[key] = val
-        response = view_class.as_view()(request)
+        response = view_class.as_view({method: self.actions[method]})(request)
         if method == 'get':
             results = response.data['results']
         else:
@@ -43,7 +48,7 @@ class AnnotationViewTest(TestCase):
         return response, results
 
     def test_list_returns_200(self):
-        response, results = self.request_to_generic_class_view(AnnotationList, 'get')
+        response, results = self.request_to_generic_class_view(AnnotationViewSet, 'get')
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(results)
 
@@ -51,7 +56,7 @@ class AnnotationViewTest(TestCase):
         mommy.make('annotation.Annotation')
         expected_count = Annotation.objects.count()
 
-        response, results = self.request_to_generic_class_view(AnnotationList, 'get')
+        response, results = self.request_to_generic_class_view(AnnotationViewSet, 'get')
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(results)
         self.assertEqual(len(results), expected_count)
@@ -80,7 +85,7 @@ class AnnotationViewTest(TestCase):
         if expected_count == 'all':
             expected_count = Annotation.objects.count()
 
-        response, results = self.request_to_generic_class_view(AnnotationList, 'get', headers={
+        response, results = self.request_to_generic_class_view(AnnotationViewSet, 'get', headers={
             'HTTP_PP_SITE_URL': query_url,
         })
         self.assertEqual(response.status_code, 200)
@@ -96,7 +101,7 @@ class AnnotationViewTest(TestCase):
         if expected_count == 'all':
             expected_count = Annotation.objects.count()
 
-        response, results = self.request_to_generic_class_view(AnnotationList, 'get', data={'url': query_url})
+        response, results = self.request_to_generic_class_view(AnnotationViewSet, 'get', data={'url': query_url})
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(results)
         self.assertEqual(len(results), expected_count)
@@ -124,7 +129,7 @@ class AnnotationViewTest(TestCase):
         if expected_count == 'all':
             expected_count = Annotation.objects.count()
 
-        response, results = self.request_to_generic_class_view(AnnotationList, 'get',
+        response, results = self.request_to_generic_class_view(AnnotationViewSet, 'get',
                                                                data={'check_status': query_status})
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(results)
@@ -137,7 +142,7 @@ class AnnotationViewTest(TestCase):
 
         # patch PAGE_SIZE so as not to have to create > 100 Annotations...
         with patch('rest_framework.pagination.LimitOffsetPagination.default_limit', 5):
-            response, results = self.request_to_generic_class_view(AnnotationList, 'get')
+            response, results = self.request_to_generic_class_view(AnnotationViewSet, 'get')
 
         self.assertEqual(response.status_code, 200)
         self.assertIsNotNone(results)
@@ -178,8 +183,8 @@ class AnnotationTaskTest(AnnotationViewTest):
         data['data']['attributes']['url'] = site_url
 
         with patch('apps.annotation.signals.notify_annotation_url_subscribers') as task_mock:
-            response, results = self.request_to_generic_class_view(AnnotationList, 'post', data=data)
-            self.assertEqual(response.status_code, 200)
+            response, results = self.request_to_generic_class_view(AnnotationViewSet, 'post', data=data)
+            self.assertEqual(response.status_code, 201)
             self.assertIsNotNone(results)
             annotation_id = int(results['id'])
             task_mock.apply_async.assert_called_once_with(args=[annotation_id])

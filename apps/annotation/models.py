@@ -165,7 +165,7 @@ class AnnotationUpvote(UserInput):
     class Meta:
         unique_together = [('user', 'annotation')]
 
-    annotation = models.ForeignKey(Annotation, on_delete=models.CASCADE, related_name='feedbacks')
+    annotation = models.ForeignKey(Annotation, on_delete=models.CASCADE)
 
 
 class AnnotationRequestFeedback(models.Model):

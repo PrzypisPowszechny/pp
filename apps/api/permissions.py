@@ -1,11 +1,11 @@
 import logging
 
-from rest_framework.permissions import BasePermission
+from rest_framework.permissions import BasePermission, IsAuthenticated
 
 logger = logging.getLogger('api.permissions')
 
 
-class IsUserOwner(BasePermission):
+class IsUserOwner(IsAuthenticated):
 
     def has_object_permission(self, request, view, obj):
         assert getattr(view, 'owner_field', None) is not None, \

@@ -1,7 +1,7 @@
 from django.urls import reverse
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import empty
+from rest_framework_json_api.relations import SerializerMethodResourceRelatedField
 from rest_framework_json_api.serializers import ModelSerializer
 
 from apps.annotation.consts import SUGGESTED_CORRECTION
@@ -10,7 +10,7 @@ from apps.api import fields
 from .models import Annotation, AnnotationUpvote
 
 
-class RequestMixin:
+class RequestUserMixin:
     def _assert_request(self):
         assert 'request' in self.context, f"No request in context of {self.__class__.__name__}"
 
@@ -35,132 +35,71 @@ class ResourceLinksSerializer(serializers.Serializer):
 
 # Annotation
 
-class AnnotationSerializer(serializers.Serializer):
-    class Attributes(serializers.ModelSerializer, RequestMixin):
-        url = fields.StandardizedRepresentationURLField()
-        range = fields.ObjectField(json_internal_type=True)
-        quote = serializers.CharField()
-        # TODO: this will be required soon
-        quote_context = serializers.CharField(required=False, allow_blank=True)
-        comment = serializers.CharField(required=False, allow_blank=True)
+class AnnotationSerializer(ModelSerializer, RequestUserMixin):
+    url = fields.StandardizedRepresentationURLField()
+    range = fields.ObjectField(json_internal_type=True)
+    upvote_count_except_user = serializers.SerializerMethodField()
+    does_belong_to_user = serializers.SerializerMethodField()
+    annotation_upvote = SerializerMethodResourceRelatedField(
+        model=AnnotationUpvote,
+        read_only=True, source='get_user_annotation_upvote',
+        related_link_view_name='api:annotation:annotation_related_upvote',
+        related_link_url_kwarg='annotation_id'
+    )
+    self_link = serializers.HyperlinkedIdentityField(view_name='api:annotation:annotation-detail',
+                                                     lookup_url_kwarg='annotation_id')
 
-        publisher = serializers.CharField()
-        upvote_count_except_user = serializers.SerializerMethodField()
-        does_belong_to_user = serializers.SerializerMethodField()
+    class Meta:
+        model = Annotation
 
-        class Meta:
-            model = Annotation
+        fields = (
+            'id', 'user', 'url', 'range', 'quote', 'quote_context',
+            'pp_category', 'demagog_category', 'comment',
+            'annotation_link', 'annotation_link_title',
 
-            fields = ('url', 'range', 'quote', 'quote_context',
-                      'pp_category', 'demagog_category', 'comment',
-                      'annotation_link', 'annotation_link_title',
+            'publisher', 'create_date', 'upvote_count_except_user', 'does_belong_to_user',
 
-                      'publisher', 'create_date', 'upvote_count_except_user', 'does_belong_to_user')
+            'annotation_request', 'user', 'annotation_upvote',
 
-        def get_upvote_count_except_user(self, instance):
-            return AnnotationUpvote.objects.filter(annotation=instance).exclude(user=self.request_user).count()
-
-        def get_does_belong_to_user(self, instance):
-            return self.request_user.id == instance.user_id
-
-    class Relationships(serializers.Serializer):
-        user = fields.RelationField(
-            related_link_url_name='api:annotation:annotation_related_user',
-            child=fields.ResourceField(resource_name='users')
+            'self_link'
         )
-        annotation_request = fields.RelationField(
-            child=fields.ResourceField('annotation_requests'),
-        )
-        annotation_upvote = fields.RelationField(
-            related_link_url_name='api:annotation:annotation_related_upvote',
-            child=fields.ResourceField(resource_name='annotation_upvotes'),
+        read_only_fields = (
+            'demagog_category', 'publisher', 'create_date',
         )
 
-    id = fields.IDField()
-    type = fields.CamelcaseConstField('annotations')
-    links = ResourceLinksSerializer(source='id', self_link_url_name='api:annotation:annotation')
-    attributes = Attributes()
-    relationships = Relationships()
+        extra_kwargs = {
+            # TODO: this will be required soon
+            'quote_context': {'required': False, 'allow_blank': True},
+            'comment': {'required': False, 'allow_blank': True},
+            'user': {
+                'read_only': True,
+                'related_link_view_name': 'api:annotation:annotation_related_user',
+                'related_link_url_kwarg': 'annotation_id'
+             }
+        }
+
+    def get_upvote_count_except_user(self, instance):
+        return instance.total_upvote_count - int(bool(self.get_user_annotation_upvote(instance)))
+
+    def get_does_belong_to_user(self, instance):
+        return self.request_user.id == instance.user_id
+
+    def get_user_annotation_upvote(self, instance):
+        # This is prefetch that results in zero or one element
+        upvotes = instance.user_annotation_upvotes
+        return upvotes[0] if upvotes else None
 
 
-class AnnotationListSerializer(serializers.Serializer):
-    class Attributes(serializers.ModelSerializer):
-        url = fields.StandardizedRepresentationURLField()
-        range = fields.ObjectField(json_internal_type=True)
-        quote = serializers.CharField()
-        quote_context = serializers.CharField()
-        publisher = serializers.CharField()
-        upvote_count_except_user = serializers.IntegerField(default=0)
-        does_belong_to_user = serializers.BooleanField(default=False)
+class AnnotationPatchSerializer(AnnotationSerializer):
+    range = fields.ObjectField(json_internal_type=True, read_only=True)
 
-        class Meta:
-            model = Annotation
-            fields = ('url', 'range', 'quote', 'quote_context', 'publisher',
-                      'pp_category', 'demagog_category', 'comment',
-                      'annotation_link', 'annotation_link_title',
-                      'create_date', 'upvote_count_except_user', 'does_belong_to_user',
-                      )
-            read_only_fields = ('upvote_count_except_user',
-                                'does_belong_to_user')
-
-    class Relationships(serializers.Serializer):
-        user = fields.RelationField(
-            related_link_url_name='api:annotation:annotation_related_user',
-            child=fields.ResourceField(resource_name='users')
-        )
-        annotation_request = fields.RelationField(
-            child=fields.ResourceField('annotation_requests'),
-        )
-        annotation_upvote = fields.RelationField(
-            related_link_url_name='api:annotation:annotation_related_upvote',
-            child=fields.ResourceField(resource_name='annotation_upvotes'),
-        )
-
-    id = fields.IDField()
-    type = fields.CamelcaseConstField('annotations')
-    links = ResourceLinksSerializer(source='id', self_link_url_name='api:annotation:annotation')
-    attributes = Attributes()
-    relationships = Relationships()
-
-
-class AnnotationDeserializer(serializers.Serializer):
-    class Attributes(serializers.ModelSerializer):
-        url = fields.StandardizedRepresentationURLField()
-        range = fields.ObjectField(json_internal_type=True)
-        quote = serializers.CharField()
-        # TODO: this will be required soon
-        quote_context = serializers.CharField(required=False, allow_blank=True)
-        comment = serializers.CharField(required=False, allow_blank=True)
-
-        class Meta:
-            model = Annotation
-            fields = ('url', 'range', 'quote', 'quote_context',
-                      'pp_category', 'demagog_category', 'comment',
-                      'annotation_link', 'annotation_link_title')
-
-    class Relationships(serializers.Serializer):
-        annotation_request = fields.RelationField(
-            child=fields.ResourceField('annotation_requests'),
-            required=False
-        )
-
-    type = fields.CamelcaseConstField('annotations')
-    attributes = Attributes()
-    relationships = Relationships(required=False)
-
-
-class AnnotationPatchDeserializer(serializers.Serializer):
-    class Attributes(serializers.ModelSerializer):
-        comment = serializers.CharField(required=False, allow_blank=True)
-
-        class Meta:
-            model = Annotation
-            fields = ('pp_category', 'comment',
-                      'annotation_link', 'annotation_link_title')
-
-    id = fields.IDField()
-    type = fields.CamelcaseConstField('annotations')
-    attributes = Attributes()
+    class Meta:
+        model = Annotation
+        fields = AnnotationSerializer.Meta.fields
+        read_only_fields = list(set(fields) - {
+            'annotation_link', 'annotation_link_title',  'comment', 'pp_category'
+        })
+        extra_kwargs = AnnotationSerializer.Meta.extra_kwargs
 
 
 # Report
@@ -221,7 +160,7 @@ class AnnotationRequestDeserializer(serializers.Serializer):
 
 
 class AnnotationRequestSerializer(serializers.Serializer):
-    class Attributes(serializers.ModelSerializer, RequestMixin):
+    class Attributes(serializers.ModelSerializer, RequestUserMixin):
         url = fields.StandardizedRepresentationURLField()
         requested_by_user = serializers.SerializerMethodField()
 

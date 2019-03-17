@@ -91,7 +91,7 @@ class AnnotationAPITest(TestCase):
                         },
                     },
                     'links': {
-                        'self': testserver_reverse('api:annotation:annotation', kwargs={'annotation_id': annotation.id})
+                        'self': testserver_reverse('api:annotation:annotation-detail', kwargs={'annotation_id': annotation.id})
                     },
                 }
             }
@@ -339,7 +339,7 @@ class AnnotationAPITest(TestCase):
                  },
              },
              'links': {
-                 'self': testserver_reverse('api:annotation:annotation', kwargs={'annotation_id': annotation.id})
+                 'self': testserver_reverse('api:annotation:annotation-detail', kwargs={'annotation_id': annotation.id})
              }
              })
 
@@ -382,7 +382,7 @@ class AnnotationAPITest(TestCase):
                  },
              },
              'links': {
-                 'self': testserver_reverse('api:annotation:annotation', kwargs={'annotation_id': annotation2.id})
+                 'self': testserver_reverse('api:annotation:annotation-detail', kwargs={'annotation_id': annotation2.id})
              },
              })
 
@@ -492,7 +492,7 @@ class AnnotationAPITest(TestCase):
             json.dumps(request_payload),
             content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
 
-        self.assertEqual(response.status_code, 200, msg=response.data)
+        self.assertEqual(response.status_code, 201, msg=response.data)
         annotation = Annotation.objects.get(user=self.user)
 
         upvote_count = AnnotationUpvote.objects.filter(annotation=annotation).exclude(user=self.user).count()
@@ -539,7 +539,7 @@ class AnnotationAPITest(TestCase):
                         },
                     },
                     'links': {
-                        'self': testserver_reverse('api:annotation:annotation', kwargs={'annotation_id': annotation.id})
+                        'self': testserver_reverse('api:annotation:annotation-detail', kwargs={'annotation_id': annotation.id})
                     },
                 }
             }
@@ -562,7 +562,7 @@ class AnnotationAPITest(TestCase):
             json.dumps(request_payload),
             content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
 
-        self.assertEqual(response.status_code, 200, msg=response.data)
+        self.assertEqual(response.status_code, 201, msg=response.data)
         new_annotation = Annotation.objects.filter(user=self.user).last()
         self.assertIsNotNone(new_annotation)
         self.assertEqual(response['content-type'], 'application/vnd.api+json', msg=response.content.decode('utf8'))
@@ -581,11 +581,12 @@ class AnnotationAPITest(TestCase):
         annotation.save()
 
         # PATCH - ignore changes
+        request_payload['data']['id'] = annotation.id
         response = self.client.patch(
             '{}/{}'.format(base_url, annotation.id),
             json.dumps(request_payload),
             content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
-        self.assertEqual(response.status_code, 200, msg=response.data)
+        self.assertEqual(response.status_code, 200, msg=response.content)
         response_data = json.loads(response.content.decode('utf8'))
         self.assertEqual(
             response_data['data']['attributes']['range'], initial_range
@@ -608,7 +609,7 @@ class AnnotationAPITest(TestCase):
             json.dumps(request_payload),
             content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
 
-        self.assertEqual(response.status_code, 200, msg=response.data)
+        self.assertEqual(response.status_code, 201, msg=response.data)
         new_annotation = Annotation.objects.filter(user=self.user).last()
         self.assertIsNotNone(new_annotation)
         self.assertEqual(response['content-type'], 'application/vnd.api+json', msg=response.content.decode('utf8'))
@@ -623,6 +624,7 @@ class AnnotationAPITest(TestCase):
         annotation.save()
 
         # PATCH - ignore changes
+        request_payload['data']['id'] = annotation.id
         response = self.client.patch(
             '{}/{}'.format(base_url, annotation.id),
             json.dumps(request_payload),
@@ -648,7 +650,7 @@ class AnnotationAPITest(TestCase):
             base_url,
             json.dumps(request_payload),
             content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
-        self.assertEqual(response.status_code, 200, msg=response.data)
+        self.assertEqual(response.status_code, 201, msg=response.data)
         new_annotation = Annotation.objects.filter(user=self.user).last()
         self.assertIsNotNone(new_annotation)
         self.assertEqual(response['content-type'], 'application/vnd.api+json', msg=response.content.decode('utf8'))
@@ -663,6 +665,7 @@ class AnnotationAPITest(TestCase):
         annotation.save()
 
         # PATCH - ignore changes
+        request_payload['data']['id'] = annotation.id
         response = self.client.patch(
             '{}/{}'.format(base_url, annotation.id),
             json.dumps(request_payload),
@@ -696,12 +699,8 @@ class AnnotationAPITest(TestCase):
             new_annotation = Annotation.objects.filter(user=self.user).last()
             self.assertIsNone(new_annotation)
             self.assertEqual(response['content-type'], 'application/vnd.api+json', msg=response.content.decode('utf8'))
-            response_data = json.loads(response.content.decode('utf8'))
-            self.assertEqual(
-                response_data['errors'][0]['source']['pointer'], '/attributes/annotationLink'
-            )
         else:
-            self.assertEqual(response.status_code, 200, msg=response.data)
+            self.assertEqual(response.status_code, 201, msg=response.data)
             new_annotation = Annotation.objects.filter(user=self.user).last()
             self.assertIsNotNone(new_annotation)
             self.assertEqual(response['content-type'], 'application/vnd.api+json', msg=response.content.decode('utf8'))
@@ -717,6 +716,7 @@ class AnnotationAPITest(TestCase):
             annotation.save()
 
             # PATCH
+            request_payload['data']['id'] = annotation.id
             response = self.client.patch(
                 '{}/{}'.format(base_url, annotation.id),
                 json.dumps(request_payload),
@@ -746,7 +746,7 @@ class AnnotationAPITest(TestCase):
             content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
         response_data = json.loads(response.content.decode('utf8'))
 
-        self.assertEqual(response.status_code, 200, msg=response.data)
+        self.assertEqual(response.status_code, 201, msg=response.data)
         new_annotation = Annotation.objects.filter(user=self.user).last()
         self.assertIsNotNone(new_annotation)
         self.assertEqual(response['content-type'], 'application/vnd.api+json', msg=response.content.decode('utf8'))
@@ -761,6 +761,7 @@ class AnnotationAPITest(TestCase):
         annotation.save()
 
         # PATCH
+        request_payload['data']['id'] = annotation.id
         response = self.client.patch(
             '{}/{}'.format(base_url, annotation.id),
             json.dumps(request_payload),
@@ -839,7 +840,7 @@ class AnnotationAPITest(TestCase):
                     },
                 },
                 'links': {
-                    'self': testserver_reverse('api:annotation:annotation', kwargs={'annotation_id': annotation.id})
+                    'self': testserver_reverse('api:annotation:annotation-detail', kwargs={'annotation_id': annotation.id})
                 },
             }
 
@@ -865,36 +866,10 @@ class AnnotationAPITest(TestCase):
                 }
             }
         })
-        response = self.client.patch(self.base_url.format(annotation.id), put_data,
-                                     content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
-        self.assertEqual(response.status_code, 400)
-
-    # TODO: do not hardcode data all the time, use helper to create valid annotation
-    def test_patch_annotation__deny__relationship_annotation(self):
-        annotation = Annotation.objects.create(
-            user=self.user, url='www.przypis.pl', comment="good job",
-            range='{}',
-            annotation_link="www.przypispowszechny.com", annotation_link_title="very nice",
-            quote='not this time'
-        )
-        AnnotationUpvote.objects.create(user=self.user, annotation=annotation)
-
-        put_string = 'not so well'
-        put_data = json.dumps({
-            'data': {
-                'type': 'annotations',
-                'id': annotation.id,
-                'attributes': {
-                    'annotationLinkTitle': put_string
-                },
-                'relationships': {}
-            }
-        })
-        response = self.client.patch(self.base_url.format(annotation.id), put_data,
-                                     content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
-        annotation = Annotation.objects.get(id=annotation.id)
-        self.assertEqual(response.status_code, 403)
-        self.assertNotEqual(annotation.comment, put_string)
+        self.client.patch(self.base_url.format(annotation.id), put_data, content_type='application/vnd.api+json',
+                          HTTP_AUTHORIZATION=self.token_header)
+        annotation.refresh_from_db()
+        self.assertEqual(annotation.quote, 'not this time')
 
     # TODO: do not hardcode data all the time, use helper to create valid annotation
     def test_patch_annotation__deny__non_owner(self):
@@ -934,7 +909,7 @@ class AnnotationAPITest(TestCase):
 
         response = self.client.delete(self.base_url.format(good_id), content_type='application/vnd.api+json',
                                       HTTP_AUTHORIZATION=self.token_header)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 204)
 
         # After removing is not accessible
         response = self.client.get(self.base_url.format(good_id), content_type='application/vnd.api+json',
