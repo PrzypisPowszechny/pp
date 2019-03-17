@@ -1,5 +1,3 @@
-import rest_framework_json_api.parsers
-import rest_framework_json_api.renderers
 from django.contrib.auth import get_user_model
 from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters
@@ -7,6 +5,8 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics
 from rest_framework import permissions, status, serializers
 from rest_framework.generics import CreateAPIView
+from rest_framework import renderers as plain_renderers
+from rest_framework import parsers as plain_parsers
 from rest_framework_simplejwt import views as jwt_views
 
 from apps.annotation.serializers import UserSerializer
@@ -16,6 +16,9 @@ User = get_user_model()
 
 
 class SocialLoginView(CreateAPIView):
+    renderer_classes = (plain_renderers.JSONRenderer,)
+    parser_classes = (plain_parsers.JSONParser,)
+
     permission_classes = [permissions.AllowAny]
     serializer_class = SocialLoginSerializer
     backend_name = None
@@ -34,6 +37,8 @@ class GoogleLogin(SocialLoginView):
 
 
 class TokenRefreshView(jwt_views.TokenRefreshView):
+    renderer_classes = (plain_renderers.JSONRenderer,)
+    parser_classes = (plain_parsers.JSONParser,)
 
     @swagger_auto_schema(responses={status.HTTP_200_OK: TokenReadOnlyMixin})
     def post(self, *args, **kwargs):
@@ -41,6 +46,8 @@ class TokenRefreshView(jwt_views.TokenRefreshView):
 
 
 class TokenVerifyView(jwt_views.TokenVerifyView):
+    renderer_classes = (plain_renderers.JSONRenderer,)
+    parser_classes = (plain_parsers.JSONParser,)
 
     @swagger_auto_schema(responses={status.HTTP_200_OK: serializers.Serializer})
     def post(self, *args, **kwargs):
@@ -50,8 +57,6 @@ class TokenVerifyView(jwt_views.TokenVerifyView):
 class UserDetailView(generics.RetrieveAPIView):
     queryset = User.objects.filter(is_active=True)
     serializer_class = UserSerializer
-    renderer_classes = [rest_framework_json_api.renderers.JSONRenderer]
-    parser_classes = [rest_framework_json_api.parsers.JSONParser]
 
     lookup_url_kwarg = 'user_id'
 

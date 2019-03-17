@@ -199,6 +199,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -210,12 +211,10 @@ REST_FRAMEWORK = {
     'ORDERING_PARAM': 'sort',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework_json_api.pagination.LimitOffsetPagination',
     'DEFAULT_PARSER_CLASSES': (
-        'apps.api.parsers.JSONAPIParser',
-        'rest_framework.parsers.FormParser',
-        'rest_framework.parsers.MultiPartParser'
+        'rest_framework_json_api.parsers.JSONParser',
     ),
     'DEFAULT_RENDERER_CLASSES': (
-        'apps.api.renderers.JSONAPIRenderer',
+        'rest_framework_json_api.renderers.JSONRenderer',
     ),
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',
@@ -228,7 +227,6 @@ REST_FRAMEWORK = {
     'URL_FIELD_NAME': 'self_link'
 }
 
-# djangorestframework_camel_case app used by our JSONAPIRenderer and JSONAPIRenderer
 JSON_CAMEL_CASE = {
     'PARSER_CLASS': 'rest_framework.parsers.JSONParser',
     'RENDERER_CLASS': 'rest_framework.renderers.JSONRenderer',
@@ -241,20 +239,13 @@ JSON_API_PLURALIZE_TYPES = True
 SWAGGER_SETTINGS = {
     'DEFAULT_FIELD_INSPECTORS': [
         'drf_yasg.inspectors.CamelCaseJSONFilter',
-        'apps.api.inspectors.RootSerializerInspector',
-
         'apps.docs.inspectors.JSONAPIFormatFilter',
         'apps.docs.inspectors.AttributesEnhancingFilter',
         'apps.docs.inspectors.JSONAPISerializerInspector',
         'drf_yasg.inspectors.RecursiveFieldInspector',
         'drf_yasg.inspectors.InlineSerializerInspector',
 
-        # Legacy inspectors
-        'apps.api.inspectors.IDFieldInspector',
-        'apps.api.inspectors.ConstFieldInspector',
-        'apps.api.inspectors.ResourceFieldInspector',
-        'apps.api.inspectors.RelationFieldInspector',
-        'apps.api.inspectors.ObjectFieldInspector',
+        'apps.api.inspectors.ObjectFieldInspector',  # TODO: consider moving/removing
 
         'drf_yasg.inspectors.ChoiceFieldInspector',
         'apps.docs.inspectors.Base64FileFieldInspector',
