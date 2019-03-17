@@ -1,10 +1,9 @@
 from typing import List
 
 from django.contrib.auth import get_user_model
-from django.urls import reverse
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from rest_framework_json_api.relations import SerializerMethodResourceRelatedField, ResourceRelatedField
+from rest_framework_json_api.relations import SerializerMethodResourceRelatedField
 from rest_framework_json_api.serializers import ModelSerializer
 
 from apps.annotation.consts import SUGGESTED_CORRECTION
@@ -22,21 +21,6 @@ class RequestUserMixin:
         self._assert_request()
         return self.context['request'].user
 
-
-class ResourceLinksSerializer(serializers.Serializer):
-    self = fields.LinkSerializerMethodField(read_only=True)
-
-    def __init__(self, self_link_url_name, **kwargs):
-        kwargs['read_only'] = True
-        super().__init__(**kwargs)
-        self.self_link_url_name = self_link_url_name
-
-    def get_self(self, instance):
-        obj_id = getattr(instance, 'id', None) or instance
-        return self.context['request'].build_absolute_uri(reverse(self.self_link_url_name, args=[obj_id]))
-
-
-# Annotation
 
 class AnnotationSerializer(ModelSerializer, RequestUserMixin):
     url = fields.StandardizedRepresentationURLField()
@@ -105,9 +89,6 @@ class AnnotationPatchSerializer(AnnotationSerializer):
         extra_kwargs = AnnotationSerializer.Meta.extra_kwargs
 
 
-# Report
-
-
 class AnnotationReportSerializer(ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
@@ -126,8 +107,6 @@ class AnnotationReportSerializer(ModelSerializer):
         return data
 
 
-# Upvote
-
 class AnnotationUpvoteSerializer(ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
@@ -136,26 +115,10 @@ class AnnotationUpvoteSerializer(ModelSerializer):
         fields = ('id', 'annotation', 'user')
 
 
-# User
-
 class UserSerializer(ModelSerializer):
     class Meta:
         model = get_user_model()
         fields = ('id', 'date_joined')
-
-
-# Annotation request
-
-class AnnotationRequestDeserializer(serializers.Serializer):
-    class Attributes(serializers.ModelSerializer):
-        url = fields.StandardizedRepresentationURLField()
-
-        class Meta:
-            model = AnnotationRequest
-            fields = ('url', 'quote', 'comment', 'notification_email')
-
-    type = fields.CamelcaseConstField('annotation_requests')
-    attributes = Attributes()
 
 
 class AnnotationRequestSerializer(ModelSerializer, RequestUserMixin):

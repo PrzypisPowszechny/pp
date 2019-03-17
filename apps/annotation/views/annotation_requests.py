@@ -1,28 +1,18 @@
-import logging
 from distutils.util import strtobool
-
-import rest_framework_json_api.parsers
-import rest_framework_json_api.renderers
 
 import django_filters
 from django.apps import apps
-from django.forms import NullBooleanSelect, BooleanField, CharField
+from django.forms import CharField
 from django_filters.constants import EMPTY_VALUES
 from django_filters.rest_framework import DjangoFilterBackend
-from drf_yasg.utils import swagger_auto_schema
 from rest_framework import mixins, viewsets
 from rest_framework.filters import OrderingFilter
-from rest_framework.generics import GenericAPIView
-from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework_json_api.pagination import LimitOffsetPagination
 
-from apps.annotation.filters import ConflictingFilterValueError
 from apps.annotation.mails import notify_editors_about_annotation_request
 from apps.annotation.models import AnnotationRequest
-from apps.annotation.serializers import AnnotationRequestDeserializer, AnnotationRequestSerializer
+from apps.annotation.serializers import AnnotationRequestSerializer
 from apps.api.permissions import OnlyOwnerCanChange
-from apps.api.responses import ValidationErrorResponse, NotFoundResponse, PermissionDenied
 
 
 class NullBooleanField(CharField):
@@ -75,8 +65,6 @@ class AnnotationRequestViewSet(mixins.CreateModelMixin,
 
     serializer_class = AnnotationRequestSerializer
     queryset = AnnotationRequest.objects.filter(active=True).prefetch_related('annotation_set')
-    renderer_classes = [rest_framework_json_api.renderers.JSONRenderer]
-    parser_classes = [rest_framework_json_api.parsers.JSONParser]
     permission_classes = [OnlyOwnerCanChange]
     owner_field = 'user'
 

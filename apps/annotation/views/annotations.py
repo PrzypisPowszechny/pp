@@ -1,8 +1,6 @@
 import logging
 
 import django_filters
-import rest_framework_json_api.parsers
-import rest_framework_json_api.renderers
 from django.apps import apps
 from django.db.models import Count, Prefetch
 from django.utils.decorators import method_decorator
@@ -33,8 +31,6 @@ class AnnotationListFilter(django_filters.FilterSet):
 ))
 class AnnotationViewSet(viewsets.ModelViewSet):
     queryset = Annotation.objects.filter(active=True)
-    renderer_classes = [rest_framework_json_api.renderers.JSONRenderer]
-    parser_classes = [rest_framework_json_api.parsers.JSONParser]
     permission_classes = [OnlyOwnerCanRead]
     owner_field = 'user'
 
