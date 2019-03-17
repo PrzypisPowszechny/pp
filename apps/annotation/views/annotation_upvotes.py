@@ -4,15 +4,15 @@ from rest_framework import mixins, viewsets, generics
 
 from apps.annotation import models
 from apps.annotation import serializers
-from apps.api.permissions import IsUserOwner
+from apps.api.permissions import OnlyOwnerCanRead
 
 
-class AnnotationUpvote(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.DestroyModelMixin):
+class AnnotationUpvoteViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin, mixins.DestroyModelMixin):
     queryset = models.AnnotationUpvote.objects.all()
     serializer_class = serializers.AnnotationUpvoteSerializer
     renderer_classes = [rest_framework_json_api.renderers.JSONRenderer]
     parser_classes = [rest_framework_json_api.parsers.JSONParser]
-    permission_classes = [IsUserOwner]
+    permission_classes = [OnlyOwnerCanRead]
     owner_field = 'user'
 
 
@@ -21,7 +21,7 @@ class AnnotationRelatedAnnotationUpvote(generics.RetrieveAPIView):
     serializer_class = serializers.AnnotationUpvoteSerializer
     renderer_classes = [rest_framework_json_api.renderers.JSONRenderer]
     parser_classes = [rest_framework_json_api.parsers.JSONParser]
-    permission_classes = [IsUserOwner]
+    permission_classes = [OnlyOwnerCanRead]
     owner_field = 'user'
 
     # Router

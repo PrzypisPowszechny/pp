@@ -5,7 +5,7 @@ from rest_framework.permissions import BasePermission, IsAuthenticated
 logger = logging.getLogger('api.permissions')
 
 
-class IsUserOwner(IsAuthenticated):
+class OnlyOwnerCanRead(IsAuthenticated):
 
     def has_object_permission(self, request, view, obj):
         assert getattr(view, 'owner_field', None) is not None, \
@@ -26,3 +26,14 @@ class IsUserOwner(IsAuthenticated):
             return False
 
         return request.user.pk == user or request.user == user
+
+
+class OnlyOwnerCanChange(OnlyOwnerCanRead):
+    safe_actions = ('detail', 'retrieve', 'head', 'options')
+
+    def has_object_permission(self, request, view, obj):
+        assert getattr(view, 'action', None) is not None,\
+            f"{self.__class__.__name__} permission is compatible only with ViewSets (or other Views defining action"
+        if view.action in self.safe_actions:
+            return True
+        return super().has_object_permission(request, view, obj)

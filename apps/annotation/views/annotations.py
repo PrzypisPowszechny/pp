@@ -15,7 +15,7 @@ from rest_framework_json_api.pagination import LimitOffsetPagination
 from apps.annotation import serializers
 from apps.annotation.filters import StandardizedURLFilterBackend, ListORFilter
 from apps.annotation.models import Annotation, AnnotationUpvote
-from apps.api.permissions import IsUserOwner
+from apps.api.permissions import OnlyOwnerCanRead
 
 logger = logging.getLogger('pp.annotation')
 
@@ -35,7 +35,7 @@ class AnnotationViewSet(viewsets.ModelViewSet):
     queryset = Annotation.objects.filter(active=True)
     renderer_classes = [rest_framework_json_api.renderers.JSONRenderer]
     parser_classes = [rest_framework_json_api.parsers.JSONParser]
-    permission_classes = [IsUserOwner]
+    permission_classes = [OnlyOwnerCanRead]
     owner_field = 'user'
 
     # List related definitions

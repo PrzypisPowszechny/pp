@@ -8,7 +8,7 @@ from apps.annotation.tests.utils import create_test_user
 
 
 class AnnotationUpvoteAPITest(TestCase):
-    user_single_url = "/api/users/{}"
+    user_single_url = "/api/auth/users/{}"
     annotation_related_user_url = "/api/annotations/{}/user"
     maxDiff = None
 
@@ -18,41 +18,46 @@ class AnnotationUpvoteAPITest(TestCase):
         self.token = str(AccessToken.for_user(self.user))
         self.token_header = 'JWT %s' % self.token
 
-    def test_get_user(self):
-        # Add annotation to make sure that despite existing relation, no relationships in the response
-        # (we do not expose it from user side)
-        Annotation.objects.create(user=self.user)
+    def test_get_user__active(self):
+        self.user.is_active = True
+        self.user.save()
 
         response = self.client.get(self.user_single_url.format(self.user.id),
                                    content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200)
-        self.assertDictEqual(
-            json.loads(response.content.decode('utf8')),
-            {'data': {
-                'id': str(self.user.id),
-                'type': 'users',
-                'attributes': {}
-            }}
-        )
+        self.assertEqual(json.loads(response.content.decode())['data']['id'], str(self.user.id))
+
+    def test_get_user__non_existing(self):
+        self.user.is_active = True
+        self.user.save()
 
         response = self.client.get(self.user_single_url.format(self.user.id + 1),
                                    content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 404)
 
+    def test_get_annotation_related_user__inactive(self):
+        annotation = Annotation.objects.create(user=self.user)
+        self.user.is_active = False
+        self.user.save()
+
+        response = self.client.get(self.annotation_related_user_url.format(annotation.id),
+                                   content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
+        self.assertEqual(response.status_code, 401)
+
     def test_get_annotation_related_user(self):
         annotation = Annotation.objects.create(user=self.user)
+        self.user.is_active = True
+        self.user.save()
 
         response = self.client.get(self.annotation_related_user_url.format(annotation.id),
                                    content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)
         self.assertEqual(response.status_code, 200)
-        self.assertDictEqual(
-            json.loads(response.content.decode('utf8')),
-            {'data': {
-                'id': str(self.user.id),
-                'type': 'users',
-                'attributes': {}
-            }}
-        )
+        self.assertEqual(json.loads(response.content.decode())['data']['id'], str(self.user.id))
+
+    def test_get_annotation_related_user__not_found(self):
+        annotation = Annotation.objects.create(user=self.user)
+        self.user.is_active = True
+        self.user.save()
 
         response = self.client.get(self.annotation_related_user_url.format(annotation.id + 1),
                                    content_type='application/vnd.api+json', HTTP_AUTHORIZATION=self.token_header)

@@ -45,7 +45,7 @@ class AnnotationRequestSingle(TestCase):
         response = self.client.delete(self.base_url.format(annotation_request.id), HTTP_AUTHORIZATION=self.token_header)
         annotation_request.refresh_from_db()
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 204)
         self.assertEqual(models.AnnotationRequest.objects.count(), annotation_request_count)
         self.assertFalse(annotation_request.active)
 

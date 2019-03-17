@@ -1,21 +1,27 @@
+import json
+
 import responses
 from django.conf import settings
 from django.test import TestCase
-from model_mommy import mommy
 from parameterized import parameterized
 from rest_framework.test import APIRequestFactory
 from rest_framework_simplejwt.tokens import AccessToken
 
-from apps.annotation.models import AnnotationRequest
 from apps.annotation.tests.utils import create_test_user, merge
-from apps.annotation.views.annotation_requests import AnnotationRequestList
+from apps.annotation.views.annotation_requests import AnnotationRequestViewSet
 
 
-class AnnotationRequestListPost(TestCase):
+class AnnotationRequestViewSetCreate(TestCase):
     maxDiff = None
 
     # We do not test request URL here and it should not play a role, so we use a fake URL for all requests
     mock_url = 'mock-url'
+
+    actions = {
+        'get': 'list',
+        'post': 'create',
+        'delete': 'destroy',
+    }
 
     def setUp(self):
         self.user, password = create_test_user()
@@ -31,14 +37,15 @@ class AnnotationRequestListPost(TestCase):
         headers['HTTP_AUTHORIZATION'] = self.token_header
         for key, val in headers.items():
             request.META[key] = val
-        response = view_class.as_view()(request)
+        response = view_class.as_view({method: self.actions[method]})(request)
+        response.render()
         return response
 
     @staticmethod
     def request_template():
         return {
             'data': {
-                'type': 'annotation_requests',
+                'type': 'annotationRequests',
                 'attributes': {}
             }
         }
@@ -62,12 +69,12 @@ class AnnotationRequestListPost(TestCase):
         request_data = self.request_template()
         merge(request_data, data)
 
-        response = self.request_to_class_view(AnnotationRequestList, 'post', data=request_data)
-        self.assertEqual(response.status_code, 200)
+        response = self.request_to_class_view(AnnotationRequestViewSet, 'post', data=request_data)
+        self.assertEqual(response.status_code, 201)
         self.assertIsNotNone(response)
 
     @parameterized.expand([
-        ({'data': {'attributes': {'url': 'http://www.xyz.pl/', 'notification_email': 'abc@test.pl'}}},),
+        ({'data': {'attributes': {'url': 'http://www.xyz.pl/', 'notificationEmail': 'abc@test.pl'}}},),
         ({'data': {'attributes': {'url': 'http://www.xyz.pl/', 'comment': 'komentarz'}}},),
         ({'data': {'attributes': {'url': 'http://www.xyz.pl/', 'quote': 'fragment tekstu'}}},),
     ])
@@ -77,9 +84,11 @@ class AnnotationRequestListPost(TestCase):
         request_data = self.request_template()
         merge(request_data, data)
 
-        response = self.request_to_class_view(AnnotationRequestList, 'post', data=request_data)
+        response = self.request_to_class_view(AnnotationRequestViewSet, 'post', data=request_data)
+        self.assertEqual(response.status_code, 201, response.content.decode())
         for send_attr, send_value in data['data']['attributes'].items():
-            self.assertEqual(send_value, response.data['attributes'].get(send_attr, ''))
+            self.assertEqual(send_value, json.loads(response.content.decode())['data']['attributes'].get(send_attr, ''),
+                             response.content)
 
     @parameterized.expand([
         ({'data': {'attributes': {'url': 'http://www.xyz.pl'}}}, 'http://www.xyz.pl/'),
@@ -91,10 +100,10 @@ class AnnotationRequestListPost(TestCase):
         request_data = self.request_template()
         merge(request_data, data)
 
-        response = self.request_to_class_view(AnnotationRequestList, 'post', data=request_data)
-        self.assertEqual(response.status_code, 200)
+        response = self.request_to_class_view(AnnotationRequestViewSet, 'post', data=request_data)
+        self.assertEqual(response.status_code, 201, response.content.decode())
         self.assertIsNotNone(response)
-        self.assertEqual(response.data['attributes']['url'], expected_response_url)
+        self.assertEqual(json.loads(response.content.decode())['data']['attributes']['url'], expected_response_url)
 
     @responses.activate
     def test_error_logged(self):
@@ -106,8 +115,8 @@ class AnnotationRequestListPost(TestCase):
         merge(request_data, data)
 
         with self.assertLogs('pp.annotation', level='ERROR') as cm:
-            response = self.request_to_class_view(AnnotationRequestList, 'post', data=request_data)
-            self.assertEqual(response.status_code, 200)
+            response = self.request_to_class_view(AnnotationRequestViewSet, 'post', data=request_data)
+            self.assertEqual(response.status_code, 201)
             self.assertIsNotNone(response)
             self.assertEqual(len(cm.output), 1)
 
@@ -121,7 +130,7 @@ class AnnotationRequestListPost(TestCase):
         merge(request_data, data)
 
         with self.assertLogs('pp.annotation', level='ERROR') as cm:
-            response = self.request_to_class_view(AnnotationRequestList, 'post', data=request_data)
-            self.assertEqual(response.status_code, 200)
+            response = self.request_to_class_view(AnnotationRequestViewSet, 'post', data=request_data)
+            self.assertEqual(response.status_code, 201)
             self.assertIsNotNone(response)
             self.assertEqual(len(cm.output), 1)
