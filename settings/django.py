@@ -70,9 +70,16 @@ elif _env.ENV == 'prod':
 
 CORS_ALLOW_CREDENTIALS = True
 
-if _env.ENV == 'dev' and _env.DEBUG:
-    # This allows the regular pp-client scripts to access API in development.
-    # Chrome extension is allowed access as it explicitly defines allowed resource domains in manifest.json permissions
+# Chrome extension is allowed access as it explicitly defines allowed resource domains in manifest.json permissions
+# server-side CORS settings only affect regular websites
+if _env.ENV == 'dev' and not _env.DEBUG:
+    # This allows for dashboard development in localhost
+    CORS_ORIGIN_REGEX_WHITELIST = (
+        r'(https?://)?localhost:[0-9]+(/.*)?',
+    )
+elif _env.ENV == 'dev' and _env.DEBUG:
+    # This allows any clients to access API in local development
+    # Allows for all kinds of experiments
     CORS_ORIGIN_ALLOW_ALL = True
 else:
     CORS_ORIGIN_WHITELIST = ()
