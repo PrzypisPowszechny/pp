@@ -20,8 +20,11 @@ class AnnotationAPITest(TestCase):
     # IMPORTANT: we log in for each test, so self.user has already an open session with server
     def setUp(self):
         self.user, self.password = create_test_user()
+        self.user.role = self.user.ROLE_EDITOR
+        self.user.save()
         self.token = str(AccessToken.for_user(self.user))
         self.token_header = 'JWT %s' % self.token
+
 
     # TODO: do not hardcode data all the time, use helper to create valid annotation
     def test_get_returns_json_200(self):

@@ -5,7 +5,7 @@ from rest_framework import mixins, viewsets
 from rest_framework.filters import OrderingFilter
 from rest_framework_json_api.pagination import LimitOffsetPagination
 
-from apps.api.permissions import OnlyOwnerCanChange
+from apps.api.permissions import OnlyOwnerCanWrite
 from ..filters import BooleanFilter, RequestUserBooleanFilter
 from ..mails import notify_editors_about_annotation_request
 from ..models import AnnotationRequest
@@ -29,7 +29,7 @@ class AnnotationRequestViewSet(mixins.CreateModelMixin,
 
     serializer_class = AnnotationRequestSerializer
     queryset = AnnotationRequest.objects.filter(active=True).prefetch_related('annotation_set')
-    permission_classes = [OnlyOwnerCanChange]
+    permission_classes = [OnlyOwnerCanWrite]
     owner_field = 'user'
 
     pagination_class = LimitOffsetPagination

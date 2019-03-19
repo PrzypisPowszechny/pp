@@ -13,7 +13,7 @@ from rest_framework_json_api.pagination import LimitOffsetPagination
 from apps.annotation import serializers
 from apps.annotation.filters import StandardizedURLFilterBackend, ListORFilter
 from apps.annotation.models import Annotation, AnnotationUpvote
-from apps.api.permissions import OnlyOwnerCanRead
+from apps.api.permissions import OnlyEditorCanWrite, OnlyOwnerCanWrite
 from apps.docs.utils import unless_swagger
 
 logger = logging.getLogger('pp.annotation')
@@ -32,7 +32,7 @@ class AnnotationListFilter(django_filters.FilterSet):
 ))
 class AnnotationViewSet(viewsets.ModelViewSet):
     queryset = Annotation.objects.filter(active=True)
-    permission_classes = [OnlyOwnerCanRead]
+    permission_classes = (OnlyEditorCanWrite & OnlyOwnerCanWrite,)
     owner_field = 'user'
 
     # List related definitions
@@ -67,10 +67,7 @@ class AnnotationViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
         # When creating get_queryset is not called, so we need to make it up
-        instance = serializer.instance
-        instance.total_upvote_count = instance.annotationupvote_set.count()
-        user_upvote = instance.annotationupvote_set.filter(user=self.request.user).first()
-        instance.user_annotation_upvotes = [user_upvote] if user_upvote else []
+        serializer.instance = self.get_queryset().get(id=serializer.instance.id)
 
     def perform_destroy(self, instance):
         instance.active = False
