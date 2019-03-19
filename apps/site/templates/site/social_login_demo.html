@@ -12,15 +12,13 @@
       fetch(`/api/auth/${provider}/`, {
         method: 'POST',
         headers: {
-          'Content-Type':  'application/vnd.api+json'
+          'Content-Type':  'application/json'
         },
         body: JSON.stringify({
-          data: {
-            // fb uses camelcase while google underscores
-            accessToken: authResponse.accessToken || authResponse.access_token,
-            expiresIn: authResponse.expiresIn || authResponse.expires_in,
-            tokenType: authResponse.tokenType || authResponse.tokenType
-          }
+          // fb uses camelcase while google underscores
+          accessToken: authResponse.accessToken || authResponse.access_token,
+          expiresIn: authResponse.expiresIn || authResponse.expires_in,
+          tokenType: authResponse.tokenType || authResponse.tokenType
         })
       })
       .then(response => response.json())
