@@ -1,12 +1,12 @@
 from django.contrib.auth import get_user_model
 from django.utils.decorators import method_decorator
 from django.views.decorators.debug import sensitive_post_parameters
+from djangorestframework_camel_case.parser import CamelCaseJSONParser
+from djangorestframework_camel_case.render import CamelCaseJSONRenderer
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics
 from rest_framework import permissions, status, serializers
 from rest_framework.generics import CreateAPIView
-from rest_framework import renderers as plain_renderers
-from rest_framework import parsers as plain_parsers
 from rest_framework_simplejwt import views as jwt_views
 
 from apps.annotation.serializers import UserSerializer
@@ -16,8 +16,8 @@ User = get_user_model()
 
 
 class SocialLoginView(CreateAPIView):
-    renderer_classes = (plain_renderers.JSONRenderer,)
-    parser_classes = (plain_parsers.JSONParser,)
+    renderer_classes = (CamelCaseJSONRenderer,)
+    parser_classes = (CamelCaseJSONParser,)
 
     permission_classes = [permissions.AllowAny]
     serializer_class = SocialLoginSerializer
@@ -37,8 +37,8 @@ class GoogleLogin(SocialLoginView):
 
 
 class TokenRefreshView(jwt_views.TokenRefreshView):
-    renderer_classes = (plain_renderers.JSONRenderer,)
-    parser_classes = (plain_parsers.JSONParser,)
+    renderer_classes = (CamelCaseJSONRenderer,)
+    parser_classes = (CamelCaseJSONParser,)
 
     @swagger_auto_schema(responses={status.HTTP_200_OK: TokenReadOnlyMixin})
     def post(self, *args, **kwargs):
@@ -46,8 +46,8 @@ class TokenRefreshView(jwt_views.TokenRefreshView):
 
 
 class TokenVerifyView(jwt_views.TokenVerifyView):
-    renderer_classes = (plain_renderers.JSONRenderer,)
-    parser_classes = (plain_parsers.JSONParser,)
+    renderer_classes = (CamelCaseJSONRenderer,)
+    parser_classes = (CamelCaseJSONParser,)
 
     @swagger_auto_schema(responses={status.HTTP_200_OK: serializers.Serializer})
     def post(self, *args, **kwargs):
