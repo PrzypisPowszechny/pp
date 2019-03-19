@@ -1,3 +1,5 @@
+from django.contrib.auth import user_logged_in
+from django.utils import timezone
 from django.utils.six import text_type
 from requests import HTTPError
 from rest_framework import serializers
@@ -17,6 +19,8 @@ class SocialLoginSerializer(TokenReadOnlyMixin, serializers.Serializer):
     expires_in = serializers.CharField(write_only=True, required=False)
     token_type = serializers.CharField(write_only=True, required=False)
     user_id = serializers.CharField(read_only=True)
+    user_email = serializers.CharField(read_only=True)
+    user_role = serializers.CharField(read_only=True)
 
     sensitive_fields = ['access_token', 'refresh_token']
 
@@ -26,11 +30,15 @@ class SocialLoginSerializer(TokenReadOnlyMixin, serializers.Serializer):
         return {
             'access': text_type(refresh.access_token),
             'refresh': text_type(refresh),
-            'user_id': user.username
+            'user_id': user.id,
+            'user_email': user.email,
+            'user_role': user.role,
         }
 
     def create(self, validated_data):
-        return self.get_token(validated_data['user'])
+        user = validated_data['user']
+        user_logged_in.send(sender=user.__class__, request=self.context['request'], user=user)
+        return self.get_token(user)
 
     def validate(self, attrs):
         attrs = super().validate(attrs)

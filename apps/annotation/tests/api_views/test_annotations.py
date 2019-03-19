@@ -182,6 +182,9 @@ class AnnotationTaskTest(AnnotationViewTest):
         data = self.get_valid_request_template()
         data['data']['attributes']['url'] = site_url
 
+        self.user.role = self.user.ROLE_EDITOR
+        self.user.save()
+
         with patch('apps.annotation.signals.notify_annotation_url_subscribers') as task_mock:
             response, results = self.request_to_generic_class_view(AnnotationViewSet, 'post', data=data)
             self.assertEqual(response.status_code, 201)

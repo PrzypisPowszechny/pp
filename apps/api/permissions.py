@@ -1,8 +1,16 @@
 import logging
 
-from rest_framework.permissions import BasePermission, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 
 logger = logging.getLogger('api.permissions')
+
+read_actions = ('list', 'retrieve')
+
+
+class ViewSetRequiredMixin:
+    def assert_viewset(self, view):
+        assert getattr(view, 'action', None) is not None, \
+            f"{self.__class__.__name__} permission is compatible only with ViewSets (or other Views defining action"
 
 
 class OnlyOwnerCanRead(IsAuthenticated):
@@ -25,15 +33,21 @@ class OnlyOwnerCanRead(IsAuthenticated):
         if user is None:
             return False
 
-        return request.user.pk == user or request.user == user
+        return request.user.pk == user.pk or request.user == user
 
 
-class OnlyOwnerCanChange(OnlyOwnerCanRead):
-    safe_actions = ('detail', 'retrieve', 'head', 'options')
+class OnlyOwnerCanWrite(ViewSetRequiredMixin, OnlyOwnerCanRead):
 
     def has_object_permission(self, request, view, obj):
-        assert getattr(view, 'action', None) is not None,\
-            f"{self.__class__.__name__} permission is compatible only with ViewSets (or other Views defining action"
-        if view.action in self.safe_actions:
+        self.assert_viewset(view)
+        if view.action in read_actions:
             return True
         return super().has_object_permission(request, view, obj)
+
+
+class OnlyEditorCanWrite(ViewSetRequiredMixin, IsAuthenticated):
+    def has_permission(self, request, view):
+        self.assert_viewset(view)
+        if view.action in read_actions:
+            return True
+        return request.user.role == request.user.ROLE_EDITOR
