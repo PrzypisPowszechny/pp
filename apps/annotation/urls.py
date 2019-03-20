@@ -39,7 +39,9 @@ urlpatterns = [
             name='annotation_report_related_annotation'),
     ])),
     url(r'^annotationRequests', include([
-        url(r'^$', annotation_requests.AnnotationRequests.as_view(),
+        url(r'^$', annotation_requests.AnnotationRequestList.as_view(),
+            name='annotation_requests'),
+        url(r'^/(?P<annotation_request_id>[0-9]+)', annotation_requests.AnnotationRequestSingle.as_view(),
             name='annotation_requests'),
     ])),
     url(r'^users/', include([

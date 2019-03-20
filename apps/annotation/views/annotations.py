@@ -13,7 +13,7 @@ from rest_framework_json_api.pagination import LimitOffsetPagination
 
 from apps.annotation import serializers
 from apps.annotation.filters import StandardizedURLFilterBackend, ConflictingFilterValueError, ListORFilter
-from apps.annotation.models import Annotation, AnnotationUpvote, AnnotationReport
+from apps.annotation.models import Annotation, AnnotationUpvote, AnnotationReport, AnnotationRequest
 from apps.api.responses import PermissionDenied, ValidationErrorResponse, ErrorResponse, NotFoundResponse, \
     Forbidden
 
@@ -39,6 +39,7 @@ class AnnotationSingle(APIView):
                     'user': annotation.user_id,
                     'annotation_upvote': upvote,
                     'annotation_reports': reports,
+                    'annotation_request': annotation.annotation_request_id,
                 }},
             context={'request': request, 'root_resource_obj': annotation}
         ).data)
@@ -78,6 +79,7 @@ class AnnotationSingle(APIView):
                     'user': annotation.user_id,
                     'annotation_upvote': feedback,
                     'annotation_reports': reports,
+                    'annotation_request': annotation.annotation_request_id,
                 }
             },
             context={'request': request, 'root_resource_obj': annotation}
@@ -85,7 +87,7 @@ class AnnotationSingle(APIView):
 
     def delete(self, request, annotation_id):
         try:
-            annotation = Annotation.objects.get(id=annotation_id)
+            annotation = Annotation.objects.get(id=annotation_id, active=True)
         except Annotation.DoesNotExist:
             return NotFoundResponse()
 
@@ -120,8 +122,13 @@ class AnnotationList(GenericAPIView):
         deserializer = serializers.AnnotationDeserializer(data=request.data)
         if not deserializer.is_valid():
             return ValidationErrorResponse(deserializer.errors)
+        annotation_request_id = deserializer.validated_data.get('relationships',  {}).get('annotation_request')
+        if annotation_request_id is not None:
+            if not AnnotationRequest.objects.filter(active=True).exists():
+                raise ErrorResponse('Supplied annotation request does not exist')
         annotation = Annotation(**deserializer.validated_data['attributes'])
         annotation.user_id = request.user.pk
+        annotation.annotation_request_id = annotation_request_id
         annotation.save()
 
         return Response(serializers.AnnotationSerializer(
@@ -132,6 +139,7 @@ class AnnotationList(GenericAPIView):
                     'user': annotation.user_id,
                     'annotation_upvote': None,
                     'annotation_reports': (),
+                    'annotation_request': annotation.annotation_request_id
                 }
             },
             context={'request': request, 'root_resource_obj': annotation}
@@ -141,7 +149,7 @@ class AnnotationList(GenericAPIView):
         queryset = Annotation.objects.filter(active=True).annotate(
             total_upvote_count=Count('feedbacks__id')
         ).select_related(
-            'user'
+            'user', 'annotation_request'
         ).prefetch_related(
             Prefetch('annotation_reports', queryset=AnnotationReport.objects.filter(user=self.request.user),
                      to_attr='user_annotation_reports')
@@ -184,9 +192,10 @@ class AnnotationList(GenericAPIView):
                 'id': annotation,
                 'attributes': annotation,
                 'relationships': {
+                    'user': annotation.user_id,
                     'annotation_upvote': annotation.user_feedback,
                     'annotation_reports': annotation.user_annotation_reports,
-                    'user': annotation.user_id,
+                    'annotation_request': annotation.annotation_request_id,
                 }
             }, context={'request': request, 'root_resource_obj': annotation}).data
             for annotation in queryset])
@@ -210,6 +219,7 @@ class AnnotationUpvoteRelatedAnnotationSingle(APIView):
                     'user': annotation.user_id,
                     'annotation_upvote': feedback,
                     'annotation_reports': reports,
+                    'annotation_request': annotation.annotation_request_id,
                 }
             },
             context={'request': request, 'root_resource_obj': annotation}
@@ -236,6 +246,7 @@ class AnnotationReportRelatedAnnotationSingle(APIView):
                     'user': annotation.user_id,
                     'annotation_upvote': feedback,
                     'annotation_reports': reports,
+                    'annotation_request': annotation.annotation_request_id,
                 }
             },
             context={'request': request, 'root_resource_obj': annotation}

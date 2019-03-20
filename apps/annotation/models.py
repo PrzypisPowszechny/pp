@@ -24,7 +24,6 @@ class AnnotationBase(UserInput):
     # Processed URL striped of some (probably) irrelevant data that might make identification harder
 
     active = models.BooleanField(blank=True, default=True)
-
     # We never actually delete models -- we only mark them as not active
 
     class Meta:
