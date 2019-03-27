@@ -8,7 +8,7 @@ from apps.annotation.tests.utils import create_test_user
 
 
 class AnnotationUpvoteAPITest(TestCase):
-    user_single_url = "/api/auth/users/{}"
+    user_single_url = "/api/users/{}"
     annotation_related_user_url = "/api/annotations/{}/user"
     maxDiff = None
 

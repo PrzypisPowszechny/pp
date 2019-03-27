@@ -14,6 +14,7 @@ from apps.annotation import serializers
 from apps.annotation.filters import StandardizedURLFilterBackend, ListORFilter
 from apps.annotation.models import Annotation, AnnotationUpvote
 from apps.api.permissions import OnlyOwnerCanRead
+from apps.docs.utils import unless_swagger
 
 logger = logging.getLogger('pp.annotation')
 
@@ -57,7 +58,9 @@ class AnnotationViewSet(viewsets.ModelViewSet):
             'user', 'annotation_request'
         ).prefetch_related(Prefetch(
             lookup='annotationupvote_set',
-            queryset=AnnotationUpvote.objects.filter(user=self.request.user),
+            queryset=AnnotationUpvote.objects.filter(
+                user=unless_swagger(self, lambda: self.request.user, default=None)
+            ),
             to_attr='user_annotation_upvotes'
         ))
 
