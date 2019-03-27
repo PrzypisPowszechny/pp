@@ -4,7 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 
 logger = logging.getLogger('api.permissions')
 
-read_actions = ('list', 'retrieve')
+# Action equivalent of GET (single and multiple objects), HEAD (same as get) and OPTIONS
+read_actions = ('list', 'retrieve', 'metadata')
 
 
 class ViewSetRequiredMixin:
@@ -20,7 +21,7 @@ class OnlyOwnerCanRead(IsAuthenticated):
             f"Define 'owner_field' view attribute to use {self.__class__.__name__} permission"
 
         try:
-            user = getattr(obj, f'{view.owner_field}_id)')
+            user = getattr(obj, f'{view.owner_field}_id')
         except AttributeError:
             try:
                 user = getattr(obj, f'{view.owner_field}')
@@ -33,7 +34,7 @@ class OnlyOwnerCanRead(IsAuthenticated):
         if user is None:
             return False
 
-        return request.user.pk == user.pk or request.user == user
+        return request.user.pk == user or request.user == user
 
 
 class OnlyOwnerCanWrite(ViewSetRequiredMixin, OnlyOwnerCanRead):
@@ -42,6 +43,7 @@ class OnlyOwnerCanWrite(ViewSetRequiredMixin, OnlyOwnerCanRead):
         self.assert_viewset(view)
         if view.action in read_actions:
             return True
+
         return super().has_object_permission(request, view, obj)
 
 

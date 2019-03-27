@@ -14,7 +14,7 @@ from apps.annotation.views.annotations import AnnotationViewSet
 from worker import celery_app
 
 
-class AnnotationViewTest(TestCase):
+class AnnotationTestBase(TestCase):
     maxDiff = None
 
     # We do not test request URL here and it should not play a role, so we use a fake URL for all requests
@@ -46,6 +46,20 @@ class AnnotationViewTest(TestCase):
         else:
             results = response.data
         return response, results
+
+
+class AnnotationViewTest(AnnotationTestBase):
+
+    def test_post_reader_403(self):
+        self.user.role = self.user.ROLE_READER
+        self.user.save()
+        response, results = self.request_to_generic_class_view(AnnotationViewSet, 'post')
+        self.assertEqual(response.status_code, 403)
+
+        self.user.role = self.user.ROLE_EDITOR
+        self.user.save()
+        response, results = self.request_to_generic_class_view(AnnotationViewSet, 'post')
+        self.assertNotEqual(response.status_code, 403)
 
     def test_list_returns_200(self):
         response, results = self.request_to_generic_class_view(AnnotationViewSet, 'get')
@@ -148,6 +162,9 @@ class AnnotationViewTest(TestCase):
         self.assertIsNotNone(results)
         self.assertLess(len(results), all_count)
 
+
+class AnnotationTaskTest(AnnotationTestBase):
+
     def get_valid_annotation_attrs(self):
         return {
             'url': "http://www.przypis.pl/",
@@ -168,9 +185,6 @@ class AnnotationViewTest(TestCase):
                 'attributes': self.get_valid_annotation_attrs()
             }
         }
-
-
-class AnnotationTaskTest(AnnotationViewTest):
 
     def test_notify_subscribers_scheduled_imported(self):
         self.assertIn('apps.annotation.tasks.notify_annotation_url_subscribers', celery_app.tasks)
