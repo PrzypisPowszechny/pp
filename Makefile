@@ -19,6 +19,9 @@ build-image:  # Build docker image
 install: dev-local.env  # Install requirements
 	docker-compose run --rm --no-deps web pip install -r requirements.txt
 
+update-requirements: dev-local.env  # Run pip compile to generate requirements.txt based on requirements_base.txt
+	docker-compose run --rm --no-deps web pip-compile --output-file requirements.txt requirements_base.txt
+
 build:  # Build from scratch: docker image and install requirements
 	${MAKE} build-image
 	${MAKE} install

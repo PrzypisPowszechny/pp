@@ -4,12 +4,11 @@ from urllib.parse import quote
 
 from django.test import TestCase
 from django.utils import timezone
-from model_mommy import mommy
 from parameterized import parameterized
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import AccessToken
 
-from apps.annotation.models import Annotation, AnnotationUpvote, AnnotationReport
+from apps.annotation.models import Annotation, AnnotationUpvote
 from apps.annotation.tests.utils import create_test_user, testserver_reverse
 
 
@@ -24,7 +23,6 @@ class AnnotationAPITest(TestCase):
         self.user.save()
         self.token = str(AccessToken.for_user(self.user))
         self.token_header = 'JWT %s' % self.token
-
 
     # TODO: do not hardcode data all the time, use helper to create valid annotation
     def test_get_returns_json_200(self):
