@@ -3,15 +3,17 @@ import json
 import responses
 from django.conf import settings
 from django.test import TestCase
+from model_mommy import mommy
 from parameterized import parameterized
 from rest_framework.test import APIRequestFactory
 from rest_framework_simplejwt.tokens import AccessToken
 
+from apps.annotation.models import AnnotationRequest
 from apps.annotation.tests.utils import create_test_user, merge
 from apps.annotation.views.annotation_requests import AnnotationRequestViewSet
 
 
-class AnnotationRequestViewSetCreate(TestCase):
+class AnnotationRequestViewSetTestCase(TestCase):
     maxDiff = None
 
     # We do not test request URL here and it should not play a role, so we use a fake URL for all requests
@@ -104,6 +106,53 @@ class AnnotationRequestViewSetCreate(TestCase):
         self.assertEqual(response.status_code, 201, response.content.decode())
         self.assertIsNotNone(response)
         self.assertEqual(json.loads(response.content.decode())['data']['attributes']['url'], expected_response_url)
+
+    filtering_url_test_params = [
+        # No filtering - include
+        ("https://docs.python.org/",
+         "",
+         'all'),
+        # Exact - include
+        ("https://docs.python.org/",
+         "https://docs.python.org/",
+         1),
+        # Different - exclude
+        ("https://docs.python.org/",
+         "https://github.com",
+         0),
+    ]
+
+    @parameterized.expand(filtering_url_test_params)
+    def test_list_header_url_filtering(self, actual_url, query_url, expected_count):
+        annotation_request = mommy.make('annotation.AnnotationRequest')
+        annotation_request.url = actual_url
+        annotation_request.save()
+
+        if expected_count == 'all':
+            expected_count = AnnotationRequest.objects.count()
+
+        response = self.request_to_class_view(AnnotationRequestViewSet, 'get', headers={
+            'HTTP_PP_SITE_URL': query_url,
+        })
+        self.assertEqual(response.status_code, 200)
+        results = response.data['results']
+        self.assertIsNotNone(results)
+        self.assertEqual(len(results), expected_count)
+
+    @parameterized.expand(filtering_url_test_params)
+    def test_list_param_url_filtering(self, actual_url, query_url, expected_count):
+        annotation_request = mommy.make('annotation.AnnotationRequest')
+        annotation_request.url = actual_url
+        annotation_request.save()
+
+        if expected_count == 'all':
+            expected_count = AnnotationRequest.objects.count()
+
+        response = self.request_to_class_view(AnnotationRequestViewSet, 'get', data={'url': query_url})
+        self.assertEqual(response.status_code, 200)
+        results = response.data['results']
+        self.assertIsNotNone(results)
+        self.assertEqual(len(results), expected_count)
 
     @responses.activate
     def test_error_logged(self):

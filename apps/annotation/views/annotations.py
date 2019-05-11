@@ -41,6 +41,7 @@ class AnnotationViewSet(viewsets.ModelViewSet):
     ordering_fields = ('create_date', 'id')
     ordering = "-create_date"
     filter_class = AnnotationListFilter
+    url_filter_model_field = 'url_id'
 
     # Router
     lookup_url_kwarg = 'annotation_id'
