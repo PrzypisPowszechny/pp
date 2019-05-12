@@ -48,7 +48,9 @@ class AnnotationRequestViewSetTestCase(TestCase):
         return {
             'data': {
                 'type': 'annotationRequests',
-                'attributes': {}
+                'attributes': {
+                    'quote': 'earth is flat'
+                }
             }
         }
 

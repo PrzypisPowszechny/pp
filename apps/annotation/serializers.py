@@ -24,7 +24,7 @@ class RequestUserMixin:
 
 class AnnotationSerializer(ModelSerializer, RequestUserMixin):
     url = fields.StandardizedRepresentationURLField()
-    range = fields.ObjectField(json_internal_type=True)
+    range = fields.ObjectField(json_internal_type=True, required=False, allow_null=True)
     upvote_count_except_user = serializers.SerializerMethodField()
     does_belong_to_user = serializers.SerializerMethodField()
     annotation_upvote = SerializerMethodResourceRelatedField(
@@ -86,7 +86,7 @@ class AnnotationPatchSerializer(AnnotationSerializer):
         model = Annotation
         fields = AnnotationSerializer.Meta.fields
         read_only_fields = list(set(fields) - {
-            'annotation_link', 'annotation_link_title', 'comment', 'pp_category'
+            'annotation_link', 'annotation_link_title', 'comment', 'pp_category',
         })
         extra_kwargs = AnnotationSerializer.Meta.extra_kwargs
 
@@ -125,15 +125,15 @@ class UserSerializer(ModelSerializer):
 
 class AnnotationRequestSerializer(ModelSerializer, RequestUserMixin):
     url = fields.StandardizedRepresentationURLField()
+    range = fields.ObjectField(json_internal_type=True, required=False, allow_null=True)
     requested_by_user = serializers.SerializerMethodField()
     annotations = SerializerMethodResourceRelatedField(read_only=True, model=Annotation, source='get_annotations')
 
     class Meta:
         model = AnnotationRequest
         fields = (
-            'id', 'url', 'quote', 'comment', 'notification_email', 'create_date', 'requested_by_user',
-
-            'annotations'
+            'id', 'url', 'range', 'quote', 'quote_context', 'comment', 'notification_email', 'create_date',
+            'requested_by_user', 'annotations'
         )
         read_only_fields = ('create_date',)
 
