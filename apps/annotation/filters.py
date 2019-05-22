@@ -23,9 +23,10 @@ class StandardizedURLFilterBackend(BaseFilterBackend):
 
     url_data_query_param = 'url'
 
-    url_model_field = 'url_id'
-
     def filter_queryset(self, request, queryset, view):
+        assert hasattr(view, 'url_filter_model_field'), \
+            f"{self.__class__.__name__} filter requires view to define url_filter_model_field attr"
+
         header_value = request.META.get(self.secret_url_meta_key)
         param_value = request.query_params.get(self.url_data_query_param)
         if header_value and param_value and header_value != param_value:
@@ -35,7 +36,7 @@ class StandardizedURLFilterBackend(BaseFilterBackend):
         filter_value = header_value or param_value
         if filter_value:
             return queryset.filter(**{
-                "{field}__exact".format(field=self.url_model_field): standardize_url_id(filter_value)
+                "{field}__exact".format(field=view.url_filter_model_field): standardize_url_id(filter_value)
             })
         return queryset
 

@@ -36,7 +36,8 @@ class AnnotationBase(UserInput):
 
 
 class LocatedAnnotationBase(AnnotationBase):
-    range = models.TextField(max_length=1000, blank=True)
+    # TODO: to be removed, quote+quote_context are the only source of location
+    range = models.TextField(max_length=1000, blank=True, null=True)
     # Json data with information about the annotation location
 
     quote = models.TextField(max_length=250)
@@ -50,11 +51,8 @@ class LocatedAnnotationBase(AnnotationBase):
         abstract = True
 
 
-class AnnotationRequest(AnnotationBase):
-
-    quote = models.TextField(max_length=250, blank=True)
-    # The exact annotated text part
-
+class AnnotationRequest(LocatedAnnotationBase):
+    
     comment = models.TextField(max_length=250, blank=True)
 
     notification_email = models.EmailField(max_length=250, blank=True)
