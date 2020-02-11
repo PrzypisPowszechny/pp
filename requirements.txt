@@ -23,7 +23,7 @@ django-extra-fields==1.0.0
 django-filter==2.0.0
 django-simple-history==2.4.0
 django-templated-mail==1.1.1  # via djoser
-django==2.0.13
+django==2.2.10
 django_mock_queries==2.1.1
 djangorestframework-camel-case==1.0b1
 djangorestframework-jsonapi==2.7.0
