@@ -52,7 +52,7 @@ psycopg2==2.7.4
 pyjwt==1.7.1              # via djangorestframework-simplejwt, social-auth-core
 python3-openid==3.1.0     # via social-auth-core
 pytz==2018.9              # via celery, django
-pyyaml==3.13              # via flex, swagger-spec-validator
+pyyaml==5.4              # via flex, swagger-spec-validator
 redis==2.10.6
 requests-oauthlib==1.2.0  # via social-auth-core
 requests==2.20.0
